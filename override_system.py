@@ -4,6 +4,9 @@ from rest_framework_jwt.authentication import BaseJSONWebTokenAuthentication
 
 
 class UserManager(BaseUserManager):
+    """
+    UserManager class for Custom User Model
+    """
     use_in_migrations = True
 
     def _create_user(self, username, email, password, fullname, mobile, **extra_fields):
