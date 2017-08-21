@@ -3,7 +3,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.text import ugettext_lazy as _
 
-from custom_modules import db_type as cmodels
+from django_custom_modules import db_type as cmodels
 
 
 class User(AbstractBaseUser, PermissionsMixin):

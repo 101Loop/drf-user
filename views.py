@@ -8,8 +8,8 @@ from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from django.core.mail import send_mail
 import smtplib
 
-from custom_modules.add_ons import JsonResponse, get_client_ip, validate_email, validate_mobile
-from custom_modules.views import ValidateAndPerformView
+from django_custom_modules.add_ons import JsonResponse, get_client_ip, validate_email, validate_mobile
+from django_custom_modules.views import ValidateAndPerformView
 from . import serializer
 from .models import OTPValidation, AuthTransaction
 from django.contrib.auth import get_user_model
