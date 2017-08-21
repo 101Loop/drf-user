@@ -128,6 +128,7 @@ class JSONWebTokenAuthenticationQS(BaseJSONWebTokenAuthentication):
 
         return auth[1]
 
+
 def jwt_payload_handler(user):
     import uuid
 
