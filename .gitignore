@@ -9,6 +9,10 @@ __pycache__/
 # Ignore .idea
 .idea/
 
+# Ignore migrations
+migrations/*.py
+!migrations/__init__.py
+
 # Distribution / packaging
 .Python
 env/
