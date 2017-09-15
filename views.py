@@ -180,12 +180,14 @@ def send_otp(prop, value, otp, recip):
     -------
 
     """
+    from django.conf import settings
+
     rdata = {'success': False, 'message': None}
     if prop.lower() == 'email':
         try:
             send_mail(subject="OTP for Verification",
                       message="Your OTP for verifying " + prop + ": " + value + " is " + otp + ".",
-                      from_email="Admin E-Nagrik <admin@iamhssingh.com>", recipient_list=[recip])
+                      from_email=settings.EMAIL_FROM, recipient_list=[recip])
             rdata['message'] = 'OTP sent successfully!'
             rdata['success'] = True
         except smtplib.SMTPException as ex:
@@ -196,7 +198,7 @@ def send_otp(prop, value, otp, recip):
         try:
             send_mail(subject="OTP for Verification",
                       message="Your OTP for verifying " + prop + ": " + value + " is " + otp + ".",
-                      from_email="Admin E-Nagrik <admin@iamhssingh.com>", recipient_list=[recip])
+                      from_email=settings.EMAIL_FROM, recipient_list=[recip])
             rdata['message'] = 'OTP sent successfully!'
             rdata['success'] = True
         except smtplib.SMTPException as ex:
