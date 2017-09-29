@@ -13,7 +13,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     from .override_system import UserManager
 
-    username = models.CharField(_('Unique UserName'), max_length=255,  unique=True)
+    username = models.CharField(_('Unique UserName'), max_length=254,  unique=True)
     email = models.EmailField(_('EMail Address'), unique=True)
     mobile = models.CharField(_('Mobile Number'), max_length=150, unique=True)
     name = models.CharField(_('Full Name'), max_length=500, blank=False)
@@ -63,7 +63,7 @@ class OTPValidation(models.Model):
     This model keeps a record of OTP Validation and which destinations have been successfully validated.
     """
     otp = models.CharField(_('OTP Code'), max_length=10, unique=True)
-    destination = models.CharField(_('Destination Address (Mobile/EMail)'), max_length=255, unique=True)
+    destination = models.CharField(_('Destination Address (Mobile/EMail)'), max_length=254, unique=True)
     create_date = cmodels.UnixTimestampField(_('Create Date'), auto_now_add=True)
     last_modified = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
     is_validated = models.BooleanField(_('Is Validated'), default=False)
