@@ -361,7 +361,7 @@ class VerifyOTP(ValidateAndPerformView):
     serializer_class = serializer.OTPVerify
 
     def validated(self, serialized_data, *args, **kwargs):
-        return validate_otp(serialized_data.initial_data['value'], serialized_data.initial_data['otp'])
+        return validate_otp(serialized_data.data['value'], serialized_data.data['otp'])
 
 
 class CheckUnique(ValidateAndPerformView):
@@ -383,7 +383,7 @@ class LoginOTP(ValidateAndPerformView):
 
     def validated(self, serialized_data, *args, **kwargs):
         otp = serialized_data.data['otp']
-        value = serialized_data.initial_data['value']
+        value = serialized_data.data['value']
 
         if value.isdigit():
             prop = 'mobile'
