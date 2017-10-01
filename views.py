@@ -3,15 +3,17 @@ import datetime
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.mixins import status
-from rest_framework_jwt import utils
+from rest_framework_jwt.utils import jwt_encode_handler
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from django.core.mail import send_mail
 import smtplib
 
 from django_custom_modules.add_ons import JsonResponse, get_client_ip, validate_email, validate_mobile
 from django_custom_modules.views import ValidateAndPerformView
+
 from . import serializer
 from .models import OTPValidation, AuthTransaction
+from .override_system import jwt_payload_handler
 from django.contrib.auth import get_user_model
 
 
@@ -171,7 +173,7 @@ def send_otp(prop, value, otp, recip):
         This is the type of value. It can be "email" or "mobile"
     value: str
         This is the value at which and for which OTP is to be sent.
-    otp: int
+    otp: str
         This is the OTP or One Time Passcode that is to be sent to user.
     recip: str
         This is the recipient to whom EMail is being sent. This will be deprecated once SMS feature is brought in.
@@ -205,6 +207,19 @@ def send_otp(prop, value, otp, recip):
             rdata['message'] = 'Sending OTP Failed!' + ex.args
             rdata['success'] = False
     return rdata
+
+
+def login_user(user: User, request)->(dict, int):
+    token = jwt_encode_handler(jwt_payload_handler(user))
+    user.last_login = datetime.datetime.now()
+    user.save()
+    AuthTransaction(user=user, ip_address=get_client_ip(request), token=token,
+                    session=user.get_session_auth_hash()).save()
+
+    data = {"name": user.get_full_name(), "username": user.get_username(), "id": user.id, "email": user.email,
+            "mobile": user.mobile, 'session': user.get_session_auth_hash(), 'token': token}
+    status_code = status.HTTP_200_OK
+    return data, status_code
 
 
 def check_validation(value):
@@ -275,20 +290,12 @@ class Login(ValidateAndPerformView):
     """
     serializer_class = JSONWebTokenSerializer
 
-    def validated(self, serialized_data, *args, **kwargs):
+    def validated(self, serialized_data, **kwargs):
         user = authenticate(username=serialized_data.initial_data['username'],
                             password=serialized_data.initial_data['password'])
 
         if user is not None:
-            token = utils.jwt_encode_handler(utils.jwt_payload_handler(user))
-            user.last_login = datetime.datetime.now()
-            user.save()
-            AuthTransaction(user=user, ip_address=get_client_ip(kwargs.get('request')), token=token,
-                            session=user.get_session_auth_hash()).save()
-
-            data = {"name": user.get_full_name(), "username": user.get_username(), "id": user.id,  "email": user.email,
-                    "mobile": user.mobile, 'session': user.get_session_auth_hash(), 'token': token}
-            status_code = status.HTTP_200_OK
+            data, status_code = login_user(user, kwargs.get('request'))
 
         else:
             data = {'message': "User not found/Password combination wrong"}
@@ -368,3 +375,37 @@ class CheckUnique(ValidateAndPerformView):
     def validated(self, serialized_data, *args, **kwargs):
         return {'unique': check_unique(serialized_data.initial_data['prop'], serialized_data.initial_data['value'])}, \
                status.HTTP_200_OK
+
+
+class LoginOTP(ValidateAndPerformView):
+
+    serializer_class = serializer.OTPVerify
+
+    def validated(self, serialized_data, *args, **kwargs):
+        otp = serialized_data.data['otp']
+        value = serialized_data.initial_data['value']
+
+        if value.isdigit():
+            prop = 'mobile'
+            user = User.objects.filter(mobile__exact=value)
+        else:
+            prop = 'email'
+            user = User.objects.filter(email__exact=value)
+
+        if user is None:
+            data = {'success': False, 'message': 'No user exists with provided details!'}
+            status_code = status.HTTP_404_NOT_FOUND
+
+        else:
+            if otp is not None:
+                otp_obj = generate_otp(prop, value)
+                send_otp(prop, value, otp_obj.otp, User.email)
+                data = {'success': True, 'message': 'OTP has been sent.'}
+                status_code = status.HTTP_201_CREATED
+
+            else:
+                data, status_code = validate_otp(value, int(otp))
+                if status_code == status.HTTP_202_ACCEPTED:
+                    data, status_code = login_user(user, self.request)
+
+        return data, status_code

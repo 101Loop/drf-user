@@ -28,7 +28,7 @@ class SendOTPSerializer(serializers.Serializer):
 
 class OTPVerify(serializers.Serializer):
     value = serializers.CharField()
-    otp = serializers.CharField()
+    otp = serializers.CharField(default=None)
 
 
 class CheckUniqueSerializer(serializers.Serializer):
