@@ -204,7 +204,7 @@ def send_otp(prop, value, otp, recip):
             rdata['message'] = 'OTP sent successfully!'
             rdata['success'] = True
         except smtplib.SMTPException as ex:
-            rdata['message'] = 'Sending OTP Failed!' + ex.args
+            rdata['message'] = 'Sending OTP Failed!' + str(ex.args)
             rdata['success'] = False
     return rdata
 
@@ -387,21 +387,23 @@ class LoginOTP(ValidateAndPerformView):
 
         if value.isdigit():
             prop = 'mobile'
-            user = User.objects.filter(mobile__exact=value)
+            user = User.objects.get(mobile=value)
         else:
             prop = 'email'
-            user = User.objects.filter(email__exact=value)
+            user = User.objects.get(email=value)
 
         if user is None:
             data = {'success': False, 'message': 'No user exists with provided details!'}
             status_code = status.HTTP_404_NOT_FOUND
 
         else:
-            if otp is not None:
+            if otp is None:
                 otp_obj = generate_otp(prop, value)
-                send_otp(prop, value, otp_obj.otp, User.email)
-                data = {'success': True, 'message': 'OTP has been sent.'}
-                status_code = status.HTTP_201_CREATED
+                data = send_otp(prop, value, otp_obj.otp, user.email)
+                if data['success']:
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    status_code = status.HTTP_400_BAD_REQUEST
 
             else:
                 data, status_code = validate_otp(value, int(otp))
