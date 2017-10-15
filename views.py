@@ -84,6 +84,10 @@ def generate_otp(prop, value):
 
     # Get or Create new instance of Model with value of provided value and set proper counter.
     otp_object, created = OTPValidation.objects.get_or_create(destination=value)
+    if not created:
+        if otp_object.reactive_at > datetime.datetime.now():
+            return otp_object
+
     otp_object.otp = random_number
     otp_object.type = prop
     # Set is_validated to False
@@ -189,11 +193,11 @@ def send_otp(prop, value, otpobj, recip):
 
     rdata = {'success': False, 'message': None}
 
-    message = "OTP for verifying " + prop + ": " + value + " is " + otp + ". Don't share this with anyone!"
-
     if otpobj.reactive_at > datetime.datetime.now():
         rdata['message'] = 'OTP sending not allowed until: ' + otpobj.reactive_at.strftime('%d-%h-%Y %H:%M:%S')
         return rdata
+
+    message = "OTP for verifying " + prop + ": " + value + " is " + otp + ". Don't share this with anyone!"
 
     if prop.lower() == 'email':
         try:
