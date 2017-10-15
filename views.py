@@ -90,6 +90,7 @@ def generate_otp(prop, value):
     otp_object.is_validated = False
     # Set attempt counter to 3, user has to enter correct OTP in 3 chances.
     otp_object.validate_attempt = 3
+    otp_object.reactive_at = datetime.datetime.now() - datetime.timedelta(minutes=1)
     otp_object.save()
     return otp_object
 
@@ -164,7 +165,7 @@ def validate_otp(value, otp):
     return data, status_code
 
 
-def send_otp(prop, value, otp, recip):
+def send_otp(prop, value, otpobj, recip):
     """
     This function sends OTP to specified value.
     Parameters
@@ -173,7 +174,7 @@ def send_otp(prop, value, otp, recip):
         This is the type of value. It can be "email" or "mobile"
     value: str
         This is the value at which and for which OTP is to be sent.
-    otp: str
+    otpobj: OTPValidation
         This is the OTP or One Time Passcode that is to be sent to user.
     recip: str
         This is the recipient to whom EMail is being sent. This will be deprecated once SMS feature is brought in.
@@ -184,28 +185,59 @@ def send_otp(prop, value, otp, recip):
     """
     from django.conf import settings
 
+    otp = otpobj.otp
+
     rdata = {'success': False, 'message': None}
+
+    message = "OTP for verifying " + prop + ": " + value + " is " + otp + ". Don't share this with anyone!"
+
+    if otpobj.reactive_at > datetime.datetime.now():
+        rdata['message'] = 'OTP sending not allowed until: ' + otpobj.reactive_at.strftime('%d-%h-%Y %H:%M:%S')
+        return rdata
+
     if prop.lower() == 'email':
         try:
             send_mail(subject="OTP for Verification",
-                      message="Your OTP for verifying " + prop + ": " + value + " is " + otp + ".",
-                      from_email=settings.EMAIL_FROM, recipient_list=[recip])
-            rdata['message'] = 'OTP sent successfully!'
-            rdata['success'] = True
-        except smtplib.SMTPException as ex:
-            rdata['message'] = 'Sending OTP Failed!' + ex.args
-            rdata['success'] = False
-
-    elif prop.lower() == 'mobile':
-        try:
-            send_mail(subject="OTP for Verification",
-                      message="Your OTP for verifying " + prop + ": " + value + " is " + otp + ".",
+                      message=message,
                       from_email=settings.EMAIL_FROM, recipient_list=[recip])
             rdata['message'] = 'OTP sent successfully!'
             rdata['success'] = True
         except smtplib.SMTPException as ex:
             rdata['message'] = 'Sending OTP Failed!' + str(ex.args)
             rdata['success'] = False
+
+    elif prop.lower() == 'mobile':
+        if hasattr(settings, 'HSP_SMS'):
+            from hspsmsapi.main import HSPConnector
+
+            hsp_data = settings.HSP_SMS['default']
+
+            hsp_sms = HSPConnector(hsp_data.get(HSPConnector.key_username), hsp_data.get(HSPConnector.key_api),
+                                   hsp_data.get(HSPConnector.key_sendername), hsp_data.get(HSPConnector.key_smstype))
+
+            try:
+                response = hsp_sms.send_sms([value], message)
+                otpobj.sms_id = response
+                rdata['message'] = 'OTP sent successfully!'
+                rdata['success'] = True
+            except ConnectionError:
+                rdata['message'] = 'Sending OTP may have Failed!'
+                rdata['success'] = False
+
+        if not rdata['success']:
+            try:
+                send_mail(subject="OTP for Verification",
+                          message=message,
+                          from_email=settings.EMAIL_FROM, recipient_list=[recip])
+                rdata['message'] = 'OTP sent successfully!'
+                rdata['success'] = True
+            except smtplib.SMTPException as ex:
+                rdata['message'] = 'Sending OTP Failed!' + str(ex.args)
+                rdata['success'] = False
+
+    otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(minutes=3)
+    otpobj.save()
+
     return rdata
 
 
@@ -337,7 +369,9 @@ class SendOTP(ValidateAndPerformView):
             if check_unique(prop, value):
                 data = {'unique': True}
                 otpobj = generate_otp(prop, value)
-                sentotp = send_otp(prop, value, otpobj.otp, serialized_data.initial_data['email'])
+
+                sentotp = send_otp(prop, value, otpobj, serialized_data.initial_data['email'])
+
                 data['OTP'] = sentotp['message']
                 if sentotp['success']:
                     otpobj.send_counter += 1
@@ -387,10 +421,16 @@ class LoginOTP(ValidateAndPerformView):
 
         if value.isdigit():
             prop = 'mobile'
-            user = User.objects.get(mobile=value)
+            try:
+                user = User.objects.get(mobile=value)
+            except User.DoesNotExist:
+                user = None
         else:
             prop = 'email'
-            user = User.objects.get(email=value)
+            try:
+                user = User.objects.get(email=value)
+            except User.DoesNotExist:
+                user = None
 
         if user is None:
             data = {'success': False, 'message': 'No user exists with provided details!'}
@@ -399,7 +439,8 @@ class LoginOTP(ValidateAndPerformView):
         else:
             if otp is None:
                 otp_obj = generate_otp(prop, value)
-                data = send_otp(prop, value, otp_obj.otp, user.email)
+                data = send_otp(prop, value, otp_obj, user.email)
+
                 if data['success']:
                     status_code = status.HTTP_201_CREATED
                 else:

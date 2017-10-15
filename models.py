@@ -71,6 +71,8 @@ class OTPValidation(models.Model):
     type = models.CharField(_('EMail/Mobile'), default='email', max_length=15,
                             choices={('email', 'EMail Address'), ('mobile', 'Mobile Number')})
     send_counter = models.IntegerField(_('OTP Sent Counter'), default=0)
+    sms_id = models.CharField(_('SMS ID'), max_length=254, null=True, blank=True)
+    reactive_at = cmodels.UnixTimestampField(_('ReActivate Sending OTP'))
 
     def __str__(self):
         return self.destination
