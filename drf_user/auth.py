@@ -1,17 +1,18 @@
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth import get_user_model
 
 
 class MultiFieldModelBackend(ModelBackend):
     """
     This is a ModelBacked that allows authentication with either a username or an email address or mobile number.
     """
+    from django.contrib.auth import get_user_model
 
     user_model = get_user_model()
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         """
-        This function is used to authenticate a user if request, username & password is supplied.
+        This function is used to authenticate a user. User can send either of email, mobile or username in request to
+        authenticate. The function will check accordingly and login the user.
         Parameters
         ----------
         request: HttpRequest
@@ -24,7 +25,9 @@ class MultiFieldModelBackend(ModelBackend):
 
         Returns
         -------
-
+        user: django.contrib.auth.get_user_model
+        or
+        None
         """
         import re
 

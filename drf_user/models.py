@@ -3,22 +3,22 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.text import gettext_lazy as _
 
-from django_custom_modules import db_type as cmodels
+from drfaddons import datatypes as cmodels
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
     A Custom USER Model. This model has ad-on properties in compare to original DJango User Mobile. This has been
-    done considering the need of relevant data in real world (or Indian) scenario.
+    done considering the need of relevant data in Indian scenario.
     """
-    from .override_system import UserManager
+    from .managers import UserManager
 
     username = models.CharField(_('Unique UserName'), max_length=254,  unique=True)
     email = models.EmailField(_('EMail Address'), unique=True)
     mobile = models.CharField(_('Mobile Number'), max_length=150, unique=True)
     name = models.CharField(_('Full Name'), max_length=500, blank=False)
     date_joined = cmodels.UnixTimestampField(_('Date Joined'), auto_now_add=True)
-    last_modified = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
+    update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
     is_active = models.BooleanField(_('Activated'), default=False)
 
     objects = UserManager()
@@ -46,9 +46,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class AuthTransaction(models.Model):
     """
-    This Model keeps the record of all authentication that is taking place.
+    This Model keeps the record of all authentication that is taking place. It's not required for authentication
+    verification. Just a record keeping model.
     """
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     ip_address = models.GenericIPAddressField(blank=False, null=False)
     date_created = cmodels.UnixTimestampField(_('Created On'), auto_created=True)
     token = models.TextField(_('JWT Token passed'))
@@ -56,6 +57,10 @@ class AuthTransaction(models.Model):
 
     def __str__(self):
         return self.user.name + ' | ' + self.user.username
+
+    class Meta:
+        verbose_name = _('Authentication Transaction')
+        verbose_name_plural = _('Authentication Transactions')
 
 
 class OTPValidation(models.Model):
@@ -65,14 +70,18 @@ class OTPValidation(models.Model):
     otp = models.CharField(_('OTP Code'), max_length=10, unique=True)
     destination = models.CharField(_('Destination Address (Mobile/EMail)'), max_length=254, unique=True)
     create_date = cmodels.UnixTimestampField(_('Create Date'), auto_now_add=True)
-    last_modified = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
+    update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
     is_validated = models.BooleanField(_('Is Validated'), default=False)
     validate_attempt = models.IntegerField(_('Attempted Validation'), default=3)
     type = models.CharField(_('EMail/Mobile'), default='email', max_length=15,
-                            choices={('email', 'EMail Address'), ('mobile', 'Mobile Number')})
+                            choices=[('email', 'EMail Address'), ('mobile', 'Mobile Number')])
     send_counter = models.IntegerField(_('OTP Sent Counter'), default=0)
     sms_id = models.CharField(_('SMS ID'), max_length=254, null=True, blank=True)
     reactive_at = cmodels.UnixTimestampField(_('ReActivate Sending OTP'))
 
     def __str__(self):
         return self.destination
+
+    class Meta:
+        verbose_name = _('OTP Validation')
+        verbose_name_plural = _('OTP Validations')

@@ -1,9 +1,0 @@
-[submodule "sample/django-userprofile"]
-	path = sample/django-userprofile
-	url = https://github.com/iamhssingh/django-userprofile.git
-[submodule "sample/django_custom_modules"]
-	path = sample/django_custom_modules
-	url = https://github.com/iamhssingh/django_custom_modules.git
-[submodule "sample/userprofile"]
-	path = sample/userprofile
-	url = https://github.com/iamhssingh/django-userprofile.git
