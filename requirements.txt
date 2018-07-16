@@ -2,6 +2,5 @@ Django==2.0.7
 djangorestframework==3.8.2
 djangorestframework-jwt==1.11.0
 drfaddons==0.0.1
-pkg-resources==0.0.0
 PyJWT==1.6.4
 pytz==2018.5
