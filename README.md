@@ -35,7 +35,8 @@ with appropriate `Django REST Framework GenericAPI Views`.
 ```
 pip install drf_user
 ```
-or<br>
+or
+
 Download and Install via `easy_install`
 ```
 easy_install drf_user
@@ -52,7 +53,7 @@ INSTALLED_APPS = [
 ```
 urlpatterns = [
     ...
-    path('/api/user/', include('drf_user.urls')),
+    path('api/user/', include('drf_user.urls')),
     ...
 ]
 
@@ -60,10 +61,17 @@ urlpatterns = [
 
 urlpatterns = [
     ...
-    url(r'api/user/', include('drf_user.urls')),
+    url(r'^api/user/', include('drf_user.urls')),
     ...
 ]
 ```
+
+- Include AUTH_USER_MODEL in settings.py
+```
+...
+AUTH_USER_MODEL = 'drf_user.User'
+...
+``` 
 
 - Finally, run `migrate` command
 ```
