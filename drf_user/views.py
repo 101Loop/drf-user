@@ -473,18 +473,16 @@ class ChangePassword(UpdateAPIView):
     """
     This view will let the user to change the password.
     """
-
-    from .serializer import ForgotPasswordSerializer
+    from .serializer import ChangePasswordSerializer
     from .models import User
 
     queryset = User.objects.all()
-    serializer_class = ForgotPasswordSerializer
+    serializer_class = ChangePasswordSerializer
 
     def update(self, request, *args, **kwargs):
-
         from drfaddons.add_ons import JsonResponse
 
-        sdata = self.ForgotPasswordSerializer(data=request.data)
+        sdata = self.ChangePasswordSerializer(data=request.data)
         if sdata.is_valid():
             request.user.set_password(sdata.data['new_password'])
             request.user.save()
@@ -504,7 +502,6 @@ class UpdateProfileView(UpdateAPIView):
     serializer_class = UpdateProfileSerializer
 
     def update(self, request, *args, **kwargs):
-
         from drfaddons.add_ons import JsonResponse
 
         serializer = self.UpdateProfileSerializer(request.user, data=request.data)

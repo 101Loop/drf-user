@@ -12,10 +12,8 @@ current stable version includes:
 - [x] REST API to login with OTP
 - [x] OTP Verification for mobile and email
 - [x] Mail sending feature upon successful registration
-
-Following features are being worked upon:
-- [ ] Change Password
-- [ ] Update Profile
+- [x] Change Password
+- [x] Update Profile
 
 #### Contributors
 

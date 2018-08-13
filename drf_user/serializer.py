@@ -22,18 +22,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                             This contains the mobile number of the user.
                         'password' : str
                             This contains the password of the user.
-                        'organization' : str
-                            This contains the organisation of the user.
     Examples
     --------
-    >>> print(UserRegisterSerializer(data={'username':'test@testing.com', 'name':'test', 'email': 'test@testing.com', 'mobile' : '123456', 'password': '123780', 'organization': 'CMT'}))
-    UserRegisterSerializer(data={'username': 'test@testing.com', 'name': 'dinesh', 'email': 'test@testing.com', 'mobile': '123456', 'password': '123780', 'organization': 'CMT'}):
+    >>> print(UserRegisterSerializer(data={'username':'test@testing.com', 'name':'test', 'email': 'test@testing.com', 'mobile' : '123456', 'password': '123780'}))
+    UserRegisterSerializer(data={'username': 'test@testing.com', 'name': 'dinesh', 'email': 'test@testing.com', 'mobile': '123456', 'password': '123780'}):
     username = CharField(label='Unique UserName', max_length=254, validators=[<UniqueValidator(queryset=User.objects.all())>])
     name = CharField(label='Full Name', max_length=500)
     email = EmailField(label='EMail Address', max_length=254, validators=[<UniqueValidator(queryset=User.objects.all())>])
     mobile = CharField(label='Mobile Number', max_length=150, validators=[<UniqueValidator(queryset=User.objects.all())>])
     password = CharField(max_length=128)
-    organization = CharField(max_length=500)
     """
 
     class Meta:
@@ -143,7 +140,7 @@ class CheckUniqueSerializer(serializers.Serializer):
     value = serializers.CharField()
 
 
-class ForgotPasswordSerializer(serializers.Serializer):
+class ChangePasswordSerializer(serializers.Serializer):
     """
     This serializer is for letting the user to change the password after being successfully LoggedIn.
     """
@@ -154,16 +151,13 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     """
     This model serializer is to update the profile of a user.
     """
-
     email = serializers.EmailField(required=False)
     mobile = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
-    organization = serializers.CharField(required=False)
 
     class Meta:
 
         from .models import User
 
         model = User
-        fields = ('name', 'email', 'mobile', 'organization')
-
+        fields = ('name', 'email', 'mobile')
