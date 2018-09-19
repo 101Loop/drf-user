@@ -1,9 +1,21 @@
 from django.db import models
+
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import PermissionsMixin, Group
+
 from django.utils.text import gettext_lazy as _
 
 from drfaddons import datatypes as cmodels
+
+
+class Role(Group):
+    """
+    A proxy model for Group for renaming Group to Role.
+    """
+    class Meta:
+        proxy = True
+        verbose_name = _('Role')
+        verbose_name_plural = _('Roles')
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -20,6 +32,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = cmodels.UnixTimestampField(_('Date Joined'), auto_now_add=True)
     update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
     is_active = models.BooleanField(_('Activated'), default=False)
+
+    groups = models.ManyToManyField(
+        Role,
+        verbose_name=_('Roles'),
+        blank=True,
+        help_text=_(
+            'The roles this user belongs to. A user will get all permissions '
+            'granted to each of their roles.'
+        ),
+        related_name="user_set",
+        related_query_name="user",
+    )
 
     objects = UserManager()
 
