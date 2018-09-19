@@ -32,6 +32,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = cmodels.UnixTimestampField(_('Date Joined'), auto_now_add=True)
     update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
     is_active = models.BooleanField(_('Activated'), default=False)
+    is_staff = models.BooleanField(_('Staff Status'), default=False)
 
     groups = models.ManyToManyField(
         Role,
@@ -62,10 +63,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return str(self.name) + ' | ' + str(self.username)
-
-    @property
-    def is_staff(self):
-        return self.is_superuser
 
 
 class AuthTransaction(models.Model):
