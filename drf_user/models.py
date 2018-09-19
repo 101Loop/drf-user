@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.name
 
     def __str__(self):
-        return self.name + ' | ' + self.username
+        return str(self.name) + ' | ' + str(self.username)
 
     @property
     def is_staff(self):
@@ -56,7 +56,7 @@ class AuthTransaction(models.Model):
     session = models.TextField(_('Session Passed'))
 
     def __str__(self):
-        return self.user.name + ' | ' + self.user.username
+        return str(self.user.name) + ' | ' + str(self.user.username)
 
     class Meta:
         verbose_name = _('Authentication Transaction')
