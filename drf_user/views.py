@@ -1,11 +1,11 @@
 from rest_framework.mixins import status
 from drfaddons.views import ValidateAndPerformView
 from django.contrib.auth import get_user_model
-from . import user_settings, update_user_settings
+from . import update_user_settings
 from rest_framework.generics import UpdateAPIView
 
 
-update_user_settings()
+user_settings = update_user_settings()
 User = get_user_model()
 otp_settings = user_settings['OTP']
 
@@ -205,7 +205,7 @@ def send_otp(prop, value, otpobj, recip):
 
     message = "OTP for verifying " + prop + ": " + value + " is " + otp + ". Don't share this with anyone!"
 
-    rdata = send_message(prop, message, otp_settings['SUBJECT'], recip)
+    rdata = send_message(prop, message, otp_settings['SUBJECT'], [recip])
 
     otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(minutes=otp_settings['COOLING_PERIOD'])
     otpobj.save()

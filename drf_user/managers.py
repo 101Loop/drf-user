@@ -20,9 +20,9 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, username, email, password, name, mobile, **extra_fields):
-        from . import user_settings
+        from . import update_user_settings
 
-        vals = user_settings
+        vals = update_user_settings()
 
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', vals['DEFAULT_ACTIVE_STATE'])
