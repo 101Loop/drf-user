@@ -23,7 +23,7 @@ class DRFUserAdmin(UserAdmin):
 
 
 class OTPValidationAdmin(admin.ModelAdmin):
-    list_display = (_('destination'), _('otp'), _('type'))
+    list_display = ('destination', 'otp', 'type')
 
 
 # UnRegister default Group & register proxy model Role
