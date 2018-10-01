@@ -342,7 +342,7 @@ class Login(ValidateAndPerformView):
                             password=serialized_data.initial_data['password'])
 
         if user is not None:
-            data, status_code = login_user(user, kwargs.get('request'))
+            data, status_code = login_user(user, self.request)
 
         else:
             data = {'message': "User not found/Password combination wrong"}
