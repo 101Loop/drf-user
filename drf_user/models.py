@@ -88,14 +88,18 @@ class OTPValidation(models.Model):
     """
     This model keeps a record of OTP Validation and which destinations have been successfully validated.
     """
+    DESTINATION_CHOICES = [
+        ('E', 'EMail Address'),
+        ('M', 'Mobile Number')
+    ]
+
     otp = models.CharField(_('OTP Code'), max_length=10, unique=True)
     destination = models.CharField(_('Destination Address (Mobile/EMail)'), max_length=254, unique=True)
     create_date = cmodels.UnixTimestampField(_('Create Date'), auto_now_add=True)
     update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
     is_validated = models.BooleanField(_('Is Validated'), default=False)
     validate_attempt = models.IntegerField(_('Attempted Validation'), default=3)
-    type = models.CharField(_('EMail/Mobile'), default='email', max_length=15,
-                            choices=[('email', 'EMail Address'), ('mobile', 'Mobile Number')])
+    prop = models.CharField(_('Destination Property'), default='E', max_length=3, choices=DESTINATION_CHOICES)
     send_counter = models.IntegerField(_('OTP Sent Counter'), default=0)
     sms_id = models.CharField(_('SMS ID'), max_length=254, null=True, blank=True)
     reactive_at = cmodels.UnixTimestampField(_('ReActivate Sending OTP'))

@@ -25,14 +25,24 @@ class UserManager(BaseUserManager):
         vals = update_user_settings()
 
         extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_active', vals['DEFAULT_ACTIVE_STATE'])
 
         return self._create_user(username, email, password, name, mobile, **extra_fields)
 
     def create_superuser(self, username, email, password, name, mobile, **extra_fields):
+        from . import update_user_settings
+
+        vals = update_user_settings()
+
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_active', vals['DEFAULT_ACTIVE_STATE'])
 
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
 
         return self._create_user(username, email, password, name, mobile, **extra_fields)
