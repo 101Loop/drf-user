@@ -7,4 +7,6 @@ class DRFUserConfig(AppConfig):
 
     def ready(self):
         from . import update_user_settings
+        from .signals.handlers import post_register
+        
         update_user_settings()
