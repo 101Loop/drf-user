@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from django.utils.text import gettext_lazy as _
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -54,58 +55,57 @@ class UserShowSerializer(serializers.ModelSerializer):
         read_only_fields = ('username', 'name')
 
 
-class SendOTPSerializer(serializers.ModelSerializer):
+class OTPSerializer(serializers.Serializer):
     """
     This Serializer is for sending OTP & verifying destination via otp.
     """
-    email = serializers.EmailField(required=True)
-    otp = serializers.IntegerField(required=False)
-    prop = serializers.CharField(source='get_prop_display')
-
-    def validate(self, data):
-        from django.utils.text import gettext_lazy as _
-
-        from drfaddons.add_ons import validate_mobile
-
-        if data['prop'] == 'E':
-            from django.core.validators import EmailValidator, ValidationError
-
-            validator = EmailValidator()
-            try:
-                validator(data['destination'])
-            except ValidationError:
-                raise serializers.ValidationError(_('Provided destination is not an Email address.'))
-        else:
-            if not validate_mobile(data['destination']):
-                raise serializers.ValidationError(_('Provided destination is not a Mobile Number.'))
-        return data
-
-    class Meta:
-        from .models import OTPValidation
-
-        model = OTPValidation
-        fields = ('prop', 'destination')
-
-
-class LoginOTPSerializer(serializers.Serializer):
-    """
-    Serializer of Login using OTP.
-    """
+    email = serializers.EmailField(required=False)
+    is_login = serializers.BooleanField(default=False)
+    verify_otp = serializers.IntegerField(required=False)
     destination = serializers.CharField(required=True)
-    otp = serializers.IntegerField(required=False)
-    prop = serializers.CharField(required=False)
+
+    def get_user(self, prop, destination):
+        from .models import User
+
+        if prop == 'M':
+            try:
+                user = User.objects.get(mobile=destination)
+            except User.DoesNotExist:
+                user = None
+        else:
+            try:
+                user = User.objects.get(email=destination)
+            except User.DoesNotExist:
+                user = None
+
+        return user
 
     def validate(self, attrs):
         from django.core.validators import EmailValidator, ValidationError
 
-        validator = EmailValidator()
+        from rest_framework.exceptions import NotFound
 
+        validator = EmailValidator()
         try:
-            validator(attrs['username'])
+            validator(attrs['destination'])
         except ValidationError:
             attrs['prop'] = 'M'
         else:
             attrs['prop'] = 'E'
+
+        user = self.get_user(attrs.get('prop'), attrs.get('destination'))
+
+        if not user:
+            if attrs['is_login']:
+                raise NotFound(_('No user exists with provided details'))
+            if 'email' not in attrs.keys() and 'verify_otp' not in attrs.keys():
+                raise serializers.ValidationError(
+                    _("email field is compulsory while verifying a non-existing user's OTP."))
+        else:
+            attrs['email'] = user.email
+            attrs['user'] = user
+
+        return attrs
 
 
 class CheckUniqueSerializer(serializers.Serializer):

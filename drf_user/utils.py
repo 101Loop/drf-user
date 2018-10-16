@@ -83,7 +83,7 @@ def generate_otp(prop, value):
             return otp_object
 
     otp_object.otp = random_number
-    otp_object.type = prop
+    otp_object.prop = prop
 
     # Set is_validated to False
     otp_object.is_validated = False
@@ -96,13 +96,11 @@ def generate_otp(prop, value):
     return otp_object
 
 
-def send_otp(prop, value, otpobj, recip):
+def send_otp(value, otpobj, recip):
     """
     This function sends OTP to specified value.
     Parameters
     ----------
-    prop: str
-        This is the type of value. It can be "email" or "mobile"
     value: str
         This is the value at which and for which OTP is to be sent.
     otpobj: OTPValidation
@@ -126,9 +124,10 @@ def send_otp(prop, value, otpobj, recip):
         raise PermissionDenied(detail=_('OTP sending not allowed until: '
                                         + otpobj.reactive_at.strftime('%d-%h-%Y %H:%M:%S')))
 
-    message = "OTP for verifying " + prop + ": " + value + " is " + otp + ". Don't share this with anyone!"
+    message = "OTP for verifying " + otpobj.get_prop_display() + ": " + value + " is " + otp + ". Don't share this " \
+                                                                                               "with anyone!"
 
-    rdata = send_message(prop, message, otp_settings['SUBJECT'], [recip])
+    rdata = send_message(message, otp_settings['SUBJECT'], [value], [recip])
 
     otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(minutes=otp_settings['COOLING_PERIOD'])
     otpobj.save()
@@ -221,7 +220,7 @@ def validate_otp(value, otp):
 
     try:
         # Try to get OTP Object from Model and initialize data dictionary
-        otp_object = OTPValidation.objects.get(destination=value)
+        otp_object = OTPValidation.objects.get(destination=value, is_validated=False)
 
         # Decrement validate_attempt
         otp_object.validate_attempt -= 1
@@ -232,7 +231,7 @@ def validate_otp(value, otp):
             return True
 
         elif otp_object.validate_attempt <= 0:
-            generate_otp(otp_object.type, value)
+            generate_otp(otp_object.prop, value)
             raise AuthenticationFailed(detail=_('Incorrect OTP. Attempt exceeded! OTP has been reset.'))
 
         else:
@@ -241,4 +240,5 @@ def validate_otp(value, otp):
                                                 + ' attempts left!'))
 
     except OTPValidation.DoesNotExist:
-        raise NotFound(detail=_('No OTP found for provided destination.'))
+        raise NotFound(detail=_('No pending OTP validation request found for provided destination.'
+                                'Kindly send an OTP first'))

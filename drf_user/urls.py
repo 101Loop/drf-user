@@ -11,9 +11,7 @@ urlpatterns = [
     # ex: api/user/register/
     path('register/', views.Register.as_view(), name='Register'),
     # ex: api/user/sendotp/
-    path('verifyotp/', views.VerifyOTP.as_view(), name='Send OTP'),
-    # ex: api/user/loginotp/
-    path('loginotp/', views.LoginOTP.as_view(), name='Login OTP'),
+    path('otp/', views.OTPView.as_view(), name='OTP'),
     # ex: api/user/isunique/
     path('isunique/', views.CheckUnique.as_view(), name='Check Unique'),
     # ex: api/user/updateprofile/
