@@ -9,7 +9,8 @@ current stable version includes:
 - [x] REST API to register
 - [x] REST API to login
 - [x] MultiModelBackend: User can login using either of mobile, email or username
-- [x] REST API to login with OTP
+- [x] REST API to login with OTP (Same API endpoint as for OTP Verification; Set `is_login: true` while sending JSON
+request)
 - [x] OTP Verification for mobile and email
 - [x] Mail sending feature upon successful registration
 - [x] Change Password
@@ -47,6 +48,16 @@ INSTALLED_APPS = [
     ...
 ]
 ```
+- Also add other dependencies in `INSTALLED_APPS`<br>
+```
+INSTALLED_APPS = [
+    ...
+    'drfaddons',
+    'rest_framework',
+    'django_filters',
+    ...
+]
+```
 - Include urls of `drf_user` in `urls.py`
 ```
 urlpatterns = [
@@ -63,17 +74,46 @@ urlpatterns = [
     ...
 ]
 ```
-
 - Include AUTH_USER_MODEL in settings.py
 ```
 ...
 AUTH_USER_MODEL = 'drf_user.User'
 ...
 ``` 
-
 - Finally, run `migrate` command
 ```
 python manage.py migrate drf_user
+```
+
+### Additional settings
+These additional settings are **required** to use `drf_user` at its full extent.
+These settings should be done in `settings.py`
+
+- Set `AUTHENTICATION_BACKEND`:
+```
+AUTHENTICATION_BACKENDS = [
+    'drf_user.auth.MultiFieldModelBackend',
+]
+```
+
+- Set `JWT_PAYLOAD_HANDLER` in `JWT_AUTH` configurations
+```
+JWT_AUTH = {
+    ...
+    'JWT_PAYLOAD_HANDLER': 'drf_user.auth.jwt_payload_handler',
+    ...
+}
+```
+
+- Set `DEFAULT_AUTHENTICATION_CLASSES` in `REST_FRAMEWORK` configuration
+```
+REST_FRAMEWORK = {
+    ...
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'drfaddons.auth.JSONWebTokenAuthentication',
+        ...
+    ),
+}
 ```
 
 #### Manual Settings

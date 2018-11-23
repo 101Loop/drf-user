@@ -130,7 +130,8 @@ class CheckUnique(APIView):
 
 class OTPView(APIView):
     """
-    Used to VerifyOTP
+    This view is used to validate OTP and do other tasks if OTP is validated.
+    Set is_login true while sending request to login via OTP.
     """
     from .serializers import OTPSerializer
 
