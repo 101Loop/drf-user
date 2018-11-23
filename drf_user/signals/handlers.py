@@ -14,6 +14,7 @@ def post_register(sender, instance, created, **kwargs):
 
     if created:
         if user_settings['REGISTRATION']['SEND_MAIL']:
-            send_message(message=user_settings['REGISTRATION']['TEXT_MAIL_BODY'],
-                         subject=user_settings['REGISTRATION']['MAIL_SUBJECT'],
-                         recip=[instance.email], recip_email=[instance.email])
+            send_message(
+                message=user_settings['REGISTRATION']['TEXT_MAIL_BODY'],
+                subject=user_settings['REGISTRATION']['MAIL_SUBJECT'],
+                recip=[instance.email], recip_email=[instance.email])

@@ -20,18 +20,21 @@ class Register(CreateAPIView):
     def perform_create(self, serializer):
         from .models import User
 
-        user = User.objects.create_user(username=serializer.validated_data['username'],
-                                        email=serializer.validated_data['email'],
-                                        name=serializer.validated_data['name'],
-                                        password=serializer.validated_data['password'],
-                                        mobile=serializer.validated_data['mobile'])
+        user = User.objects.create_user(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email'],
+            name=serializer.validated_data['name'],
+            password=serializer.validated_data['password'],
+            mobile=serializer.validated_data['mobile'])
         serializer = self.get_serializer(user)
 
 
 class Login(APIView):
     """
-    This is used to Login into system. The data required are 'username' and 'password'.
-    In 'username' user can provide either username or mobile or email address.
+    This is used to Login into system. The data required are 'username'
+    and 'password'.
+    In 'username' user can provide either username or mobile or email
+    address.
     """
     from rest_framework_jwt.serializers import JSONWebTokenSerializer
     from rest_framework.permissions import AllowAny
@@ -54,7 +57,8 @@ class Login(APIView):
 
         user = serialized_data.object.get('user') or self.request.user
         token = serialized_data.object.get('token')
-        response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(token, user, self.request)
+        response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(token, user,
+                                                                  self.request)
         response = Response(response_data)
         if api_settings.JWT_AUTH_COOKIE:
             expiration = (datetime.utcnow() +
@@ -67,7 +71,8 @@ class Login(APIView):
         user.last_login = datetime.now()
         user.save()
 
-        AuthTransaction(user=user, ip_address=get_client_ip(self.request), token=token,
+        AuthTransaction(created_by=user, token=token,
+                        ip_address=get_client_ip(self.request),
                         session=user.get_session_auth_hash()).save()
 
         return response
@@ -81,12 +86,14 @@ class Login(APIView):
         if serialized_data.is_valid():
             return self.validated(serialized_data=serialized_data)
         else:
-            return JsonResponse(serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return JsonResponse(serialized_data.errors,
+                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class CheckUnique(APIView):
     """
-    This view checks if the given property -> value pair is unique (or doesn't exists yet)
+    This view checks if the given property -> value pair is unique (or
+    doesn't exists yet)
     'prop': A property to check for uniqueness (username/email/mobile)
     'value': Value against property which is to be checked for.
     """
@@ -103,8 +110,10 @@ class CheckUnique(APIView):
 
         from rest_framework.mixins import status
 
-        return {'unique': check_unique(serialized_data.validated_data['prop'],
-                                       serialized_data.validated_data['value'])}, status.HTTP_200_OK
+        return (
+            {'unique': check_unique(serialized_data.validated_data['prop'],
+                                    serialized_data.validated_data['value'])},
+            status.HTTP_200_OK)
 
     def post(self, request):
         from drfaddons.add_ons import JsonResponse
@@ -112,9 +121,11 @@ class CheckUnique(APIView):
 
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
-            return JsonResponse(self.validated(serialized_data=serialized_data))
+            return JsonResponse(self.validated(
+                serialized_data=serialized_data))
         else:
-            return JsonResponse(serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return JsonResponse(serialized_data.errors,
+                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class OTPView(APIView):
@@ -148,9 +159,12 @@ class OTPView(APIView):
         if 'verify_otp' in request.data.keys():
             if validate_otp(destination, request.data.get('verify_otp')):
                 if is_login:
-                    return Response(login_user(user, self.request), status=status.HTTP_202_ACCEPTED)
+                    return Response(login_user(user, self.request),
+                                    status=status.HTTP_202_ACCEPTED)
                 else:
-                    return Response(data={'OTP': [_('OTP Validated successfully!'), ]}, status=status.HTTP_202_ACCEPTED)
+                    return Response(
+                        data={'OTP': [_('OTP Validated successfully!'), ]},
+                        status=status.HTTP_202_ACCEPTED)
         else:
             otp_obj = generate_otp(prop, destination)
             sentotp = send_otp(destination, otp_obj, email)
@@ -161,7 +175,8 @@ class OTPView(APIView):
 
                 return Response(sentotp, status=status.HTTP_201_CREATED)
             else:
-                raise APIException(detail=_('A Server Error occurred: ' + sentotp['message']))
+                raise APIException(
+                    detail=_('A Server Error occurred: ' + sentotp['message']))
 
 
 class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
@@ -186,4 +201,6 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
             self.request.user.set_password(request.data.pop('password'))
             self.request.user.save()
 
-        return super(RetrieveUpdateUserAccountView, self).update(request, *args, **kwargs)
+        return super(RetrieveUpdateUserAccountView, self).update(request,
+                                                                 *args,
+                                                                 **kwargs)

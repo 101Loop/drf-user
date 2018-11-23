@@ -9,7 +9,8 @@ otp_settings = user_settings['OTP']
 
 def check_unique(prop, value):
     """
-    This function checks if the value provided is present in Database or can be created in DBMS as unique data.
+    This function checks if the value provided is present in Database
+    or can be created in DBMS as unique data.
     Parameters
     ----------
     prop: str
@@ -26,7 +27,8 @@ def check_unique(prop, value):
         True if the data sent is doesn't exist, False otherwise.
     Examples
     --------
-    To check if test@testing.com email address is already present in Database
+    To check if test@testing.com email address is already present in
+    Database
     >>> print(check_unique('email', 'test@testing.com'))
     True
     """
@@ -39,7 +41,8 @@ def check_unique(prop, value):
 
 def generate_otp(prop, value):
     """
-    This function generates an OTP and saves it into Model. It also sets various counters, such as send_counter,
+    This function generates an OTP and saves it into Model. It also
+    sets various counters, such as send_counter,
     is_validated, validate_attempt.
     Parameters
     ----------
@@ -68,16 +71,22 @@ def generate_otp(prop, value):
     import datetime
 
     # Create a random number
-    random_number = User.objects.make_random_password(length=otp_settings['LENGTH'],
-                                                      allowed_chars=otp_settings['ALLOWED_CHARS'])
+    random_number = User.objects.make_random_password(
+        length=otp_settings['LENGTH'],
+        allowed_chars=otp_settings['ALLOWED_CHARS'])
 
-    # Checks if random number is unique among non-validated OTPs and creates new until it is unique.
-    while OTPValidation.objects.filter(otp__exact=random_number).filter(is_validated=False):
-        random_number = User.objects.make_random_password(length=otp_settings['LENGTH'],
-                                                          allowed_chars=otp_settings['ALLOWED_CHARS'])
+    # Checks if random number is unique among non-validated OTPs and
+    # creates new until it is unique.
+    while OTPValidation.objects.filter(otp__exact=random_number).filter(
+            is_validated=False):
+        random_number = User.objects.make_random_password(
+            length=otp_settings['LENGTH'],
+            allowed_chars=otp_settings['ALLOWED_CHARS'])
 
-    # Get or Create new instance of Model with value of provided value and set proper counter.
-    otp_object, created = OTPValidation.objects.get_or_create(destination=value)
+    # Get or Create new instance of Model with value of provided value
+    # and set proper counter.
+    otp_object, created = OTPValidation.objects.get_or_create(
+        destination=value)
     if not created:
         if otp_object.reactive_at > datetime.datetime.now():
             return otp_object
@@ -88,10 +97,12 @@ def generate_otp(prop, value):
     # Set is_validated to False
     otp_object.is_validated = False
 
-    # Set attempt counter to OTP_VALIDATION_ATTEMPS, user has to enter correct OTP in 3 chances.
+    # Set attempt counter to OTP_VALIDATION_ATTEMPS, user has to enter
+    # correct OTP in 3 chances.
     otp_object.validate_attempt = otp_settings['VALIDATION_ATTEMPTS']
 
-    otp_object.reactive_at = datetime.datetime.now() - datetime.timedelta(minutes=1)
+    otp_object.reactive_at = (datetime.datetime.now() -
+                              datetime.timedelta(minutes=1))
     otp_object.save()
     return otp_object
 
@@ -106,7 +117,8 @@ def send_otp(value, otpobj, recip):
     otpobj: OTPValidation
         This is the OTP or One Time Passcode that is to be sent to user.
     recip: str
-        This is the recipient to whom EMail is being sent. This will be deprecated once SMS feature is brought in.
+        This is the recipient to whom EMail is being sent. This will be
+        deprecated once SMS feature is brought in.
 
     Returns
     -------
@@ -121,15 +133,17 @@ def send_otp(value, otpobj, recip):
     otp = otpobj.otp
 
     if otpobj.reactive_at > datetime.datetime.now():
-        raise PermissionDenied(detail=_('OTP sending not allowed until: '
-                                        + otpobj.reactive_at.strftime('%d-%h-%Y %H:%M:%S')))
+        raise PermissionDenied(
+            detail=_('OTP sending not allowed until: '
+                     + otpobj.reactive_at.strftime('%d-%h-%Y %H:%M:%S')))
 
-    message = "OTP for verifying " + otpobj.get_prop_display() + ": " + value + " is " + otp + ". Don't share this " \
-                                                                                               "with anyone!"
+    message = ("OTP for verifying " + otpobj.get_prop_display() + ": "
+               + value + " is " + otp + ". Don't share this with anyone!")
 
     rdata = send_message(message, otp_settings['SUBJECT'], [value], [recip])
 
-    otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(minutes=otp_settings['COOLING_PERIOD'])
+    otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(
+        minutes=otp_settings['COOLING_PERIOD'])
     otpobj.save()
 
     return rdata
@@ -137,7 +151,8 @@ def send_otp(value, otpobj, recip):
 
 def login_user(user: User, request)->(dict, int):
     """
-    This function is used to login a user. It saves the authentication in AuthTransaction model.
+    This function is used to login a user. It saves the authentication in
+    AuthTransaction model.
     Parameters
     ----------
     user: django.contrib.auth.get_user_model
@@ -161,8 +176,9 @@ def login_user(user: User, request)->(dict, int):
     token = jwt_encode_handler(jwt_payload_handler(user))
     user.last_login = datetime.datetime.now()
     user.save()
-    AuthTransaction(user=user, ip_address=get_client_ip(request), token=token, session=user.get_session_auth_hash())\
-        .save()
+    AuthTransaction(created_by=user, ip_address=get_client_ip(request),
+                    token=token,
+                    session=user.get_session_auth_hash()).save()
 
     data = {'session': user.get_session_auth_hash(), 'token': token}
     return data
@@ -220,7 +236,8 @@ def validate_otp(value, otp):
 
     try:
         # Try to get OTP Object from Model and initialize data dictionary
-        otp_object = OTPValidation.objects.get(destination=value, is_validated=False)
+        otp_object = OTPValidation.objects.get(destination=value,
+                                               is_validated=False)
 
         # Decrement validate_attempt
         otp_object.validate_attempt -= 1
@@ -232,13 +249,17 @@ def validate_otp(value, otp):
 
         elif otp_object.validate_attempt <= 0:
             generate_otp(otp_object.prop, value)
-            raise AuthenticationFailed(detail=_('Incorrect OTP. Attempt exceeded! OTP has been reset.'))
+            raise AuthenticationFailed(
+                detail=_('Incorrect OTP. Attempt exceeded! OTP has been '
+                         'reset.'))
 
         else:
             otp_object.save()
-            raise AuthenticationFailed(detail=_('OTP Validation failed! ' + str(otp_object.validate_attempt)
-                                                + ' attempts left!'))
+            raise AuthenticationFailed(
+                detail=_('OTP Validation failed! ' + str(
+                    otp_object.validate_attempt) + ' attempts left!'))
 
     except OTPValidation.DoesNotExist:
-        raise NotFound(detail=_('No pending OTP validation request found for provided destination.'
-                                'Kindly send an OTP first'))
+        raise NotFound(
+            detail=_('No pending OTP validation request found for provided'
+                     'destination. Kindly send an OTP first'))

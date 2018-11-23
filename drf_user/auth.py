@@ -3,7 +3,8 @@ from django.contrib.auth.backends import ModelBackend
 
 class MultiFieldModelBackend(ModelBackend):
     """
-    This is a ModelBacked that allows authentication with either a username or an email address or mobile number.
+    This is a ModelBacked that allows authentication with either a
+    username or an email address or mobile number.
     """
     from django.contrib.auth import get_user_model
 
@@ -11,16 +12,20 @@ class MultiFieldModelBackend(ModelBackend):
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         """
-        This function is used to authenticate a user. User can send either of email, mobile or username in request to
-        authenticate. The function will check accordingly and login the user.
+        This function is used to authenticate a user. User can send
+        either of email, mobile or username in request to
+        authenticate. The function will check accordingly and login the
+        user.
         Parameters
         ----------
         request: HttpRequest
             This is the request that is received by Django view.
         username: str
-            This is the username sent by user to the API. The default value is None.
+            This is the username sent by user to the API. The default
+            value is None.
         password: str
-            This is the password sent by user to the API. The default value is None.
+            This is the password sent by user to the API. The default
+            value is None.
         kwargs
 
         Returns
@@ -56,8 +61,8 @@ class MultiFieldModelBackend(ModelBackend):
 
 def jwt_payload_handler(user):
     """
-    A custom JWT Payload Handler that adds certain extra data in payload such as:
-    email, mobile, name
+    A custom JWT Payload Handler that adds certain extra data in
+    payload such as: email, mobile, name
 
     Source: Himanshu Shankar (https://github.com/iamhssingh)
     Parameters

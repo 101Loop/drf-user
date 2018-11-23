@@ -9,13 +9,24 @@ from .models import User, Role, AuthTransaction, OTPValidation
 
 class DRFUserAdmin(UserAdmin):
     """
-    Overrides UserAdmin to show fields name & mobile and remove fields: first_name, last_name
+    Overrides UserAdmin to show fields name & mobile and remove fields:
+    first_name, last_name
     """
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('name', 'email', 'mobile')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser','groups', 'user_permissions')}),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff',
+                                       'is_superuser','groups',
+                                       'user_permissions')}),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined',
+                                           'update_date')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'mobile', 'password1',
+                       'password2'),
+        }),
     )
     list_display = ('username', 'email', 'name', 'mobile', 'is_staff')
     search_fields = ('username', 'name', 'email', 'mobile')

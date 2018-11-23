@@ -2,9 +2,11 @@ from rest_framework import serializers
 
 from django.utils.text import gettext_lazy as _
 
+
 class UserSerializer(serializers.ModelSerializer):
     """
-    UserRegisterSerializer is a model serializer which includes the attributes that are required for registering a user.
+    UserRegisterSerializer is a model serializer which includes the
+    attributes that are required for registering a user.
     """
     def validate_email(self, value):
         from . import user_settings
@@ -16,7 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
             if check_validation(value=value):
                 return value
             else:
-                raise serializers.ValidationError('The email must be pre-validated via OTP.')
+                raise serializers.ValidationError('The email must be'
+                                                  'pre-validated via OTP.')
         else:
             return value
 
@@ -29,7 +32,8 @@ class UserSerializer(serializers.ModelSerializer):
             if check_validation(value=value):
                 return value
             else:
-                raise serializers.ValidationError('The mobile must be pre-validated via OTP.')
+                raise serializers.ValidationError('The mobile must be'
+                                                  'pre-validated via OTP.')
         else:
             return value
 
@@ -37,14 +41,16 @@ class UserSerializer(serializers.ModelSerializer):
         from .models import User
 
         model = User
-        fields = ('id', 'username', 'name', 'email', 'mobile', 'password', 'is_superuser', 'is_staff')
+        fields = ('id', 'username', 'name', 'email', 'mobile', 'password',
+                  'is_superuser', 'is_staff')
         read_only_fields = ('is_superuser', 'is_staff')
         extra_kwargs = {'password': {'write_only': True}}
 
 
 class UserShowSerializer(serializers.ModelSerializer):
     """
-    UserShowSerializer is a model serializer which shows the attributes of a user.
+    UserShowSerializer is a model serializer which shows the attributes of a
+    user.
     """
 
     class Meta:
@@ -98,9 +104,11 @@ class OTPSerializer(serializers.Serializer):
         if not user:
             if attrs['is_login']:
                 raise NotFound(_('No user exists with provided details'))
-            if 'email' not in attrs.keys() and 'verify_otp' not in attrs.keys():
+            if ('email' not in attrs.keys()
+                    and 'verify_otp' not in attrs.keys()):
                 raise serializers.ValidationError(
-                    _("email field is compulsory while verifying a non-existing user's OTP."))
+                    _("email field is compulsory while verifying a"
+                      " non-existing user's OTP."))
         else:
             attrs['email'] = user.email
             attrs['user'] = user
@@ -110,7 +118,8 @@ class OTPSerializer(serializers.Serializer):
 
 class CheckUniqueSerializer(serializers.Serializer):
     """
-    This serializer is for checking the uniqueness of username/email/mobile of user.
+    This serializer is for checking the uniqueness of
+    username/email/mobile of user.
     """
     prop = serializers.ChoiceField(choices=('email', 'mobile', 'username'))
     value = serializers.CharField()

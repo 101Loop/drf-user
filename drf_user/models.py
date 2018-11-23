@@ -5,7 +5,7 @@ from django.contrib.auth.models import PermissionsMixin, Group
 
 from django.utils.text import gettext_lazy as _
 
-from drfaddons import datatypes as cmodels
+from drfaddons.models import CreateUpdateModel
 
 
 class Role(Group):
@@ -20,19 +20,26 @@ class Role(Group):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    A Custom USER Model. This model has ad-on properties in compare to original DJango User Mobile. This has been
+    A Custom USER Model. This model has ad-on properties in compare to
+    original Django User Mobile. This has been
     done considering the need of relevant data in Indian scenario.
     """
     from .managers import UserManager
 
-    username = models.CharField(_('Unique UserName'), max_length=254,  unique=True)
-    email = models.EmailField(_('EMail Address'), unique=True)
-    mobile = models.CharField(_('Mobile Number'), max_length=150, unique=True)
-    name = models.CharField(_('Full Name'), max_length=500, blank=False)
-    date_joined = cmodels.UnixTimestampField(_('Date Joined'), auto_now_add=True)
-    update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
-    is_active = models.BooleanField(_('Activated'), default=False)
-    is_staff = models.BooleanField(_('Staff Status'), default=False)
+    username = models.CharField(verbose_name=_('Unique UserName'),
+                                max_length=254, unique=True)
+    email = models.EmailField(verbose_name=_('EMail Address'), unique=True)
+    mobile = models.CharField(verbose_name=_('Mobile Number'), max_length=150,
+                              unique=True)
+    name = models.CharField(verbose_name=_('Full Name'), max_length=500,
+                            blank=False)
+    date_joined = models.DateTimeField(verbose_name=_('Date Joined'),
+                                       auto_now_add=True)
+    update_date = models.DateTimeField(verbose_name=_('Date Modified'),
+                                       auto_now=True)
+    is_active = models.BooleanField(verbose_name=_('Activated'), default=False)
+    is_staff = models.BooleanField(verbose_name=_('Staff Status'),
+                                   default=False)
 
     groups = models.ManyToManyField(
         Role,
@@ -65,19 +72,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         return str(self.name) + ' | ' + str(self.username)
 
 
-class AuthTransaction(models.Model):
+class AuthTransaction(CreateUpdateModel):
     """
-    This Model keeps the record of all authentication that is taking place. It's not required for authentication
+    This Model keeps the record of all authentication that is taking
+    place. It's not required for authentication
     verification. Just a record keeping model.
     """
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     ip_address = models.GenericIPAddressField(blank=False, null=False)
-    date_created = cmodels.UnixTimestampField(_('Created On'), auto_created=True)
-    token = models.TextField(_('JWT Token passed'))
-    session = models.TextField(_('Session Passed'))
+    token = models.TextField(verbose_name=_('JWT Token passed'))
+    session = models.TextField(verbose_name=_('Session Passed'))
 
     def __str__(self):
-        return str(self.user.name) + ' | ' + str(self.user.username)
+        return str(self.created_by.name) + ' | ' + str(
+            self.created_by.username)
 
     class Meta:
         verbose_name = _('Authentication Transaction')
@@ -86,23 +93,36 @@ class AuthTransaction(models.Model):
 
 class OTPValidation(models.Model):
     """
-    This model keeps a record of OTP Validation and which destinations have been successfully validated.
+    This model keeps a record of OTP Validation and which destinations
+    have been successfully validated.
     """
     DESTINATION_CHOICES = [
         ('E', 'EMail Address'),
         ('M', 'Mobile Number')
     ]
 
-    otp = models.CharField(_('OTP Code'), max_length=10, unique=True)
-    destination = models.CharField(_('Destination Address (Mobile/EMail)'), max_length=254, unique=True)
-    create_date = cmodels.UnixTimestampField(_('Create Date'), auto_now_add=True)
-    update_date = cmodels.UnixTimestampField(_('Date Modified'), auto_created=True)
-    is_validated = models.BooleanField(_('Is Validated'), default=False)
-    validate_attempt = models.IntegerField(_('Attempted Validation'), default=3)
-    prop = models.CharField(_('Destination Property'), default='E', max_length=3, choices=DESTINATION_CHOICES)
-    send_counter = models.IntegerField(_('OTP Sent Counter'), default=0)
-    sms_id = models.CharField(_('SMS ID'), max_length=254, null=True, blank=True)
-    reactive_at = cmodels.UnixTimestampField(_('ReActivate Sending OTP'))
+    otp = models.CharField(verbose_name=_('OTP Code'), max_length=10,
+                           unique=True)
+    destination = models.CharField(
+        verbose_name=_('Destination Address (Mobile/EMail)'), max_length=254,
+        unique=True)
+    create_date = models.DateTimeField(verbose_name=_('Create Date'),
+                                       auto_now_add=True)
+    update_date = models.DateTimeField(verbose_name=_('Date Modified'),
+                                       auto_now=True)
+    is_validated = models.BooleanField(verbose_name=_('Is Validated'),
+                                       default=False)
+    validate_attempt = models.IntegerField(
+        verbose_name=_('Attempted Validation'), default=3)
+    prop = models.CharField(verbose_name=_('Destination Property'),
+                            default='E', max_length=3,
+                            choices=DESTINATION_CHOICES)
+    send_counter = models.IntegerField(verbose_name=_('OTP Sent Counter'),
+                                       default=0)
+    sms_id = models.CharField(verbose_name=_('SMS ID'), max_length=254,
+                              null=True, blank=True)
+    reactive_at = models.DateTimeField(
+        verbose_name=_('ReActivate Sending OTP'))
 
     def __str__(self):
         return self.destination

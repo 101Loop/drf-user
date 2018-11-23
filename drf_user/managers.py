@@ -7,19 +7,22 @@ class UserManager(BaseUserManager):
     """
     use_in_migrations = True
 
-    def _create_user(self, username, email, password, fullname, mobile, **extra_fields):
+    def _create_user(self, username, email, password, fullname, mobile,
+                     **extra_fields):
         """
         Creates and saves a User with the given email and password.
         """
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
-        user = self.model(username=username, email=email, name=fullname, mobile=mobile, **extra_fields)
+        user = self.model(username=username, email=email, name=fullname,
+                          mobile=mobile, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, username, email, password, name, mobile, **extra_fields):
+    def create_user(self, username, email, password, name, mobile,
+                    **extra_fields):
         from . import update_user_settings
 
         vals = update_user_settings()
@@ -28,9 +31,11 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_active', vals['DEFAULT_ACTIVE_STATE'])
 
-        return self._create_user(username, email, password, name, mobile, **extra_fields)
+        return self._create_user(username, email, password, name, mobile,
+                                 **extra_fields)
 
-    def create_superuser(self, username, email, password, name, mobile, **extra_fields):
+    def create_superuser(self, username, email, password, name, mobile,
+                         **extra_fields):
         from . import update_user_settings
 
         vals = update_user_settings()
@@ -45,4 +50,5 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
 
-        return self._create_user(username, email, password, name, mobile, **extra_fields)
+        return self._create_user(username, email, password, name, mobile,
+                                 **extra_fields)
