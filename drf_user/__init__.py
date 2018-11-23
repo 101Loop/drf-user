@@ -1,6 +1,6 @@
 __title__ = 'Django REST Framework - User'
-__version__ = '0.0.1'
-__author__ = 'Civil Machines Technologies Private Limited'
+__version__ = '0.0.2'
+__author__ = '101Loop'
 __license__ = 'GPLv3'
 
 default_app_config = 'drf_user.apps.DRFUserConfig'
