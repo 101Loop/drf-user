@@ -5,8 +5,6 @@ from django.contrib.auth.models import PermissionsMixin, Group
 
 from django.utils.text import gettext_lazy as _
 
-from drfaddons.models import CreateUpdateModel
-
 
 class Role(Group):
     """
@@ -72,7 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return str(self.name) + ' | ' + str(self.username)
 
 
-class AuthTransaction(CreateUpdateModel):
+class AuthTransaction(models.Model):
     """
     This Model keeps the record of all authentication that is taking
     place. It's not required for authentication
@@ -81,6 +79,11 @@ class AuthTransaction(CreateUpdateModel):
     ip_address = models.GenericIPAddressField(blank=False, null=False)
     token = models.TextField(verbose_name=_('JWT Token passed'))
     session = models.TextField(verbose_name=_('Session Passed'))
+    create_date = models.DateTimeField(verbose_name=_('Create Date/Time'),
+                                       auto_now_add=True)
+    update_date = models.DateTimeField(verbose_name=_('Date/Time Modified'),
+                                       auto_now=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
 
     def __str__(self):
         return str(self.created_by.name) + ' | ' + str(
