@@ -13,8 +13,12 @@ current stable version includes:
 request)
 - [x] OTP Verification for mobile and email
 - [x] Mail sending feature upon successful registration
+- [x] SMS sending feature upon successful registration
 - [x] Change Password
 - [x] Update Profile
+- [x] settings.py based configuration
+- [ ] Signal based mails: Pending in OTP section
+- [ ] Mail based activation (optional alternative for OTP based activation)
 
 #### Contributors
 
@@ -121,7 +125,7 @@ REST_FRAMEWORK = {
 User can define manual setting in `settings.py` file in `USER_SETTINGS` variable . Default options are provided below
 
 ```
-USER_SETTINGS = {
+user_settings = {
     'DEFAULT_ACTIVE_STATE': False,
     'OTP': {
         'LENGTH': 7,
@@ -134,7 +138,9 @@ USER_SETTINGS = {
     'EMAIL_VALIDATION': True,
     'REGISTRATION': {
         'SEND_MAIL': False,
+        'SEND_MESSAGE': False,
         'MAIL_SUBJECT': 'Welcome to DRF-USER',
+        'SMS_BODY': 'Your account has been created',
         'TEXT_MAIL_BODY': 'Your account has been created.',
         'HTML_MAIL_BODY': 'Your account has been created.'
     }
