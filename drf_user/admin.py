@@ -30,7 +30,7 @@ class DRFUserAdmin(UserAdmin):
     )
     list_display = ('username', 'email', 'name', 'mobile', 'is_staff')
     search_fields = ('username', 'name', 'email', 'mobile')
-    readonly_fields = ('date_joined', 'last_login')
+    readonly_fields = ('date_joined', 'last_login', 'update_date')
 
 
 class OTPValidationAdmin(admin.ModelAdmin):

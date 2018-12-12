@@ -18,7 +18,9 @@ user_settings = {
     'EMAIL_VALIDATION': True,
     'REGISTRATION': {
         'SEND_MAIL': False,
+        'SEND_MESSAGE': False,
         'MAIL_SUBJECT': 'Welcome to DRF-USER',
+        'SMS_BODY': 'Your account has been created',
         'TEXT_MAIL_BODY': 'Your account has been created.',
         'HTML_MAIL_BODY': 'Your account has been created.'
     }
@@ -40,20 +42,24 @@ def update_user_settings()->dict:
                         for otp_key, otp_value in value.items():
                             user_settings['OTP'][otp_key] = otp_value
                     else:
-                        raise TypeError('USER_SETTING attribute OTP must be a dict.')
+                        raise TypeError('USER_SETTING attribute OTP must be a'
+                                        ' dict.')
                 elif key == 'REGISTRATION':
                     if isinstance(value, dict):
                         for reg_key, reg_value in value.items():
                             user_settings['REGISTRATION'][reg_key] = reg_value
                     else:
-                        raise TypeError('USER_SETTING attribute REGISTRATION must be a dict.')
+                        raise TypeError('USER_SETTING attribute REGISTRATION'
+                                        ' must be a dict.')
         else:
             raise TypeError('USER_SETTING must be a dict.')
 
         if user_settings['REGISTRATION']['SEND_MAIL']:
             if not getattr(settings, 'EMAIL_HOST', None):
-                raise ValueError('EMAIL_HOST must be defined in django setting for sending mail.')
+                raise ValueError('EMAIL_HOST must be defined in django setting'
+                                 ' for sending mail.')
             if not getattr(settings, 'EMAIL_FROM', None):
-                raise ValueError('EMAIL_FROM must be defined in django setting for sending mail. Who is sending email?')
+                raise ValueError('EMAIL_FROM must be defined in django setting'
+                                 ' for sending mail. Who is sending email?')
 
     return user_settings

@@ -51,7 +51,7 @@ class Login(APIView):
 
         from .models import AuthTransaction
 
-        from drfaddons.add_ons import get_client_ip
+        from drfaddons.utils import get_client_ip
 
         from rest_framework.response import Response
 
@@ -78,7 +78,7 @@ class Login(APIView):
         return response
 
     def post(self, request):
-        from drfaddons.add_ons import JsonResponse
+        from drfaddons.utils import JsonResponse
 
         from rest_framework import status
 
@@ -116,7 +116,7 @@ class CheckUnique(APIView):
             status.HTTP_200_OK)
 
     def post(self, request):
-        from drfaddons.add_ons import JsonResponse
+        from drfaddons.utils import JsonResponse
         from rest_framework import status
 
         serialized_data = self.serializer_class(data=request.data)

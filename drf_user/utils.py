@@ -124,7 +124,8 @@ def send_otp(value, otpobj, recip):
     -------
 
     """
-    from drfaddons.add_ons import send_message
+
+    from drfaddons.utils import send_message
 
     from rest_framework.exceptions import PermissionDenied
 
@@ -164,12 +165,12 @@ def login_user(user: User, request)->(dict, int):
         data: dict
         status_code: int
     """
-    from drfaddons.add_ons import get_client_ip
-    from drfaddons.auth import jwt_payload_handler
+    from drfaddons.utils import get_client_ip
 
     from rest_framework_jwt.utils import jwt_encode_handler
 
     from .models import AuthTransaction
+    from .auth import jwt_payload_handler
 
     import datetime
 
