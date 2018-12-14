@@ -85,9 +85,12 @@ def generate_otp(prop, value):
 
     # Get or Create new instance of Model with value of provided value
     # and set proper counter.
-    otp_object, created = OTPValidation.objects.get_or_create(
-        destination=value)
-    if not created:
+    try:
+        otp_object = OTPValidation.objects.get(destination=value)
+    except OTPValidation.DoesNotExist:
+        otp_object = OTPValidation()
+        otp_object.destination = value
+    else:
         if otp_object.reactive_at > datetime.datetime.now():
             return otp_object
 
@@ -97,7 +100,7 @@ def generate_otp(prop, value):
     # Set is_validated to False
     otp_object.is_validated = False
 
-    # Set attempt counter to OTP_VALIDATION_ATTEMPS, user has to enter
+    # Set attempt counter to OTP_VALIDATION_ATTEMPTS, user has to enter
     # correct OTP in 3 chances.
     otp_object.validate_attempt = otp_settings['VALIDATION_ATTEMPTS']
 
@@ -127,7 +130,7 @@ def send_otp(value, otpobj, recip):
 
     from drfaddons.utils import send_message
 
-    from rest_framework.exceptions import PermissionDenied
+    from rest_framework.exceptions import PermissionDenied, APIException
 
     import datetime
 
@@ -141,7 +144,12 @@ def send_otp(value, otpobj, recip):
     message = ("OTP for verifying " + otpobj.get_prop_display() + ": "
                + value + " is " + otp + ". Don't share this with anyone!")
 
-    rdata = send_message(message, otp_settings['SUBJECT'], [value], [recip])
+    try:
+        rdata = send_message(message, otp_settings['SUBJECT'], [value],
+                             [recip])
+    except ValueError as err:
+        raise APIException(_("Server configuration error occured: %s") %
+                           str(err))
 
     otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(
         minutes=otp_settings['COOLING_PERIOD'])
