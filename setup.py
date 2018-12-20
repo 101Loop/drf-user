@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license=__import__('drf_user').__license__,
-    url="https://github.com/civilmachines/drf-user",
+    url="https://github.com/101loop/drf-user",
     python_requires=">=3.0",
     packages=setuptools.find_packages(),
     install_requires=open('requirements.txt').read().split(),
