@@ -68,6 +68,8 @@ def generate_otp(prop, value):
     """
     from .models import OTPValidation
 
+    from django.utils import timezone
+
     import datetime
 
     # Create a random number
@@ -91,8 +93,14 @@ def generate_otp(prop, value):
         otp_object = OTPValidation()
         otp_object.destination = value
     else:
-        if otp_object.reactive_at > datetime.datetime.now():
-            return otp_object
+        if (otp_object.reactive_at.tzinfo is not None
+                and otp_object.reactive_at.tzinfo.utcoffset(
+                    otp_object.reactive_at) is not None):
+            if otp_object.reactive_at > timezone.now():
+                return otp_object
+        else:
+            if otp_object.reactive_at > datetime.datetime.now():
+                return otp_object
 
     otp_object.otp = random_number
     otp_object.prop = prop

@@ -104,8 +104,7 @@ class OTPValidation(models.Model):
         ('M', 'Mobile Number')
     ]
 
-    otp = models.CharField(verbose_name=_('OTP Code'), max_length=10,
-                           unique=True)
+    otp = models.CharField(verbose_name=_('OTP Code'), max_length=10)
     destination = models.CharField(
         verbose_name=_('Destination Address (Mobile/EMail)'), max_length=254,
         unique=True)
