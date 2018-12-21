@@ -1,5 +1,5 @@
 __title__ = 'User - Django REST Framework'
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 __author__ = '101Loop'
 __license__ = 'GPLv3'
 
@@ -28,6 +28,17 @@ user_settings = {
 
 
 def update_user_settings()->dict:
+    """
+    Updates user setting from django default setting
+
+    TODO: Think of a better way, using Signal preferably.
+
+    Returns
+    -------
+    user_settings: dict
+
+    Author: Himanshu Shankar (https://himanshus.com)
+    """
     from django.conf import settings
 
     custom_settings = getattr(settings, 'USER_SETTINGS', None)

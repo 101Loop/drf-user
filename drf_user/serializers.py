@@ -91,7 +91,35 @@ class UserShowSerializer(serializers.ModelSerializer):
 class OTPSerializer(serializers.Serializer):
     """
     This Serializer is for sending OTP & verifying destination via otp.
-    is_login: Set is_login true if trying to login via OTP.
+    is_login: Set is_login true if trying to login via OTP
+    destination: Required. Place where sending OTP
+    email: Fallback in case of destination is a mobile number
+    verify_otp: OTP in the 2nd step of flow
+
+    Examples
+    --------
+    1. Request an OTP for verifying
+    >>> OTPSerializer(data={"destination": "me@himanshus.com"})
+    Or for mobile number as destination
+    >>> OTPSerializer(data={"destination": "88xx6xx5xx",
+    >>>                     "email": "me@himanshus.com"})
+
+    2. Send OTP to verify
+    >>> OTPSerializer(data={"destination": "me@himanshus.com",
+    >>>                     "verify_otp": 2930432})
+    Or for mobile number as destination
+    >>> OTPSerializer(data={"destination": "88xx6xx5xx",
+    >>>                     "email": "me@himanshus.com",
+    >>>                     "verify_otp": 2930433})
+
+    For log in, just add is_login to request
+    >>> OTPSerializer(data={"destination": "me@himanshus.com",
+    >>>                     "is_login": True})
+    >>> OTPSerializer(data={"destination": "88xx6xx5xx",
+    >>>                     "email": "me@himanshus.com",
+    >>>                     "verify_otp": 2930433, "is_login": True})
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
     email = serializers.EmailField(required=False)
     is_login = serializers.BooleanField(default=False)
@@ -114,8 +142,9 @@ class OTPSerializer(serializers.Serializer):
 
         """
         from .models import User
+        from .variables import MOBILE
 
-        if prop == 'M':
+        if prop == MOBILE:
             try:
                 user = User.objects.get(mobile=destination)
             except User.DoesNotExist:
@@ -149,13 +178,15 @@ class OTPSerializer(serializers.Serializer):
 
         from rest_framework.exceptions import NotFound
 
+        from .variables import EMAIL, MOBILE
+
         validator = EmailValidator()
         try:
             validator(attrs['destination'])
         except ValidationError:
-            attrs['prop'] = 'M'
+            attrs['prop'] = MOBILE
         else:
-            attrs['prop'] = 'E'
+            attrs['prop'] = EMAIL
 
         user = self.get_user(attrs.get('prop'), attrs.get('destination'))
 

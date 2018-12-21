@@ -130,8 +130,34 @@ class CheckUnique(APIView):
 
 class OTPView(APIView):
     """
-    This view is used to validate OTP and do other tasks if OTP is validated.
-    Set is_login true while sending request to login via OTP.
+    This view is used to validate OTP and do other tasks if OTP is validated
+
+    FROM SERIALIZER:
+    is_login: Set is_login true if trying to login via OTP
+    destination: Required. Place where sending OTP
+    email: Fallback in case of destination is a mobile number
+    verify_otp: OTP in the 2nd step of flow
+
+    Examples
+    --------
+    1. Request an OTP for verifying
+    >>> {"destination": "me@himanshus.com"}
+    Or for mobile number as destination
+    >>> {"destination": "88xx6xx5xx", "email": "me@himanshus.com"}
+
+    2. Send OTP to verify
+    >>> {"destination": "me@himanshus.com", "verify_otp": 2930432}
+    Or for mobile number as destination
+    >>> {"destination": "88xx6xx5xx", "email": "me@himanshus.com",
+    >>>  "verify_otp": 2930433})
+
+    For log in, just add is_login to request
+    >>> {"destination": "me@himanshus.com", "is_login": True}
+
+    >>> {"destination": "me@himanshus.com", "is_login": True,
+    >>>  "verify_otp": 1234232}
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
     from .serializers import OTPSerializer
 
@@ -183,6 +209,8 @@ class OTPView(APIView):
 class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     """
     This view is to update a user profile.
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
     from .serializers import UserSerializer
     from .models import User
@@ -209,11 +237,19 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
 
 class OTPLoginView(APIView):
     """
-    Used to register/login to OfficeCafe
+    Used to register/login to a system where User may not be required
+    to pre-login but needs to login in later stage or while doing a
+    transaction.
+
+    View ensures a smooth flow by sending same OTP on mobile as well as
+    email.
+
     name - Required
     email - Required
     mobile - Required
     verify_otp - Not Required (only when verifying OTP)
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
 
     from rest_framework.permissions import AllowAny
@@ -233,10 +269,10 @@ class OTPLoginView(APIView):
 
         from rest_framework.exceptions import APIException
 
-        from drf_user.utils import validate_otp, generate_otp, send_otp
-        from drf_user.utils import login_user
-
-        from drf_user.models import User
+        from .utils import validate_otp, generate_otp, send_otp
+        from .utils import login_user
+        from .models import User
+        from .variables import EMAIL, MOBILE
 
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -262,8 +298,8 @@ class OTPLoginView(APIView):
                             status=status.HTTP_202_ACCEPTED)
 
         else:
-            otp_obj_email = generate_otp('E', email)
-            otp_obj_mobile = generate_otp('M', mobile)
+            otp_obj_email = generate_otp(EMAIL, email)
+            otp_obj_mobile = generate_otp(MOBILE, mobile)
 
             # Set same OTP for both Email & Mobile
             otp_obj_mobile.otp = otp_obj_email.otp

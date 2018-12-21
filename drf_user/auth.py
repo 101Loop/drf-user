@@ -1,3 +1,8 @@
+"""
+Custom backends to facilitate authorizations
+
+Author: Himanshu Shankar (https://himanshus.com)
+"""
 from django.contrib.auth.backends import ModelBackend
 
 

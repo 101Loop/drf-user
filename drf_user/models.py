@@ -18,9 +18,13 @@ class Role(Group):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    A Custom USER Model. This model has ad-on properties in compare to
-    original Django User Mobile. This has been
-    done considering the need of relevant data in Indian scenario.
+    Represents default user model in a Django project.
+    Adds following extra attributes:
+    mobile: Mobile Number of the user
+    name: Name of the user. Replaces last_name & first_name
+    update_date: DateTime instance when the user was updated
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
     from .managers import UserManager
 
@@ -39,6 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(verbose_name=_('Staff Status'),
                                    default=False)
 
+    # Renamed Groups to Roles
     groups = models.ManyToManyField(
         Role,
         verbose_name=_('Roles'),
@@ -72,9 +77,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class AuthTransaction(models.Model):
     """
-    This Model keeps the record of all authentication that is taking
-    place. It's not required for authentication
-    verification. Just a record keeping model.
+    Represents all authentication in the system that took place via
+    REST API.
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
     ip_address = models.GenericIPAddressField(blank=False, null=False)
     token = models.TextField(verbose_name=_('JWT Token passed'))
@@ -96,13 +102,11 @@ class AuthTransaction(models.Model):
 
 class OTPValidation(models.Model):
     """
-    This model keeps a record of OTP Validation and which destinations
-    have been successfully validated.
+    Represents all OTP Validation in the System.
+
+    Author: Himanshu Shankar (https://himanshus.com)
     """
-    DESTINATION_CHOICES = [
-        ('E', 'EMail Address'),
-        ('M', 'Mobile Number')
-    ]
+    from .variables import EMAIL, DESTINATION_CHOICES
 
     otp = models.CharField(verbose_name=_('OTP Code'), max_length=10)
     destination = models.CharField(
@@ -117,7 +121,7 @@ class OTPValidation(models.Model):
     validate_attempt = models.IntegerField(
         verbose_name=_('Attempted Validation'), default=3)
     prop = models.CharField(verbose_name=_('Destination Property'),
-                            default='E', max_length=3,
+                            default=EMAIL, max_length=3,
                             choices=DESTINATION_CHOICES)
     send_counter = models.IntegerField(verbose_name=_('OTP Sent Counter'),
                                        default=0)
