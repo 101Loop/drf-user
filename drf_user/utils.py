@@ -7,6 +7,31 @@ user_settings = update_user_settings()
 otp_settings = user_settings['OTP']
 
 
+def datetime_passed_now(source):
+    """
+    Compares provided datetime with current time on the basis of Django
+    settings. Checks source is in future or in past. False if it's in future.
+    Parameters
+    ----------
+    source: datetime object than may or may not be naive
+
+    Returns
+    -------
+    bool
+
+    Author: Himanshu Shankar (https://himanshus.com)
+    """
+    import datetime
+
+    import pytz
+
+    if (source.tzinfo is not None
+            and source.tzinfo.utcoffset(source) is not None):
+        return source <= datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+    else:
+        return source <= datetime.datetime.now()
+
+
 def check_unique(prop, value):
     """
     This function checks if the value provided is present in Database
@@ -66,11 +91,12 @@ def generate_otp(prop, value):
     >>> print(generate_otp('email', 'test@testing.com').otp)
     5039164
     """
-    from .models import OTPValidation
+
+    import datetime
 
     from django.utils import timezone
 
-    import datetime
+    from .models import OTPValidation
 
     # Create a random number
     random_number = User.objects.make_random_password(
@@ -93,14 +119,8 @@ def generate_otp(prop, value):
         otp_object = OTPValidation()
         otp_object.destination = value
     else:
-        if (otp_object.reactive_at.tzinfo is not None
-                and otp_object.reactive_at.tzinfo.utcoffset(
-                    otp_object.reactive_at) is not None):
-            if otp_object.reactive_at > timezone.now():
-                return otp_object
-        else:
-            if otp_object.reactive_at > datetime.datetime.now():
-                return otp_object
+        if not datetime_passed_now(otp_object.reactive_at):
+            return otp_object
 
     otp_object.otp = random_number
     otp_object.prop = prop
@@ -112,7 +132,7 @@ def generate_otp(prop, value):
     # correct OTP in 3 chances.
     otp_object.validate_attempt = otp_settings['VALIDATION_ATTEMPTS']
 
-    otp_object.reactive_at = (datetime.datetime.now() -
+    otp_object.reactive_at = (timezone.now() -
                               datetime.timedelta(minutes=1))
     otp_object.save()
     return otp_object
@@ -136,15 +156,17 @@ def send_otp(value, otpobj, recip):
 
     """
 
+    import datetime
+
+    from django.utils import timezone
+
     from drfaddons.utils import send_message
 
     from rest_framework.exceptions import PermissionDenied, APIException
 
-    import datetime
-
     otp = otpobj.otp
 
-    if otpobj.reactive_at > datetime.datetime.now():
+    if datetime_passed_now(otpobj.reactive_at):
         raise PermissionDenied(
             detail=_('OTP sending not allowed until: '
                      + otpobj.reactive_at.strftime('%d-%h-%Y %H:%M:%S')))
@@ -159,7 +181,7 @@ def send_otp(value, otpobj, recip):
         raise APIException(_("Server configuration error occured: %s") %
                            str(err))
 
-    otpobj.reactive_at = datetime.datetime.now() + datetime.timedelta(
+    otpobj.reactive_at = timezone.now() + datetime.timedelta(
         minutes=otp_settings['COOLING_PERIOD'])
     otpobj.save()
 
@@ -181,17 +203,18 @@ def login_user(user: User, request)->(dict, int):
         data: dict
         status_code: int
     """
-    from drfaddons.utils import get_client_ip
+
+    from django.utils import timezone
 
     from rest_framework_jwt.utils import jwt_encode_handler
+
+    from drfaddons.utils import get_client_ip
 
     from .models import AuthTransaction
     from .auth import jwt_payload_handler
 
-    import datetime
-
     token = jwt_encode_handler(jwt_payload_handler(user))
-    user.last_login = datetime.datetime.now()
+    user.last_login = timezone.now()
     user.save()
     AuthTransaction(created_by=user, ip_address=get_client_ip(request),
                     token=token,
