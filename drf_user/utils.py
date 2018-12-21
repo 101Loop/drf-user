@@ -166,7 +166,7 @@ def send_otp(value, otpobj, recip):
 
     otp = otpobj.otp
 
-    if datetime_passed_now(otpobj.reactive_at):
+    if not datetime_passed_now(otpobj.reactive_at):
         raise PermissionDenied(
             detail=_('OTP sending not allowed until: '
                      + str(otpobj.reactive_at)))
