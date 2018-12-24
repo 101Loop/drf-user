@@ -1,6 +1,12 @@
+"""
+All static variables used in the system.
+
+Author: Himanshu Shankar (https://himanshus.com)
+"""
+
 EMAIL = "E"
 MOBILE = "M"
 DESTINATION_CHOICES = [
-    ('E', 'EMail Address'),
-    ('M', 'Mobile Number')
+    (EMAIL, "EMail Address"),
+    (MOBILE, "Mobile Number")
 ]

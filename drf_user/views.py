@@ -5,9 +5,15 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from django.utils.text import gettext_lazy as _
 
 
-class Register(CreateAPIView):
+class RegisterView(CreateAPIView):
     """
+    Register View
+
     Register a new user to the system.
+    The data required are username, email, name, password and mobile.
+
+    Author: Himanshu Shankar (https://himanshus.com)
+            Aditya Gupta (https://github.com/ag93999)
     """
     from .serializers import UserSerializer
     from rest_framework.permissions import AllowAny
@@ -29,12 +35,18 @@ class Register(CreateAPIView):
         serializer = self.get_serializer(user)
 
 
-class Login(APIView):
+class LoginView(APIView):
     """
-    This is used to Login into system. The data required are 'username'
-    and 'password'.
-    In 'username' user can provide either username or mobile or email
-    address.
+    Login View
+
+    This is used to Login into system.
+    The data required are 'username' and 'password'.
+
+    username -- Either username or mobile or email address.
+    password -- Password of the user.
+
+    Author: Himanshu Shankar (https://himanshus.com)
+            Aditya Gupta (https://github.com/ag93999)
     """
     from rest_framework_jwt.serializers import JSONWebTokenSerializer
     from rest_framework.permissions import AllowAny
@@ -90,12 +102,17 @@ class Login(APIView):
                                 status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
-class CheckUnique(APIView):
+class CheckUniqueView(APIView):
     """
+    Check Unique API View
+
     This view checks if the given property -> value pair is unique (or
     doesn't exists yet)
-    'prop': A property to check for uniqueness (username/email/mobile)
-    'value': Value against property which is to be checked for.
+    'prop' -- A property to check for uniqueness (username/email/mobile)
+    'value' -- Value against property which is to be checked for.
+
+     Author: Himanshu Shankar (https://himanshus.com)
+            Aditya Gupta (https://github.com/ag93999)
     """
     from .serializers import CheckUniqueSerializer
     from rest_framework.permissions import AllowAny
@@ -130,13 +147,14 @@ class CheckUnique(APIView):
 
 class OTPView(APIView):
     """
-    This view is used to validate OTP and do other tasks if OTP is validated
+    OTP Validate | OTP Login
 
-    FROM SERIALIZER:
-    is_login: Set is_login true if trying to login via OTP
-    destination: Required. Place where sending OTP
-    email: Fallback in case of destination is a mobile number
-    verify_otp: OTP in the 2nd step of flow
+    FROM SERIALIZER
+    ----------------
+    is_login -- Set is_login true if trying to login via OTP
+    destination -- Required. Place where sending OTP
+    email -- Fallback in case of destination is a mobile number
+    verify_otp -- OTP in the 2nd step of flow
 
     Examples
     --------
@@ -158,6 +176,7 @@ class OTPView(APIView):
     >>>  "verify_otp": 1234232}
 
     Author: Himanshu Shankar (https://himanshus.com)
+            Aditya Gupta (https://github.com/ag93999)
     """
     from .serializers import OTPSerializer
 
@@ -208,9 +227,14 @@ class OTPView(APIView):
 
 class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     """
-    This view is to update a user profile.
+    Retrieve Update User Account View
+
+    get: Fetch Account Details
+    put: Update all details
+    patch: Update some details
 
     Author: Himanshu Shankar (https://himanshus.com)
+            Aditya Gupta( https://github.com/ag93999)
     """
     from .serializers import UserSerializer
     from .models import User
@@ -237,6 +261,8 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
 
 class OTPLoginView(APIView):
     """
+    OTP Login View
+
     Used to register/login to a system where User may not be required
     to pre-login but needs to login in later stage or while doing a
     transaction.
@@ -244,12 +270,13 @@ class OTPLoginView(APIView):
     View ensures a smooth flow by sending same OTP on mobile as well as
     email.
 
-    name - Required
-    email - Required
-    mobile - Required
-    verify_otp - Not Required (only when verifying OTP)
+    name -- Required
+    email -- Required
+    mobile -- Required
+    verify_otp -- Not Required (only when verifying OTP)
 
     Author: Himanshu Shankar (https://himanshus.com)
+            Aditya Gupta (https://github.com/ag93999)
     """
 
     from rest_framework.permissions import AllowAny

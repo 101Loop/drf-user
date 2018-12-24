@@ -216,10 +216,10 @@ class CheckUniqueSerializer(serializers.Serializer):
 
 class OTPLoginRegisterSerializer(serializers.Serializer):
     """
-    Registers a new user with auto generated password or log in user if
+    Registers a new user with auto generated password or login user if
     already exists
 
-    This will also set same OTP for mobile & email for easy process
+    This will also set same OTP for mobile & email for easy process.
     Params
     name: Name of user
     email: Email of user
