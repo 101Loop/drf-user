@@ -1,5 +1,5 @@
 __title__ = 'User - Django REST Framework'
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 __author__ = '101Loop'
 __license__ = 'GPLv3'
 
@@ -8,7 +8,7 @@ default_app_config = 'drf_user.apps.DRFUserConfig'
 user_settings = {
     'DEFAULT_ACTIVE_STATE': False,
     'OTP': {
-        'LENGTH': 7,
+        'LENGTH': 5,
         'ALLOWED_CHARS': '1234567890',
         'VALIDATION_ATTEMPTS': 3,
         'SUBJECT': 'OTP for Verification',
