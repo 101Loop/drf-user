@@ -168,8 +168,8 @@ def send_otp(value, otpobj, recip):
 
     if not datetime_passed_now(otpobj.reactive_at):
         raise PermissionDenied(
-            detail=_('OTP sending not allowed until: '
-                     + otpobj.reactive_at.strftime("%d %b %Y %H:%M:%S")))
+            detail=_('OTP sending not allowed until: ' +
+                     str(otpobj.reactive_at)))
 
     message = ("OTP for verifying " + otpobj.get_prop_display() + ": "
                + value + " is " + otp + ". Don't share this with anyone!")
