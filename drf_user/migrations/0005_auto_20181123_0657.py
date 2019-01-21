@@ -38,29 +38,4 @@ class Migration(migrations.Migration):
             name='update_date',
             field=models.DateTimeField(auto_now=True, verbose_name='Date/Time Modified'),
         ),
-        migrations.AlterField(
-            model_name='otpvalidation',
-            name='create_date',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='Create Date'),
-        ),
-        migrations.AlterField(
-            model_name='otpvalidation',
-            name='reactive_at',
-            field=models.DateTimeField(verbose_name='ReActivate Sending OTP'),
-        ),
-        migrations.AlterField(
-            model_name='otpvalidation',
-            name='update_date',
-            field=models.DateTimeField(auto_now=True, verbose_name='Date Modified'),
-        ),
-        migrations.AlterField(
-            model_name='user',
-            name='date_joined',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='Date Joined'),
-        ),
-        migrations.AlterField(
-            model_name='user',
-            name='update_date',
-            field=models.DateTimeField(auto_now=True, verbose_name='Date Modified'),
-        ),
     ]
