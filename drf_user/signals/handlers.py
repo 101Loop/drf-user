@@ -3,8 +3,6 @@ from django.dispatch import receiver
 
 from django.contrib.auth import get_user_model
 
-from drf_user.models import OTPValidation
-
 
 @receiver(post_save, sender=get_user_model())
 def post_register(sender, instance: get_user_model(), created, **kwargs):

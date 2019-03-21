@@ -12,6 +12,7 @@ current stable version includes:
 - [x] REST API to login with OTP (Same API endpoint as for OTP Verification; Set `is_login: true` while sending JSON
 request)
 - [x] OTP Verification for mobile and email
+- [x] API to register / login with OTP (no pre-registration required)
 - [x] Mail sending feature upon successful registration
 - [x] SMS sending feature upon successful registration
 - [x] Change Password

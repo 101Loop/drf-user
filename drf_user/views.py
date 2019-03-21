@@ -125,7 +125,7 @@ class CheckUniqueView(APIView):
     def validated(self, serialized_data, *args, **kwargs):
         from .utils import check_unique
 
-        from rest_framework.mixins import status
+        from rest_framework import status
 
         return (
             {'unique': check_unique(serialized_data.validated_data['prop'],
@@ -187,7 +187,7 @@ class OTPView(APIView):
 
     def post(self, request, *args, **kwargs):
         from rest_framework.response import Response
-        from rest_framework.mixins import status
+        from rest_framework import status
 
         from rest_framework.exceptions import APIException
 
@@ -292,7 +292,7 @@ class OTPLoginView(APIView):
 
     def post(self, request, *args, **kwargs):
         from rest_framework.response import Response
-        from rest_framework.mixins import status
+        from rest_framework import status
 
         from rest_framework.exceptions import APIException
 
@@ -346,7 +346,7 @@ class OTPLoginView(APIView):
                 }
             else:
                 message['email'] = {
-                    'otp':_("OTP sending failed {}".format(
+                    'otp': _("OTP sending failed {}".format(
                         sentotp_email['message']))
                 }
 

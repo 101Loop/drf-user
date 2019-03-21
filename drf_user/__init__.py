@@ -1,5 +1,5 @@
 __title__ = 'User - Django REST Framework'
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 __author__ = '101Loop'
 __license__ = 'GPLv3'
 
