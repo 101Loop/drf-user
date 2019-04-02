@@ -123,7 +123,7 @@ class OTPSerializer(serializers.Serializer):
     """
     email = serializers.EmailField(required=False)
     is_login = serializers.BooleanField(default=False)
-    verify_otp = serializers.IntegerField(required=False)
+    verify_otp = serializers.CharField(required=False)
     destination = serializers.CharField(required=True)
 
     def get_user(self, prop: str, destination: str)->User:
@@ -231,7 +231,7 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
 
     name = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
-    verify_otp = serializers.IntegerField(default=None, required=False)
+    verify_otp = serializers.CharField(default=None, required=False)
     mobile = serializers.CharField(required=True)
 
     @staticmethod
