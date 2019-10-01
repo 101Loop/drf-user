@@ -115,7 +115,7 @@ JWT_AUTH = {
 REST_FRAMEWORK = {
     ...
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'drfaddons.auth.JSONWebTokenAuthentication',
+        'drfaddons.auth.JSONWebTokenAuthenticationQS',
         ...
     ),
 }
