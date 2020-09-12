@@ -1,7 +1,4 @@
-"""
-
-Author: Himanshu Shankar (https://himanshus.com)
-"""
+"""Custom Managers for drf-user"""
 from django.contrib.auth.base_user import BaseUserManager
 
 

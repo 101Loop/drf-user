@@ -1,3 +1,5 @@
+"""Django REST Framework - User! User App for Django with API Views"""
+
 __title__ = "User - Django REST Framework"
 __version__ = "0.0.8"
 __author__ = "101Loop"

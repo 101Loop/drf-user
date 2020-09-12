@@ -58,6 +58,8 @@ class DRFUserAdmin(UserAdmin):
 
 
 class OTPValidationAdmin(admin.ModelAdmin):
+    """OPT Validation Admin"""
+
     list_display = ("destination", "otp", "prop")
 
 

@@ -1,3 +1,4 @@
+"""Collection of general helper functions."""
 from django.utils.text import gettext_lazy as _
 
 from . import update_user_settings

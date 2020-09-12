@@ -1,3 +1,4 @@
+"""Serializers related to drf-user"""
 from django.utils.text import gettext_lazy as _
 from rest_framework import serializers
 
@@ -10,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     attributes that are required for registering a user.
     """
 
-    def validate_email(self, value: str):
+    def validate_email(self, value: str) -> str:
         """
         If pre-validated email is required, this function checks if
         the email is pre-validated using OTP.
@@ -38,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
         else:
             return value
 
-    def validate_mobile(self, value: str):
+    def validate_mobile(self, value: str) -> str:
         """
         If pre-validated mobile number is required, this function
         checks if the mobile is pre-validated using OTP.
@@ -67,6 +68,8 @@ class UserSerializer(serializers.ModelSerializer):
             return value
 
     class Meta:
+        """Passing model metadata"""
+
         from .models import User
 
         model = User
@@ -91,6 +94,8 @@ class UserShowSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
+        """Passing model metadata"""
+
         from .models import User
 
         model = User
@@ -250,6 +255,8 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
 
     @staticmethod
     def get_user(email: str, mobile: str):
+        """Fetches user object"""
+
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
@@ -278,6 +285,8 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
         return user
 
     def validate(self, attrs: dict) -> dict:
+        """Validates the response"""
+
         attrs["user"] = self.get_user(
             email=attrs.get("email"), mobile=attrs.get("mobile")
         )

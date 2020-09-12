@@ -9,7 +9,7 @@ from drf_user.models import User
 
 
 class TestUserModel(TestCase):
-    """ User Model Tests"""
+    """User Model"""
 
     def setUp(self) -> None:
         """Create user object using model_bakery"""

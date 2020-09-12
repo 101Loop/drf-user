@@ -1,3 +1,4 @@
+"""Urls module for drf-user"""
 from django.urls import path
 
 from . import views
