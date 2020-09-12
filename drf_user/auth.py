@@ -11,6 +11,7 @@ class MultiFieldModelBackend(ModelBackend):
     This is a ModelBacked that allows authentication with either a
     username or an email address or mobile number.
     """
+
     from django.contrib.auth import get_user_model
 
     user_model = get_user_model()
@@ -45,11 +46,11 @@ class MultiFieldModelBackend(ModelBackend):
             username = kwargs.get(self.user_model.USERNAME_FIELD)
 
         if username.isdigit():
-            kwargs = {'mobile': username}
+            kwargs = {"mobile": username}
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", username):
-            kwargs = {'username': username}
+            kwargs = {"username": username}
         else:
-            kwargs = {'email': username}
+            kwargs = {"email": username}
         try:
             user = self.user_model.objects.get(**kwargs)
             if user.check_password(password):
@@ -91,22 +92,22 @@ def jwt_payload_handler(user):
     username = get_username(user)
 
     payload = {
-        'user_id': user.pk,
-        'is_admin': user.is_staff,
-        'exp': datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA
+        "user_id": user.pk,
+        "is_admin": user.is_staff,
+        "exp": datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA,
     }
 
-    if hasattr(user, 'email'):
-        payload['email'] = user.email
+    if hasattr(user, "email"):
+        payload["email"] = user.email
 
-    if hasattr(user, 'mobile'):
-        payload['mobile'] = user.mobile
+    if hasattr(user, "mobile"):
+        payload["mobile"] = user.mobile
 
-    if hasattr(user, 'name'):
-        payload['name'] = user.name
+    if hasattr(user, "name"):
+        payload["name"] = user.name
 
     if isinstance(user.pk, uuid.UUID):
-        payload['user_id'] = str(user.pk)
+        payload["user_id"] = str(user.pk)
 
     payload[username_field] = username
 
@@ -114,14 +115,12 @@ def jwt_payload_handler(user):
     # to allow token refresh
 
     if api_settings.JWT_ALLOW_REFRESH:
-        payload['orig_iat'] = timegm(
-            datetime.utcnow().utctimetuple()
-        )
+        payload["orig_iat"] = timegm(datetime.utcnow().utctimetuple())
 
     if api_settings.JWT_AUDIENCE is not None:
-        payload['aud'] = api_settings.JWT_AUDIENCE
+        payload["aud"] = api_settings.JWT_AUDIENCE
 
     if api_settings.JWT_ISSUER is not None:
-        payload['iss'] = api_settings.JWT_ISSUER
+        payload["iss"] = api_settings.JWT_ISSUER
 
     return payload

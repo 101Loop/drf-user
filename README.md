@@ -1,3 +1,6 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 # Django REST Framework - User
 
 **User APP for Django REST Framework with API Views.**<br>
@@ -23,8 +26,8 @@ request)
 
 #### Contributors
 
-- **[Civil Machines Technologies Private Limited](https://github.com/civilmahines)**: For providing me platform and 
-funds for research work. This project is hosted currently with `CMT` only. 
+- **[Civil Machines Technologies Private Limited](https://github.com/civilmahines)**: For providing me platform and
+funds for research work. This project is hosted currently with `CMT` only.
 - [Himanshu Shankar](https://github.com/iamhssingh): The app was initiated and worked upon majorly by Himanshu. This app
 is currently in use in various other django projects that are developed by him.
 - [Aditya Gupta](https://github.com/ag93999): Aditya has updated view in the app to include additional features such as
@@ -84,7 +87,7 @@ urlpatterns = [
 ...
 AUTH_USER_MODEL = 'drf_user.User'
 ...
-``` 
+```
 - Finally, run `migrate` command
 ```
 python manage.py migrate drf_user
