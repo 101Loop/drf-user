@@ -19,7 +19,7 @@
 - [ ] Updates to documentation:
     - [ ] Document any relevant additions/changes in `README.md`.
     - [ ] Manually update **both** the `README.md` _and_ `docs/index.rst` for any new changes.
-    - [ ] Any changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).  Find the appropriate next version in the project's [``__init__.py``](https://github.com/101loop/drf-user/blob/master/src/drf_user/__init__.py) file.
+    - [ ] Any changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).  Find the appropriate next version in the project's [``__init__.py``](https://github.com/101loop/drf-user/blob/master/drf_user/__init__.py) file.
 
 ## Release note
 <!--  If your change is non-trivial (e.g. more than a fixed typo in docs, or updated tests), please write a suggested release note for us to include in `docs/changelog.rst` (we may edit it a bit).
