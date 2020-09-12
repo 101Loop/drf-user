@@ -3,6 +3,7 @@ import pytest
 from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
+from model_bakery import baker
 from rest_framework import status
 
 from drf_user.models import User
@@ -15,8 +16,9 @@ class LoginViewTest(TestCase):
         """Create Client object to call the API"""
         self.client = Client()
 
-        """Create User object"""
-        self.user = User.objects.create(
+        """Create User object using model_bakery"""
+        self.user = baker.make(
+            "drf_user.User",
             username="user",
             email="user@email.com",
             name="user",
