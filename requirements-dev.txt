@@ -1,6 +1,7 @@
 -r requirements.txt
 black
 flake8
+model_bakery
 pre-commit
 pytest
 pytest-cov
