@@ -6,6 +6,7 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
+from rest_framework.test import force_authenticate
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
@@ -94,3 +95,19 @@ class UserAccountViewTest(TestCase):
         view.setup(request)
 
         self.assertEqual(view.get_object(), self.user)
+
+    @pytest.mark.django_db
+    def test_get_user_account_view(self):
+        """Create request object using factory"""
+        request = self.factory.get(reverse("Retrieve Update Profile"))
+
+        """Authenticating the request"""
+        force_authenticate(
+            request=request, user=self.user, token=self.auth_transaction.token
+        )
+
+        """Creates and sets up the RetrieveUpdateUserAccountView"""
+        view = RetrieveUpdateUserAccountView.as_view()
+        response = view(request)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
