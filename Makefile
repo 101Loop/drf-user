@@ -1,5 +1,9 @@
 .PHONY: clean-pyc clean-build docs clean
 
+VIRTUALENV = virtualenv --python=python3
+PYTHON = $(VENV)/bin/python3
+VENV := $(shell echo $${VIRTUAL_ENV-.venv})
+
 TEST_FLAGS=--verbosity=2
 COVER_FLAGS=--source=drf_user
 
@@ -59,14 +63,10 @@ format:
 	black --exclude .+/migrations/.+\.py drf_user
 
 test:
-	python tests/manage.py test ${TEST_FLAGS}
+	$(PYTHON) -m pytest --ds=tests.settings --cov=drf_user tests/
 
 test-coverage: clean-test
-	-coverage run ${COVER_FLAGS} tests/manage.py test ${TEST_FLAGS}
-	@exit_code=$?
-	@-coverage report
-	@-coverage html
-	@exit ${exit_code}
+	$(PYTHON) -m pytest --ds=tests.settings --cov=drf_user tests/ --cov-report html
 
 test-all:
 	tox
