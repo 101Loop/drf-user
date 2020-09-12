@@ -111,3 +111,24 @@ class UserAccountViewTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @pytest.mark.django_db
+    def test_update_user_account_view(self):
+        """Create request object using factory"""
+        request = self.factory.patch(
+            reverse("Retrieve Update Profile"),
+            data={"username": "updated_username"},
+            content_type="application/json",
+        )
+
+        """Authenticating the request"""
+        force_authenticate(
+            request=request, user=self.user, token=self.auth_transaction.token
+        )
+
+        """Creates and sets up the RetrieveUpdateUserAccountView"""
+        view = RetrieveUpdateUserAccountView.as_view()
+        response = view(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.user.username, "updated_username")
