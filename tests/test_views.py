@@ -111,6 +111,7 @@ class UserAccountViewTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["username"], self.user.username)
 
     @pytest.mark.django_db
     def test_update_user_account_view(self):
