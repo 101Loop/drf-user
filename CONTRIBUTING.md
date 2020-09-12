@@ -1,7 +1,7 @@
 # How To Contribute<sup>[1](#footnote-1)</sup>
 
-First off, thank you for considering contributing to `drf-user`! It's
-people like _you_ who make it such a great tool for everyone.
+First off, thank you for considering contributing to `drf-user`! It's people
+like _you_ who make it such a great tool for everyone.
 
 This document intends to make contribution more accessible by codifying tribal
 knowledge and expectations. Don't be afraid to open half-finished PRs, and ask
@@ -154,7 +154,9 @@ of a virtual environment):
 (env) $ pre-commit run --all-files
 ```
 -->
-Install your local copy into a virtualenv. Assuming you have already created virtualenv, this is how you set up your fork for local development:
+
+Install your local copy into a virtualenv. Assuming you have already created
+virtualenv, this is how you set up your fork for local development:
 
 ```sh
 (env) $ cd drf-user
@@ -166,9 +168,11 @@ Create a branch for local development:
 ```sh
 $ git checkout -b name-of-your-bugfix-or-feature
 ```
+
 Now you can make your changes locally.
 
-When you're done making changes, check that your changes pass tests and code style should be aligned with Flake8 and Black:
+When you're done making changes, check that your changes pass tests and code
+style should be aligned with Flake8 and Black:
 
 ```sh
 $ make test-coverage
@@ -177,6 +181,7 @@ $ make format
 ```
 
 Commit your changes and push your branch to GitHub:
+
 ```sh
 $ git add .
 $ git commit -m "Your detailed description of your changes."
@@ -184,6 +189,7 @@ $ git push origin name-of-your-bugfix-or-feature
 ```
 
 Submit a pull request through the GitHub website.
+
 ## Code of Conduct
 
 Please note that this project is released with a Contributor
