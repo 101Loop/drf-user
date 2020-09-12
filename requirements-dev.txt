@@ -1,7 +1,9 @@
 -r requirements.txt
 black
-coverage
 flake8
 pre-commit
+pytest
+pytest-cov
+pytest-django
 sphinx
 tox
