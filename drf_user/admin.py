@@ -58,9 +58,30 @@ class DRFUserAdmin(UserAdmin):
 
 
 class OTPValidationAdmin(admin.ModelAdmin):
-    """OPT Validation Admin"""
+    """OTP Validation Admin"""
 
     list_display = ("destination", "otp", "prop")
+
+
+class AuthTransactionAdmin(admin.ModelAdmin):
+    """AuthTransaction Admin"""
+
+    list_display = ("created_by", "ip_address", "create_date")
+
+    def has_add_permission(self, request):
+        """Limits admin to add an object."""
+
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """Limits admin to change an object."""
+
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Limits admin to delete an object."""
+
+        return False
 
 
 # UnRegister default Group & register proxy model Role
@@ -71,4 +92,4 @@ admin.site.register(Role, GroupAdmin)
 
 admin.site.register(User, DRFUserAdmin)
 admin.site.register(OTPValidation, OTPValidationAdmin)
-admin.site.register(AuthTransaction)
+admin.site.register(AuthTransaction, AuthTransactionAdmin)
