@@ -36,10 +36,8 @@ jobs:
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
       - name: Test with pytest
-        env:
-          DJANGO_SETTINGS_MODULE: tests.settings
         run: |
-          pytest --disable-pytest-warnings --cov=drf_user tests/ -n 2 --cov-report=xml
+          python -m pytest --ds=tests.settings --cov=drf_user tests/ -n 2 --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
