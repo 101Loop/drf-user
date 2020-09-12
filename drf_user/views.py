@@ -222,11 +222,7 @@ class OTPView(APIView):
                     )
                 else:
                     return Response(
-                        data={
-                            "OTP": [
-                                _("OTP Validated successfully!"),
-                            ]
-                        },
+                        data={"OTP": [_("OTP Validated successfully!"),]},
                         status=status.HTTP_202_ACCEPTED,
                     )
         else:
@@ -348,11 +344,7 @@ class OTPLoginView(APIView):
                     login_user(user, self.request), status=status.HTTP_202_ACCEPTED
                 )
             return Response(
-                data={
-                    "OTP": [
-                        _("OTP Validated successfully!"),
-                    ]
-                },
+                data={"OTP": [_("OTP Validated successfully!"),]},
                 status=status.HTTP_202_ACCEPTED,
             )
 
