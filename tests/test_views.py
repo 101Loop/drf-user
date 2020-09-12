@@ -60,7 +60,7 @@ class UserAccountViewTest(TestCase):
     """User Account View Test"""
 
     def setUp(self) -> None:
-        """Create Client object to call the API"""
+        """Create RequestFactory object to call the API"""
         self.factory = RequestFactory()
 
         """Create User object using model_bakery"""
