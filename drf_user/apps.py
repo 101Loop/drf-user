@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class DRFUserConfig(AppConfig):
-    name = 'drf_user'
+    name = "drf_user"
     verbose_name = "Authorization & Authentication"
 
     def ready(self):
@@ -16,6 +16,6 @@ class DRFUserConfig(AppConfig):
         Author: Himanshu Shankar (https://himanshus.com)
         """
         from . import update_user_settings
-        from .signals.handlers import post_register
-        
+        from .signals.handlers import post_register  # noqa
+
         update_user_settings()

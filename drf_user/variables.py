@@ -7,7 +7,4 @@ Author: Aditya Gupta (https://github.com/ag93999)
 
 EMAIL = "E"
 MOBILE = "M"
-DESTINATION_CHOICES = [
-    (EMAIL, "EMail Address"),
-    (MOBILE, "Mobile Number")
-]
+DESTINATION_CHOICES = [(EMAIL, "EMail Address"), (MOBILE, "Mobile Number")]

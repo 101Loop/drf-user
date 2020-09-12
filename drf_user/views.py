@@ -1,8 +1,7 @@
-from rest_framework.generics import CreateAPIView
-from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateAPIView
-
 from django.utils.text import gettext_lazy as _
+from rest_framework.generics import CreateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.views import APIView
 
 
 class RegisterView(CreateAPIView):
@@ -15,6 +14,7 @@ class RegisterView(CreateAPIView):
     Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta (https://github.com/ag93999)
     """
+
     from .serializers import UserSerializer
     from rest_framework.permissions import AllowAny
     from rest_framework.renderers import JSONRenderer
@@ -27,11 +27,12 @@ class RegisterView(CreateAPIView):
         from .models import User
 
         user = User.objects.create_user(
-            username=serializer.validated_data['username'],
-            email=serializer.validated_data['email'],
-            name=serializer.validated_data['name'],
-            password=serializer.validated_data['password'],
-            mobile=serializer.validated_data['mobile'])
+            username=serializer.validated_data["username"],
+            email=serializer.validated_data["email"],
+            name=serializer.validated_data["name"],
+            password=serializer.validated_data["password"],
+            mobile=serializer.validated_data["mobile"],
+        )
         serializer = self.get_serializer(user)
 
 
@@ -48,6 +49,7 @@ class LoginView(APIView):
     Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta (https://github.com/ag93999)
     """
+
     from rest_framework_jwt.serializers import JSONWebTokenSerializer
     from rest_framework.permissions import AllowAny
     from rest_framework.renderers import JSONRenderer
@@ -67,25 +69,27 @@ class LoginView(APIView):
 
         from rest_framework.response import Response
 
-        user = serialized_data.object.get('user') or self.request.user
-        token = serialized_data.object.get('token')
-        response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(token, user,
-                                                                  self.request)
+        user = serialized_data.object.get("user") or self.request.user
+        token = serialized_data.object.get("token")
+        response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(
+            token, user, self.request
+        )
         response = Response(response_data)
         if api_settings.JWT_AUTH_COOKIE:
-            expiration = (datetime.utcnow() +
-                          api_settings.JWT_EXPIRATION_DELTA)
-            response.set_cookie(api_settings.JWT_AUTH_COOKIE,
-                                token,
-                                expires=expiration,
-                                httponly=True)
+            expiration = datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA
+            response.set_cookie(
+                api_settings.JWT_AUTH_COOKIE, token, expires=expiration, httponly=True
+            )
 
         user.last_login = datetime.now()
         user.save()
 
-        AuthTransaction(created_by=user, token=token,
-                        ip_address=get_client_ip(self.request),
-                        session=user.get_session_auth_hash()).save()
+        AuthTransaction(
+            created_by=user,
+            token=token,
+            ip_address=get_client_ip(self.request),
+            session=user.get_session_auth_hash(),
+        ).save()
 
         return response
 
@@ -98,8 +102,9 @@ class LoginView(APIView):
         if serialized_data.is_valid():
             return self.validated(serialized_data=serialized_data)
         else:
-            return JsonResponse(serialized_data.errors,
-                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return JsonResponse(
+                serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
 
 class CheckUniqueView(APIView):
@@ -114,6 +119,7 @@ class CheckUniqueView(APIView):
      Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta (https://github.com/ag93999)
     """
+
     from .serializers import CheckUniqueSerializer
     from rest_framework.permissions import AllowAny
     from rest_framework.renderers import JSONRenderer
@@ -128,9 +134,14 @@ class CheckUniqueView(APIView):
         from rest_framework import status
 
         return (
-            {'unique': check_unique(serialized_data.validated_data['prop'],
-                                    serialized_data.validated_data['value'])},
-            status.HTTP_200_OK)
+            {
+                "unique": check_unique(
+                    serialized_data.validated_data["prop"],
+                    serialized_data.validated_data["value"],
+                )
+            },
+            status.HTTP_200_OK,
+        )
 
     def post(self, request):
         from drfaddons.utils import JsonResponse
@@ -138,11 +149,11 @@ class CheckUniqueView(APIView):
 
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
-            return JsonResponse(self.validated(
-                serialized_data=serialized_data))
+            return JsonResponse(self.validated(serialized_data=serialized_data))
         else:
-            return JsonResponse(serialized_data.errors,
-                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return JsonResponse(
+                serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
 
 class OTPView(APIView):
@@ -178,11 +189,12 @@ class OTPView(APIView):
     Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta (https://github.com/ag93999)
     """
+
     from .serializers import OTPSerializer
 
     from rest_framework.permissions import AllowAny
 
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)
     serializer_class = OTPSerializer
 
     def post(self, request, *args, **kwargs):
@@ -196,33 +208,36 @@ class OTPView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        destination = serializer.validated_data.get('destination')
-        prop = serializer.validated_data.get('prop')
-        user = serializer.validated_data.get('user')
-        email = serializer.validated_data.get('email')
-        is_login = serializer.validated_data.get('is_login')
+        destination = serializer.validated_data.get("destination")
+        prop = serializer.validated_data.get("prop")
+        user = serializer.validated_data.get("user")
+        email = serializer.validated_data.get("email")
+        is_login = serializer.validated_data.get("is_login")
 
-        if 'verify_otp' in request.data.keys():
-            if validate_otp(destination, request.data.get('verify_otp')):
+        if "verify_otp" in request.data.keys():
+            if validate_otp(destination, request.data.get("verify_otp")):
                 if is_login:
-                    return Response(login_user(user, self.request),
-                                    status=status.HTTP_202_ACCEPTED)
+                    return Response(
+                        login_user(user, self.request), status=status.HTTP_202_ACCEPTED
+                    )
                 else:
                     return Response(
-                        data={'OTP': [_('OTP Validated successfully!'), ]},
-                        status=status.HTTP_202_ACCEPTED)
+                        data={"OTP": [_("OTP Validated successfully!"),]},
+                        status=status.HTTP_202_ACCEPTED,
+                    )
         else:
             otp_obj = generate_otp(prop, destination)
             sentotp = send_otp(destination, otp_obj, email)
 
-            if sentotp['success']:
+            if sentotp["success"]:
                 otp_obj.send_counter += 1
                 otp_obj.save()
 
                 return Response(sentotp, status=status.HTTP_201_CREATED)
             else:
                 raise APIException(
-                    detail=_('A Server Error occurred: ' + sentotp['message']))
+                    detail=_("A Server Error occurred: " + sentotp["message"])
+                )
 
 
 class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
@@ -236,6 +251,7 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta( https://github.com/ag93999)
     """
+
     from .serializers import UserSerializer
     from .models import User
 
@@ -244,19 +260,19 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
-    lookup_field = 'created_by'
+    lookup_field = "created_by"
 
     def get_object(self):
         return self.request.user
 
     def update(self, request, *args, **kwargs):
-        if 'password' in request.data.keys():
-            self.request.user.set_password(request.data.pop('password'))
+        if "password" in request.data.keys():
+            self.request.user.set_password(request.data.pop("password"))
             self.request.user.save()
 
-        return super(RetrieveUpdateUserAccountView, self).update(request,
-                                                                 *args,
-                                                                 **kwargs)
+        return super(RetrieveUpdateUserAccountView, self).update(
+            request, *args, **kwargs
+        )
 
 
 class OTPLoginView(APIView):
@@ -304,11 +320,11 @@ class OTPLoginView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        verify_otp = serializer.validated_data.get('verify_otp', None)
-        name = serializer.validated_data.get('name')
-        mobile = serializer.validated_data.get('mobile')
-        email = serializer.validated_data.get('email')
-        user = serializer.validated_data.get('user', None)
+        verify_otp = serializer.validated_data.get("verify_otp", None)
+        name = serializer.validated_data.get("name")
+        mobile = serializer.validated_data.get("mobile")
+        email = serializer.validated_data.get("email")
+        user = serializer.validated_data.get("user", None)
 
         message = {}
 
@@ -316,15 +332,21 @@ class OTPLoginView(APIView):
             if validate_otp(email, verify_otp):
                 if not user:
                     user = User.objects.create_user(
-                        name=name, mobile=mobile, email=email, username=mobile,
-                        password=User.objects.make_random_password()
+                        name=name,
+                        mobile=mobile,
+                        email=email,
+                        username=mobile,
+                        password=User.objects.make_random_password(),
                     )
                     user.is_active = True
                     user.save()
-                return Response(login_user(user, self.request),
-                                status=status.HTTP_202_ACCEPTED)
-            return Response(data={'OTP': [_('OTP Validated successfully!'), ]},
-                            status=status.HTTP_202_ACCEPTED)
+                return Response(
+                    login_user(user, self.request), status=status.HTTP_202_ACCEPTED
+                )
+            return Response(
+                data={"OTP": [_("OTP Validated successfully!"),]},
+                status=status.HTTP_202_ACCEPTED,
+            )
 
         else:
             otp_obj_email = generate_otp(EMAIL, email)
@@ -338,36 +360,29 @@ class OTPLoginView(APIView):
             sentotp_email = send_otp(email, otp_obj_email, email)
             sentotp_mobile = send_otp(mobile, otp_obj_mobile, email)
 
-            if sentotp_email['success']:
+            if sentotp_email["success"]:
                 otp_obj_email.send_counter += 1
                 otp_obj_email.save()
-                message['email'] = {
-                    'otp': _("OTP has been sent successfully.")
-                }
+                message["email"] = {"otp": _("OTP has been sent successfully.")}
             else:
-                message['email'] = {
-                    'otp': _("OTP sending failed {}".format(
-                        sentotp_email['message']))
+                message["email"] = {
+                    "otp": _("OTP sending failed {}".format(sentotp_email["message"]))
                 }
 
-            if sentotp_mobile['success']:
+            if sentotp_mobile["success"]:
                 otp_obj_mobile.send_counter += 1
                 otp_obj_mobile.save()
-                message['mobile'] = {
-                    'otp': _("OTP has been sent successfully.")
-                }
+                message["mobile"] = {"otp": _("OTP has been sent successfully.")}
             else:
-                message['mobile'] = {
-                    'otp': _("OTP sending failed {}".format(
-                        sentotp_mobile['message']))
+                message["mobile"] = {
+                    "otp": _("OTP sending failed {}".format(sentotp_mobile["message"]))
                 }
 
-            if sentotp_email['success'] or sentotp_mobile['success']:
+            if sentotp_email["success"] or sentotp_mobile["success"]:
                 curr_status = status.HTTP_201_CREATED
             else:
                 raise APIException(
-                    detail=_(
-                        'A Server Error occurred: ' + sentotp_mobile['message']
-                    ))
+                    detail=_("A Server Error occurred: " + sentotp_mobile["message"])
+                )
 
             return Response(data=message, status=curr_status)

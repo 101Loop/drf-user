@@ -53,10 +53,10 @@ docs:
 	python setup.py build_sphinx
 
 lint:
-	flake8  --max-line-length 88 drf_user
+	flake8  --exclude=*/migrations/* --max-line-length 88 drf_user
 
 format:
-	black drf_user
+	black --exclude .+/migrations/.+\.py drf_user
 
 test:
 	python tests/manage.py test ${TEST_FLAGS}

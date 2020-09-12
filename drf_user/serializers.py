@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from django.utils.text import gettext_lazy as _
+from rest_framework import serializers
 
 from .models import User
 
@@ -10,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     UserRegisterSerializer is a model serializer which includes the
     attributes that are required for registering a user.
     """
+
     def validate_email(self, value: str):
         """
         If pre-validated email is required, this function checks if
@@ -28,12 +28,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         from .utils import check_validation
 
-        if user_settings['EMAIL_VALIDATION']:
+        if user_settings["EMAIL_VALIDATION"]:
             if check_validation(value=value):
                 return value
             else:
-                raise serializers.ValidationError('The email must be '
-                                                  'pre-validated via OTP.')
+                raise serializers.ValidationError(
+                    "The email must be " "pre-validated via OTP."
+                )
         else:
             return value
 
@@ -55,12 +56,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         from .utils import check_validation
 
-        if user_settings['MOBILE_VALIDATION']:
+        if user_settings["MOBILE_VALIDATION"]:
             if check_validation(value=value):
                 return value
             else:
-                raise serializers.ValidationError('The mobile must be '
-                                                  'pre-validated via OTP.')
+                raise serializers.ValidationError(
+                    "The mobile must be " "pre-validated via OTP."
+                )
         else:
             return value
 
@@ -68,10 +70,18 @@ class UserSerializer(serializers.ModelSerializer):
         from .models import User
 
         model = User
-        fields = ('id', 'username', 'name', 'email', 'mobile', 'password',
-                  'is_superuser', 'is_staff')
-        read_only_fields = ('is_superuser', 'is_staff')
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = (
+            "id",
+            "username",
+            "name",
+            "email",
+            "mobile",
+            "password",
+            "is_superuser",
+            "is_staff",
+        )
+        read_only_fields = ("is_superuser", "is_staff")
+        extra_kwargs = {"password": {"write_only": True}}
 
 
 class UserShowSerializer(serializers.ModelSerializer):
@@ -84,8 +94,8 @@ class UserShowSerializer(serializers.ModelSerializer):
         from .models import User
 
         model = User
-        fields = ('id', 'username', 'name')
-        read_only_fields = ('username', 'name')
+        fields = ("id", "username", "name")
+        read_only_fields = ("username", "name")
 
 
 class OTPSerializer(serializers.Serializer):
@@ -121,12 +131,13 @@ class OTPSerializer(serializers.Serializer):
 
     Author: Himanshu Shankar (https://himanshus.com)
     """
+
     email = serializers.EmailField(required=False)
     is_login = serializers.BooleanField(default=False)
     verify_otp = serializers.CharField(required=False)
     destination = serializers.CharField(required=True)
 
-    def get_user(self, prop: str, destination: str)->User:
+    def get_user(self, prop: str, destination: str) -> User:
         """
         Provides current user on the basis of property and destination
         provided.
@@ -157,7 +168,7 @@ class OTPSerializer(serializers.Serializer):
 
         return user
 
-    def validate(self, attrs: dict)->dict:
+    def validate(self, attrs: dict) -> dict:
         """
         Performs custom validation to check if any user exists with
         provided details.
@@ -182,25 +193,27 @@ class OTPSerializer(serializers.Serializer):
 
         validator = EmailValidator()
         try:
-            validator(attrs['destination'])
+            validator(attrs["destination"])
         except ValidationError:
-            attrs['prop'] = MOBILE
+            attrs["prop"] = MOBILE
         else:
-            attrs['prop'] = EMAIL
+            attrs["prop"] = EMAIL
 
-        user = self.get_user(attrs.get('prop'), attrs.get('destination'))
+        user = self.get_user(attrs.get("prop"), attrs.get("destination"))
 
         if not user:
-            if attrs['is_login']:
-                raise NotFound(_('No user exists with provided details'))
-            if ('email' not in attrs.keys()
-                    and 'verify_otp' not in attrs.keys()):
+            if attrs["is_login"]:
+                raise NotFound(_("No user exists with provided details"))
+            if "email" not in attrs.keys() and "verify_otp" not in attrs.keys():
                 raise serializers.ValidationError(
-                    _("email field is compulsory while verifying a"
-                      " non-existing user's OTP."))
+                    _(
+                        "email field is compulsory while verifying a"
+                        " non-existing user's OTP."
+                    )
+                )
         else:
-            attrs['email'] = user.email
-            attrs['user'] = user
+            attrs["email"] = user.email
+            attrs["user"] = user
 
         return attrs
 
@@ -210,7 +223,8 @@ class CheckUniqueSerializer(serializers.Serializer):
     This serializer is for checking the uniqueness of
     username/email/mobile of user.
     """
-    prop = serializers.ChoiceField(choices=('email', 'mobile', 'username'))
+
+    prop = serializers.ChoiceField(choices=("email", "mobile", "username"))
     value = serializers.CharField()
 
 
@@ -246,19 +260,25 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
 
         if user:
             if user.email != email:
-                raise serializers.ValidationError(_(
-                    "Your account is registered with {mobile} does not has "
-                    "{email} as registered email. Please login directly via "
-                    "OTP with your mobile.".format(mobile=mobile, email=email)
-                ))
+                raise serializers.ValidationError(
+                    _(
+                        "Your account is registered with {mobile} does not has "
+                        "{email} as registered email. Please login directly via "
+                        "OTP with your mobile.".format(mobile=mobile, email=email)
+                    )
+                )
             if user.mobile != mobile:
-                raise serializers.ValidationError(_(
-                    "Your account is registered with {email} does not has "
-                    "{mobile} as registered mobile. Please login directly via "
-                    "OTP with your email.".format(mobile=mobile, email=email)))
+                raise serializers.ValidationError(
+                    _(
+                        "Your account is registered with {email} does not has "
+                        "{mobile} as registered mobile. Please login directly via "
+                        "OTP with your email.".format(mobile=mobile, email=email)
+                    )
+                )
         return user
 
     def validate(self, attrs: dict) -> dict:
-        attrs['user'] = self.get_user(email=attrs.get('email'),
-                                      mobile=attrs.get('mobile'))
+        attrs["user"] = self.get_user(
+            email=attrs.get("email"), mobile=attrs.get("mobile")
+        )
         return attrs
