@@ -1,3 +1,4 @@
+"""Views for drf-user"""
 from django.utils.text import gettext_lazy as _
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
@@ -24,6 +25,8 @@ class RegisterView(CreateAPIView):
     serializer_class = UserSerializer
 
     def perform_create(self, serializer):
+        """Override perform_create to create user"""
+
         from .models import User
 
         user = User.objects.create_user(
@@ -59,6 +62,8 @@ class LoginView(APIView):
     serializer_class = JSONWebTokenSerializer
 
     def validated(self, serialized_data, *args, **kwargs):
+        """Validates the response"""
+
         from rest_framework_jwt.settings import api_settings
 
         from datetime import datetime
@@ -94,6 +99,8 @@ class LoginView(APIView):
         return response
 
     def post(self, request):
+        """Overrides post method to validate serialized data"""
+
         from drfaddons.utils import JsonResponse
 
         from rest_framework import status
@@ -129,6 +136,8 @@ class CheckUniqueView(APIView):
     serializer_class = CheckUniqueSerializer
 
     def validated(self, serialized_data, *args, **kwargs):
+        """Validates the response"""
+
         from .utils import check_unique
 
         from rest_framework import status
@@ -144,6 +153,8 @@ class CheckUniqueView(APIView):
         )
 
     def post(self, request):
+        """Overrides post method to validate serialized data"""
+
         from drfaddons.utils import JsonResponse
         from rest_framework import status
 
@@ -198,6 +209,8 @@ class OTPView(APIView):
     serializer_class = OTPSerializer
 
     def post(self, request, *args, **kwargs):
+        """Overrides post method to validate serialized data"""
+
         from rest_framework.response import Response
         from rest_framework import status
 
@@ -222,7 +235,11 @@ class OTPView(APIView):
                     )
                 else:
                     return Response(
-                        data={"OTP": [_("OTP Validated successfully!"),]},
+                        data={
+                            "OTP": [
+                                _("OTP Validated successfully!"),
+                            ]
+                        },
                         status=status.HTTP_202_ACCEPTED,
                     )
         else:
@@ -263,9 +280,13 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     lookup_field = "created_by"
 
     def get_object(self):
+        """Fetches user from request"""
+
         return self.request.user
 
     def update(self, request, *args, **kwargs):
+        """Updates user's password"""
+
         if "password" in request.data.keys():
             self.request.user.set_password(request.data.pop("password"))
             self.request.user.save()
@@ -307,6 +328,8 @@ class OTPLoginView(APIView):
     serializer_class = OTPLoginRegisterSerializer
 
     def post(self, request, *args, **kwargs):
+        """Overrides post method to validate serialized data"""
+
         from rest_framework.response import Response
         from rest_framework import status
 
@@ -344,7 +367,11 @@ class OTPLoginView(APIView):
                     login_user(user, self.request), status=status.HTTP_202_ACCEPTED
                 )
             return Response(
-                data={"OTP": [_("OTP Validated successfully!"),]},
+                data={
+                    "OTP": [
+                        _("OTP Validated successfully!"),
+                    ]
+                },
                 status=status.HTTP_202_ACCEPTED,
             )
 

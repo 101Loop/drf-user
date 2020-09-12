@@ -16,7 +16,7 @@ class MultiFieldModelBackend(ModelBackend):
 
     user_model = get_user_model()
 
-    def authenticate(self, request, username=None, password=None, **kwargs):
+    def authenticate(self, request, username=None, password=None, **kwargs) -> None:
         """
         This function is used to authenticate a user. User can send
         either of email, mobile or username in request to
@@ -40,6 +40,7 @@ class MultiFieldModelBackend(ModelBackend):
         or
         None
         """
+
         import re
 
         if username is None:
@@ -58,7 +59,21 @@ class MultiFieldModelBackend(ModelBackend):
         except self.user_model.DoesNotExist:
             return None
 
-    def get_user(self, username):
+    def get_user(self, username: int) -> None:
+        """Returns user object if exists otherwise None
+
+        Parameters
+        ----------
+        username: int
+            ID of the user will be passed here.
+        Returns
+        -------
+        user: django.contrib.auth.get_user_model
+        or
+        None
+
+        """
+
         try:
             return self.user_model.objects.get(pk=username)
         except self.user_model.DoesNotExist:
@@ -79,6 +94,7 @@ def jwt_payload_handler(user):
     -------
     payload: dict
     """
+
     import uuid
 
     from calendar import timegm

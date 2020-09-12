@@ -1,3 +1,4 @@
+"""Models for drf-user"""
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import PermissionsMixin
@@ -11,6 +12,8 @@ class Role(Group):
     """
 
     class Meta:
+        """Passing model metadata"""
+
         proxy = True
         verbose_name = _("Role")
         verbose_name_plural = _("Roles")
@@ -61,13 +64,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["name", "mobile", "email"]
 
     class Meta:
+        """Passing model metadata"""
+
         verbose_name = _("User")
         verbose_name_plural = _("Users")
 
-    def get_full_name(self):
-        return self.name
+    def get_full_name(self) -> str:
+        """Method to return user's full name"""
+
+        return str(self.name)
 
     def __str__(self):
+        """String representation of model"""
+
         return str(self.name) + " | " + str(self.username)
 
 
@@ -91,9 +100,13 @@ class AuthTransaction(models.Model):
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
 
     def __str__(self):
+        """String representation of model"""
+
         return str(self.created_by.name) + " | " + str(self.created_by.username)
 
     class Meta:
+        """Passing model metadata"""
+
         verbose_name = _("Authentication Transaction")
         verbose_name_plural = _("Authentication Transactions")
 
@@ -132,8 +145,12 @@ class OTPValidation(models.Model):
     reactive_at = models.DateTimeField(verbose_name=_("ReActivate Sending OTP"))
 
     def __str__(self):
+        """String representation of model"""
+
         return self.destination
 
     class Meta:
+        """Passing model metadata"""
+
         verbose_name = _("OTP Validation")
         verbose_name_plural = _("OTP Validations")
