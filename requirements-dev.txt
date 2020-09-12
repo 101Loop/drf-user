@@ -1,0 +1,7 @@
+-r requirements.txt
+coverage
+black
+flake8
+tox
+sphinx
+pre-commit
