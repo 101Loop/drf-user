@@ -1,7 +1,7 @@
 .PHONY: clean-pyc clean-build docs clean
 
 VIRTUALENV = virtualenv --python=python3
-PYTHON = $(VENV)/bin/python3
+PYTHON = $(VENV)/bin/python
 VENV := $(shell echo $${VIRTUAL_ENV-.venv})
 
 TEST_FLAGS=--verbosity=2

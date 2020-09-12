@@ -9,6 +9,8 @@ __pycache__/
 # Ignore .idea
 .idea/
 
+# Ignore .vscode
+.vscode/
 # Ignore migrations
 # migrations/*.py
 # !migrations/__init__.py
