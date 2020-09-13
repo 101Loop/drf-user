@@ -65,16 +65,12 @@ class TestRetrieveUpdateUserAccountView(TestCase):
 
         """Create User object using model_bakery"""
         self.user = baker.make(
-            "drf_user.User",
-            username="user",
-            email="user@email.com",
-            mobile=1234569877,
+            "drf_user.User", username="user", email="user@email.com", mobile=1234569877,
         )
 
         """Create auth_transaction object using model_bakery"""
         self.auth_transaction = baker.make(
-            "drf_user.AuthTransaction",
-            created_by=self.user,
+            "drf_user.AuthTransaction", created_by=self.user,
         )
 
     @pytest.mark.django_db
@@ -144,10 +140,7 @@ class TestCheckUniqueView(TestCase):
 
         """Create User object using model_bakery"""
         self.user = baker.make(
-            "drf_user.User",
-            username="user",
-            email="user@email.com",
-            mobile=1234569877,
+            "drf_user.User", username="user", email="user@email.com", mobile=1234569877,
         )
 
     @pytest.mark.django_db
