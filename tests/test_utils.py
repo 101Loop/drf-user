@@ -21,17 +21,17 @@ class TestCheckUnique(TestCase):
     @pytest.mark.django_db
     def test_object_created(self):
         """Check if User object created or not"""
-        self.assertEqual(User.objects.count(), 1)
+        assert User.objects.count() == 1
 
     @pytest.mark.django_db
     def test_check_non_unique(self):
         """Check if the user is non-unique"""
-        self.assertTrue(utils.check_unique("email", "user1@email.com"))
+        assert utils.check_unique("email", "user1@email.com")
 
     @pytest.mark.django_db
     def test_check_unique(self):
         """Check if the user is unique"""
-        self.assertFalse(utils.check_unique("email", "user@email.com"))
+        assert not utils.check_unique("email", "user@email.com")
 
 
 class TestCheckValidation(TestCase):
@@ -46,14 +46,14 @@ class TestCheckValidation(TestCase):
     @pytest.mark.django_db
     def test_object_created(self):
         """Check if OTPValidation object is created or not"""
-        self.assertEqual(OTPValidation.objects.count(), 1)
+        assert OTPValidation.objects.count() == 1
 
     @pytest.mark.django_db
     def test_check_validated_object(self):
         """Check if the value is validated"""
-        self.assertTrue(utils.check_validation("user@email.com"))
+        assert utils.check_validation("user@email.com")
 
     @pytest.mark.django_db
     def test_check_non_validated_object(self):
         """Check if the value is not validated"""
-        self.assertFalse(utils.check_validation("user1@email.com"))
+        assert not utils.check_validation("user1@email.com")
