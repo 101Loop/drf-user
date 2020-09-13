@@ -120,6 +120,10 @@ class TestValidateOTP(TestCase):
     @pytest.mark.django_db
     def test_validate_otp_raises_attempt_exceeded_exception(self):
         """Check function raises attempt exceeded exception"""
+
+        """
+        Set the validate_attempt to 0. Raises attempt exceeded exception
+        """
         self.otp_validation.validate_attempt = 0
         self.otp_validation.save()
 
@@ -134,13 +138,10 @@ class TestValidateOTP(TestCase):
     @pytest.mark.django_db
     def test_validate_otp_raises_invalid_otp_exception(self):
         """Check function raises attempt exceeded exception"""
-        self.otp_validation.validate_attempt = 2
-        self.otp_validation.save()
-
         with self.assertRaises(AuthenticationFailed) as context_manager:
             utils.validate_otp("user@email.com", 5623)
 
         assert (
             str(context_manager.exception.detail)
-            == "OTP Validation failed! 1 attempts left!"
+            == "OTP Validation failed! 2 attempts left!"
         )
