@@ -1,4 +1,5 @@
-include LICENSE *.rst *.toml *.yml *.yaml *.ini *.txt
+include LICENSE *.py *.rst *.toml *.yml *.yaml *.ini *.txt
+include Makefile
 graft .github
 
 # Tests
@@ -15,6 +16,7 @@ recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs *.css
 recursive-include docs *.html
+recursive-include docs *.bat
 prune docs/_build
 
 # Ignore github-related markdown files
