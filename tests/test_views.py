@@ -214,7 +214,9 @@ class TestOTPView(APITestCase):
         self.url = reverse("OTP")
 
     def test_request_otp_on_email(self):
-        """Request OTP for verification"""
+        """
+        Checks when destination and email is passed to OTPView is sends otp on mail
+        """
 
         response = self.client.post(
             self.url, {"destination": "email@django.com", "email": "email@django.com"}
@@ -224,7 +226,10 @@ class TestOTPView(APITestCase):
         assert "Message sent successfully!" in response.json()["message"]
 
     def test_request_otp_on_email_and_mobile(self):
-        """Request OTP for verification"""
+        """
+        Checks when mobile as destination and email is passed to OTPView
+        it sends otp on mail as well as on mobile
+        """
 
         response = self.client.post(
             self.url, {"destination": 1231242492, "email": "email@django.com"}
@@ -234,7 +239,7 @@ class TestOTPView(APITestCase):
         assert "Message sent successfully!" in response.json()["message"]
 
     def test_raise_api_exception_when_email_invalid(self):
-        """Request OTP for verification"""
+        """Checks OTPView raises validation error when email/mobile is invalid"""
 
         response = self.client.post(
             self.url, {"destination": "a.b", "email": "abc@d.com"}
@@ -244,7 +249,10 @@ class TestOTPView(APITestCase):
         assert "Server configuration error occured:" in response.json()["detail"]
 
     def test_raise_validation_error_when_email_not_response_when_user_is_new(self):
-        """TEst"""
+        """
+        Checks OTPView raises validation error when new user
+        only passes destination and not email
+        """
 
         response = self.client.post(self.url, {"destination": "email@django.com"})
 
@@ -255,7 +263,10 @@ class TestOTPView(APITestCase):
         assert response.status_code == 400
 
     def test_raise_validation_error_when_is_login_response_when_user_is_new(self):
-        """TEst"""
+        """
+        Checks OTPView raises validation error when new user
+        only passes is_login
+        """
 
         response = self.client.post(
             self.url, {"destination": "email@django.com", "is_login": True}
@@ -265,7 +276,7 @@ class TestOTPView(APITestCase):
         assert response.status_code == 404
 
     def test_verify_otp_in_response(self):
-        """Test"""
+        """Check otp validation"""
         response = self.client.post(
             self.url,
             {
@@ -279,7 +290,7 @@ class TestOTPView(APITestCase):
         assert "OTP Validated successfully!" in response.json()["OTP"]
 
     def test_is_login_in_response(self):
-        """Test"""
+        """Check user login with OTP"""
 
         response = self.client.post(
             self.url,
