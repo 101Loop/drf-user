@@ -1,23 +1,16 @@
-include LICENSE *.py *.rst *.toml *.yml *.yaml *.ini *.txt
+include LICENSE *.py *.yml *.yaml *.txt
 include Makefile
+include README.md
 graft .github
 
 # Tests
 include tox.ini
 recursive-include tests *.py
-recursive-include tests *.svg
-recursive-include tests *.txt
 
 # Documentation
-include docs/Makefile docs/docutils.conf
-recursive-include docs *.png
+include docs/Makefile
 recursive-include docs *.svg
 recursive-include docs *.py
 recursive-include docs *.rst
-recursive-include docs *.css
-recursive-include docs *.html
 recursive-include docs *.bat
 prune docs/_build
-
-# Ignore github-related markdown files
-exclude *.md
