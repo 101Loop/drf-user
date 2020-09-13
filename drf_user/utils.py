@@ -58,10 +58,7 @@ def check_unique(prop, value):
     True
     """
     user = User.objects.extra(where=[prop + " = '" + value + "'"])
-    if user.count() != 0:
-        return False
-    else:
-        return True
+    return user.count() == 0
 
 
 def generate_otp(prop, value):
