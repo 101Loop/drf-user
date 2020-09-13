@@ -133,3 +133,44 @@ class TestRetrieveUpdateUserAccountView(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.user.username, "updated_username")
+
+
+class TestCheckUniqueView(TestCase):
+    """CheckUniqueView Test"""
+
+    def setUp(self) -> None:
+        """Create Client object to call the API"""
+        self.client = Client()
+
+        """Create User object using model_bakery"""
+        self.user = baker.make(
+            "drf_user.User",
+            username="user",
+            email="user@email.com",
+            mobile=1234569877,
+        )
+
+    @pytest.mark.django_db
+    def test_user_object_created(self):
+        """Check if User object created or not"""
+        self.assertEqual(User.objects.count(), 1)
+
+    @pytest.mark.django_db
+    def test_is_unique(self):
+        """Check if the user is unique"""
+        response = self.client.post(
+            reverse("Check Unique"), data={"prop": "username", "value": "user7"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertTrue(response_data["data"][0]["unique"])
+
+    @pytest.mark.django_db
+    def test_is_not_unique(self):
+        """Check if the user is non-unique"""
+        response = self.client.post(
+            reverse("Check Unique"), data={"prop": "username", "value": "user"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertFalse(response_data["data"][0]["unique"])
