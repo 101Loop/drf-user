@@ -5,6 +5,7 @@ import pytest
 from django.test import TestCase
 from django.utils import timezone
 from model_bakery import baker
+from rest_framework.exceptions import AuthenticationFailed
 
 from drf_user import utils as utils
 from drf_user.models import OTPValidation
@@ -95,3 +96,52 @@ class TestGenerateOTP(TestCase):
 
         otp_validation2 = utils.generate_otp("email", "user1@email.com")
         assert otp_validation1.otp == otp_validation2.otp
+
+
+class TestValidateOTP(TestCase):
+    """validate_otp test"""
+
+    def setUp(self) -> None:
+        """Create OTPValidation object using model_bakery"""
+        self.otp_validation = baker.make(
+            "drf_user.OTPValidation", destination="user@email.com", otp=12345
+        )
+
+    @pytest.mark.django_db
+    def test_object_created(self):
+        """Check if OTPValidation object is created or not"""
+        assert OTPValidation.objects.count() == 1
+
+    @pytest.mark.django_db
+    def test_validate_otp(self):
+        """Check if OTPValidation object is created or not"""
+        assert utils.validate_otp("user@email.com", 12345)
+
+    @pytest.mark.django_db
+    def test_validate_otp_raises_attempt_exceeded_exception(self):
+        """Check function raises attempt exceeded exception"""
+
+        """
+        Set the validate_attempt to 0. Raises attempt exceeded exception
+        """
+        self.otp_validation.validate_attempt = 0
+        self.otp_validation.save()
+
+        with self.assertRaises(AuthenticationFailed) as context_manager:
+            utils.validate_otp("user@email.com", 56123)
+
+        assert (
+            str(context_manager.exception.detail)
+            == "Incorrect OTP. Attempt exceeded! OTP has been reset."
+        )
+
+    @pytest.mark.django_db
+    def test_validate_otp_raises_invalid_otp_exception(self):
+        """Check function raises attempt exceeded exception"""
+        with self.assertRaises(AuthenticationFailed) as context_manager:
+            utils.validate_otp("user@email.com", 5623)
+
+        assert (
+            str(context_manager.exception.detail)
+            == "OTP Validation failed! 2 attempts left!"
+        )
