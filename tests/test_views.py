@@ -13,8 +13,8 @@ from drf_user.models import User
 from drf_user.views import RetrieveUpdateUserAccountView
 
 
-class LoginViewTest(TestCase):
-    """Login View Test"""
+class TestLoginView(TestCase):
+    """LoginView Test"""
 
     def setUp(self) -> None:
         """Create Client object to call the API"""
@@ -56,8 +56,8 @@ class LoginViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
-class UserAccountViewTest(TestCase):
-    """User Account View Test"""
+class TestRetrieveUpdateUserAccountView(TestCase):
+    """RetrieveUpdateUserAccountView Test"""
 
     def setUp(self) -> None:
         """Create RequestFactory object to call the API"""
