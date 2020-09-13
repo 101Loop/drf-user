@@ -253,10 +253,7 @@ def check_validation(value):
 
     try:
         otp_object = OTPValidation.objects.get(destination=value)
-        if otp_object.is_validated:
-            return True
-        else:
-            return False
+        return otp_object.is_validated
     except OTPValidation.DoesNotExist:
         return False
 
