@@ -61,3 +61,24 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "drf_user.User"
+
+USER_SETTINGS = {
+    "DEFAULT_ACTIVE_STATE": False,
+    "OTP": {
+        "LENGTH": 7,
+        "ALLOWED_CHARS": "1234567890",
+        "VALIDATION_ATTEMPTS": 3,
+        "SUBJECT": "OTP for Verification",
+        "COOLING_PERIOD": 3,
+    },
+    "MOBILE_VALIDATION": True,
+    "EMAIL_VALIDATION": True,
+    "REGISTRATION": {
+        "SEND_MAIL": False,
+        "SEND_MESSAGE": False,
+        "MAIL_SUBJECT": "Welcome to DRF-USER",
+        "SMS_BODY": "Your account has been created",
+        "TEXT_MAIL_BODY": "Your account has been created.",
+        "HTML_MAIL_BODY": "Your account has been created.",
+    },
+}

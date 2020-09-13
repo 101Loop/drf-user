@@ -1,4 +1,5 @@
 """Serializers related to drf-user"""
+from django.contrib.auth.password_validation import validate_password
 from django.utils.text import gettext_lazy as _
 from rest_framework import serializers
 
@@ -66,6 +67,11 @@ class UserSerializer(serializers.ModelSerializer):
                 )
         else:
             return value
+
+    def validate_password(self, value: str) -> str:
+        """Validate whether the password meets all django validator requirements."""
+        validate_password(value)
+        return value
 
     class Meta:
         """Passing model metadata"""

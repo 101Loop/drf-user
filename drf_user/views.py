@@ -288,7 +288,7 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
         """Updates user's password"""
 
         if "password" in request.data.keys():
-            self.request.user.set_password(request.data.pop("password"))
+            self.request.user.set_password(request.data["password"])
             self.request.user.save()
 
         return super(RetrieveUpdateUserAccountView, self).update(

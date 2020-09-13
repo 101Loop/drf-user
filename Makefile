@@ -63,10 +63,10 @@ format:
 	black --exclude .+/migrations/.+\.py drf_user
 
 test:
-	$(PYTHON) -m pytest --ds=tests.settings --cov=drf_user tests/
+	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/
 
 test-coverage: clean-test
-	$(PYTHON) -m pytest --ds=tests.settings --cov=drf_user tests/ --cov-report html
+	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report html
 
 test-all:
 	tox
