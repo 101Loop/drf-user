@@ -67,8 +67,7 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         )
 
         self.auth_transaction = baker.make(
-            "drf_user.AuthTransaction",
-            created_by=self.user,
+            "drf_user.AuthTransaction", created_by=self.user,
         )
 
     @pytest.mark.django_db
@@ -119,10 +118,7 @@ class TestCheckUniqueView(APITestCase):
         self.url = reverse("Check Unique")
 
         self.user = baker.make(
-            "drf_user.User",
-            username="user",
-            email="user@email.com",
-            mobile=1234569877,
+            "drf_user.User", username="user", email="user@email.com", mobile=1234569877,
         )
 
     @pytest.mark.django_db
