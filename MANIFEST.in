@@ -1,9 +1,8 @@
 include LICENSE *.rst *.toml *.yml *.yaml *.ini
-include src/interrogate/badge/*.svg
 graft .github
 
 # Tests
-include tox.ini conftest.py
+include tox.ini
 recursive-include tests *.py
 recursive-include tests *.svg
 recursive-include tests *.txt
