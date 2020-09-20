@@ -308,7 +308,7 @@ def validate_otp(value, otp):
     except OTPValidation.DoesNotExist:
         raise NotFound(
             detail=_(
-                "No pending OTP validation request found for provided"
+                "No pending OTP validation request found for provided "
                 "destination. Kindly send an OTP first"
             )
         )
