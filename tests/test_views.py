@@ -298,3 +298,212 @@ class TestOTPView(APITestCase):
         )
 
         assert response.status_code == 202
+
+
+class TestOTPLoginView(APITestCase):
+    """OTP Login View"""
+
+    def setUp(self) -> None:
+        """Setup Test Data"""
+        self.url = reverse("OTP-Register-LogIn")
+
+        # create user
+        self.user = baker.make(
+            "drf_user.User",
+            username="my_user",
+            email="my_user@django.com",
+            mobile=2848482848,
+        )
+        # create otp of registered user
+        self.user_otp = baker.make(
+            "drf_user.OTPValidation", destination="my_user@django.com", otp=437474
+        )
+
+        # generate otp for random user
+        self.random_user_otp = baker.make(
+            "drf_user.OTPValidation", destination="random@django.com", otp=888383
+        )
+        self.data = {
+            "name": "random_name",
+            "email": "random@django.com",
+            "mobile": 1234567890,
+        }
+        self.data_with_incorrect_email_mobile = {
+            "name": "name",
+            "email": "r@o.com",
+            "mobile": 97,
+        }
+        self.data_with_correct_otp = {
+            "name": "random_name",
+            "email": "random@django.com",
+            "mobile": 1234567890,
+            "verify_otp": 888383,
+        }
+        self.data_with_incorrect_otp = {
+            "name": "random_name",
+            "email": "random@django.com",
+            "mobile": 1234567890,
+            "verify_otp": 999999,
+        }
+        self.data_registered_user = {
+            "name": "my_user",
+            "email": "my_user@django.com",
+            "mobile": 2848482848,
+            "verify_otp": 437474,
+        }
+        self.data_registered_user_with_different_mobile = {
+            "name": "my_user",
+            "email": "my_user@django.com",
+            "mobile": 2846482848,
+            "verify_otp": 437474,
+        }
+        self.data_registered_user_with_different_email = {
+            "name": "my_user",
+            "email": "ser@django.com",
+            "mobile": 2848482848,
+            "verify_otp": 437474,
+        }
+        self.data_random_user = {
+            "name": "test_user1",
+            "email": "test_user1@django.com",
+            "mobile": 2848444448,
+            "verify_otp": 585858,
+        }
+
+    def test_when_only_name_is_passed(self):
+        """Check when only name is passed as data then api raises 400"""
+        response = self.client.post(self.url, data={"name": "test"}, format="json")
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["email"]
+        assert "This field is required." in response.json()["mobile"]
+
+    def test_when_name_email_is_passed(self):
+        """Check when name and email is passed as data, then API raises 400"""
+
+        response = self.client.post(
+            self.url, data={"name": "test", "email": "test@random.com"}, format="json"
+        )
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["mobile"]
+
+    def test_when_name_mobile_is_passed(self):
+        """Check when name and mobile is passed as data, then API raises 400"""
+
+        response = self.client.post(
+            self.url, data={"name": "test", "mobile": 1234838884}, format="json"
+        )
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["email"]
+
+    def test_when_email_mobile_is_passed(self):
+        """Check when email and mobile is passed as data, then API raises 400"""
+
+        response = self.client.post(
+            self.url,
+            data={"email": "test@example.com", "mobile": 1234838884},
+            format="json",
+        )
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["name"]
+
+    def test_sent_otp_when_name_email_mobile_is_passed(self):
+        """
+        Check when name, email, mobile is passed then OTP
+        is sent on user's email/mobile by API
+        """
+        response = self.client.post(self.url, data=self.data, format="json")
+
+        assert response.status_code == 201
+        assert "OTP has been sent successfully." in response.json()["email"]["otp"]
+        assert "OTP has been sent successfully." in response.json()["mobile"]["otp"]
+
+    def test_login_with_incorrect_otp_for_registered_user(self):
+        """Check when data with correct otp is passed, token is generated or not"""
+
+        response = self.client.post(
+            self.url, data=self.data_with_incorrect_otp, format="json"
+        )
+
+        assert response.status_code == 403
+        assert "OTP Validation failed! 2 attempts left!" in response.json()["detail"]
+
+    def test_login_with_incorrect_otp_for_new_user_without_validated_otp(self):
+        """Check when data without validated otp is passed, raises 404"""
+
+        response = self.client.post(self.url, data=self.data_random_user, format="json")
+
+        assert response.status_code == 404
+        assert (
+            "No pending OTP validation request found for provided destination. "
+            "Kindly send an OTP first" in response.json()["detail"]
+        )
+
+    def test_login_with_correct_otp_for_new_user(self):
+        """
+        Check when data with correct otp is passed, token is generated
+        and user is created
+        """
+
+        response = self.client.post(
+            self.url, data=self.data_with_correct_otp, format="json"
+        )
+
+        assert response.status_code == 202
+        assert "token" in response.json()
+        self.assertTrue(User.objects.get(email="random@django.com"))
+
+    def test_login_with_incorrect_email_mobile(self):
+        """
+        Checks when wrong data is passed, raises server error
+        """
+        # this test case verifies that mobile isn't validated by drfaddons,
+        # will update this test case after fixing drfaddons
+        response = self.client.post(
+            self.url, data=self.data_with_incorrect_email_mobile, format="json"
+        )
+
+        # TODO: update this test case to assert status_code == 400
+        #  when drf_addons is updated
+        assert response.status_code == 500
+        assert (
+            "Server configuration error occured: Invalid recipient."
+            in response.json()["detail"]
+        )
+
+    def test_login_with_different_email(self):
+        """
+        Checks when a registered user passed different email,
+        raises validation error or not
+        """
+        response = self.client.post(
+            self.url, data=self.data_registered_user_with_different_email, format="json"
+        )
+
+        assert response.status_code == 400
+        assert (
+            "Your account is registered with 2848482848 does not has ser@django.com as "
+            "registered email. Please login directly via OTP with your mobile."
+            in response.json()["non_field_errors"]
+        )
+
+    def test_login_with_different_mobile(self):
+        """
+        Checks when a registered user passed different mobile,
+        raises validation error or not
+        """
+        response = self.client.post(
+            self.url,
+            data=self.data_registered_user_with_different_mobile,
+            format="json",
+        )
+
+        assert response.status_code == 400
+        assert (
+            "Your account is registered with my_user@django.com does not has 2846482848"
+            " as registered mobile. Please login directly via OTP with your email."
+            in response.json()["non_field_errors"]
+        )

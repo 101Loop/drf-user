@@ -363,16 +363,8 @@ class OTPLoginView(APIView):
                     )
                     user.is_active = True
                     user.save()
-                return Response(
-                    login_user(user, self.request), status=status.HTTP_202_ACCEPTED
-                )
             return Response(
-                data={
-                    "OTP": [
-                        _("OTP Validated successfully!"),
-                    ]
-                },
-                status=status.HTTP_202_ACCEPTED,
+                login_user(user, self.request), status=status.HTTP_202_ACCEPTED
             )
 
         else:
