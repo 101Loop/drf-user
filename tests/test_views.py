@@ -298,3 +298,70 @@ class TestOTPView(APITestCase):
         )
 
         assert response.status_code == 202
+
+
+class TestOTPLoginView(APITestCase):
+    """OTP Login View"""
+
+    def setUp(self) -> None:
+        """Setup Test Data"""
+        self.url = reverse("OTP-Register-LogIn")
+        self.data = {
+            "name": "random_name",
+            "email": "random@django.com",
+            "mobile": 1234567890,
+        }
+
+    def test_when_only_name_is_passed(self):
+        """Check when only name is passed as data then api raises 400"""
+        response = self.client.post(self.url, data={"name": "test"}, format="json")
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["email"]
+        assert "This field is required." in response.json()["mobile"]
+
+    def test_when_name_email_is_passed(self):
+        """Check when name and email is passed as data, then API raises 400"""
+
+        response = self.client.post(
+            self.url, data={"name": "test", "email": "test@random.com"}, format="json"
+        )
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["mobile"]
+
+    def test_when_name_mobile_is_passed(self):
+        """Check when name and mobile is passed as data, then API raises 400"""
+
+        response = self.client.post(
+            self.url, data={"name": "test", "mobile": 1234838884}, format="json"
+        )
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["email"]
+
+    def test_when_email_mobile_is_passed(self):
+        """Check when email and mobile is passed as data, then API raises 400"""
+
+        response = self.client.post(
+            self.url,
+            data={"email": "test@example.com", "mobile": 1234838884},
+            format="json",
+        )
+
+        assert response.status_code == 400
+        assert "This field is required." in response.json()["name"]
+
+    def test_sent_otp_when_name_email_mobile_is_passed(self):
+        """
+        Check when name, email, mobile is passed then OTP
+        is sent on user's email/mobile by api
+        """
+        response = self.client.post(self.url, data=self.data, format="json")
+
+        assert response.status_code == 201
+        assert "OTP has been sent successfully." in response.json()["email"]["otp"]
+        assert "OTP has been sent successfully." in response.json()["mobile"]["otp"]
+
+    def test_verify_opt(self):
+        """Check otp is correct"""
