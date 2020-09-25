@@ -26,6 +26,7 @@ help:
 
 install:
 	pip install -r requirements-dev.txt
+	pip install -e .
 	pre-commit install
 
 
@@ -71,7 +72,7 @@ test-coverage: clean-test
 test-all:
 	tox
 
-check: clean-build clean-pyc clean-test format lint test
+check: clean-build clean-pyc clean-test lint format test
 
 release: clean
 	python setup.py sdist upload
