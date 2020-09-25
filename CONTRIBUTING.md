@@ -98,8 +98,8 @@ questions if something is unclear!
       # separate following codes (according to PEP257).
       # But for function, method and module, there should be no blank lines
       # after closing the docstring.
-      """
-
+  ```
+  
 - We follow
 [reorder_python_imports](https://github.com/asottile/reorder_python_imports) for
 sorting our imports. Similar to [isort](https://github.com/timothycrosley/isort)
@@ -118,7 +118,7 @@ characters.
 
  assert 42 == x.some_attribute
  assert "foo" == x._a_private_attribute
-````
+```
 
 <!-- * To run the test suite, all you need is a recent [tox](https://tox.readthedocs.io/). It will ensure the test suite runs with all dependencies against all Python versions just as it will in our CI. If you lack some Python versions, you can can always limit the environments like ``tox -e py35,py36`` (in that case you may want to look into [pyenv](https://github.com/pyenv/pyenv), which makes it very easy to install many different Python versions in parallel). -->
 
