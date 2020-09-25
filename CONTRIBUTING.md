@@ -16,8 +16,10 @@ questions if something is unclear!
   branch. Whether you prefer to rebase on master or merge master into your
   branch, do whatever is more comfortable for you.
 - _Always_ add tests and docs for your code. This is a hard rule; patches with
-missing tests or documentation will not be merged.
-<!-- * Make sure your changes pass our [CI](https://github.com/101loop/drf-user/actions?query=workflow%3ACI). You won't get any feedback until it's green unless you ask for it. -->
+  missing tests or documentation will not be merged.
+- Make sure your changes pass our
+  [CI](https://github.com/101loop/drf-user/actions?query=workflow%3ACI). You
+  won't get any feedback until it's green unless you ask for it.
 - Once you've addressed review feedback, make sure to bump the pull request with
   a short note, so we know you're done.
 - Avoid breaking backwards compatibility.
@@ -26,23 +28,78 @@ missing tests or documentation will not be merged.
 
 - Obey [PEP 8](https://www.python.org/dev/peps/pep-0008/),
   [PEP 257](https://www.python.org/dev/peps/pep-0257/), and the
-  [Google Python Style Guide](http://google.github.io/styleguide/pyguide.html)
-  (mostly)<sup>[2](#footnote-2)</sup>. We use
-  [restructuredtext](https://docutils.sourceforge.io/rst.html) syntax, and have
-  a summary line starting the `"""` block:
+  [Numpydoc Docstring Guide](https://numpydoc.readthedocs.io/en/latest/format.html).
+  We have a summary line starting the `"""` block:
 
   ```python
-  def func(x):
-      """Do something.
+  def foo(var1, var2, *args, long_var_name='hi', **kwargs):
+      """Summarize the function in one line.
 
-      Maybe some more "something" context that can span
-      multiple lines.
+      Several sentences providing an extended description. Refer to
+      variables using back-ticks, e.g. `var`.
 
-      :param str x: A very important parameter.
-      :rtype: str
+      Parameters
+      ----------
+      var1 : array_like
+          Array_like means all those objects -- lists, nested lists, etc. --
+          that can be converted to an array.  We can also refer to
+          variables like `var1`.
+      var2 : int
+          The type above can either refer to an actual Python type
+          (e.g. ``int``), or describe the type of the variable in more
+          detail, e.g. ``(N,) ndarray`` or ``array_like``.
+      *args : iterable
+          Other arguments.
+      long_var_name : {'hi', 'ho'}, optional
+          Choices in brackets, default first when optional.
+      **kwargs : dict
+          Keyword arguments.
+
+      Returns
+      -------
+      type
+          Explanation of anonymous return value of type ``type``.
+      describe : type
+          Explanation of return value named `describe`.
+      out : type
+          Explanation of `out`.
+      type_without_description
+
+      Raises
+      ------
+      BadException
+          Because you shouldn't have done that.
+
+      Notes
+      -----
+      Notes about the implementation algorithm (if needed).
+
+      This can have multiple paragraphs.
+
+      You may include some math:
+
+      .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
+
+      And even use a Greek symbol like :math:`\omega` inline.
+
+      Examples
+      --------
+      These are written in doctest format, and should illustrate how to
+      use the function.
+
+      >>> a = [1, 2, 3]
+      >>> print([x + 3 for x in a])
+      [4, 5, 6]
+      >>> print("a\nb")
+      a
+      b
       """
+      # After closing class docstring, there should be one blank line to
+      # separate following codes (according to PEP257).
+      # But for function, method and module, there should be no blank lines
+      # after closing the docstring.
   ```
-
+  
 - We follow
 [reorder_python_imports](https://github.com/asottile/reorder_python_imports) for
 sorting our imports. Similar to [isort](https://github.com/timothycrosley/isort)
@@ -55,13 +112,13 @@ characters.
 
 - Write your asserts as `expected == actual` to line them up nicely:
 
-  ```python
+```python
 
-   x = f()
+ x = f()
 
-   assert 42 == x.some_attribute
-   assert "foo" == x._a_private_attribute
-  ```
+ assert 42 == x.some_attribute
+ assert "foo" == x._a_private_attribute
+```
 
 <!-- * To run the test suite, all you need is a recent [tox](https://tox.readthedocs.io/). It will ensure the test suite runs with all dependencies against all Python versions just as it will in our CI. If you lack some Python versions, you can can always limit the environments like ``tox -e py35,py36`` (in that case you may want to look into [pyenv](https://github.com/pyenv/pyenv), which makes it very easy to install many different Python versions in parallel). -->
 
@@ -118,17 +175,20 @@ or if you want to use git via `https`:
 $ git clone https://github.com/101loop/drf-user.git
 ```
 
-<!-- Change into the newly created directory and **after activating your virtual environment** install an editable version of `interrogate` along with its tests and docs requirements:
+Change into the newly created directory and **after activating your virtual
+environment** install an editable version of `drf-user` along with its tests,
+docs requirements and to avoid committing code that violates our style guide, we
+use [pre-commit](https://pre-commit.com/) hooks:
 
 ```sh
 (env) $ cd drf-user
-(env) $ pip install -e '.[dev]'
+(env) $ make install
 ```
 
 At this point,
 
 ```sh
-(env) $ python -m pytest
+(env) $ make test
 ```
 
 should work and pass, as should:
@@ -138,35 +198,13 @@ should work and pass, as should:
 (env) $ make livehtml
 ```
 
-The built documentation can then be found in [`localhost:8888`](http://localhost:8888).
-
-To avoid committing code that violates our style guide, we advise you to install
-[pre-commit](https://pre-commit.com/) hooks:
-
-```sh
-(env) $ pre-commit install
-```
-
-You can also run them anytime (as our `tox` does, but always run `tox` outside
-of a virtual environment):
-
-```sh
-(env) $ pre-commit run --all-files
-```
--->
-
-Install your local copy into a virtualenv. Assuming you have already created
-virtualenv, this is how you set up your fork for local development:
-
-```sh
-(env) $ cd drf-user
-(env) $ make install
-```
+The built documentation can then be found in
+[`localhost:8888`](http://localhost:8888).
 
 Create a branch for local development:
 
 ```sh
-$ git checkout -b name-of-your-bugfix-or-feature
+(env) $ git checkout -b name-of-your-bugfix-or-feature
 ```
 
 Now you can make your changes locally.
@@ -175,17 +213,15 @@ When you're done making changes, check that your changes pass tests and code
 style should be aligned with Flake8 and Black:
 
 ```sh
-$ make test-coverage
-$ make lint
-$ make format
+(env) $ make check
 ```
 
 Commit your changes and push your branch to GitHub:
 
 ```sh
-$ git add .
-$ git commit -m "Your detailed description of your changes."
-$ git push origin name-of-your-bugfix-or-feature
+(env) $ git add .
+(env) $ git commit -m "Your detailed description of your changes."
+(env) $ git push origin name-of-your-bugfix-or-feature
 ```
 
 Submit a pull request through the GitHub website.
@@ -203,17 +239,3 @@ Thank you for considering contributing to `drf-user`!
 
 <a name="footnote-1">1</a>: This contribution guide has been taken from
 [interrogate](https://github.com/econchick/interrogate/).
-
-<a name="footnote-2">2</a>: Do to personal preference, this project differs from
-Google's style guide in a few ways:
-
-- Instead of using Google's approach for documenting
-  [arguments, return/yields, and raises](http://google.github.io/styleguide/pyguide.html#383-functions-and-methods),
-  use [restructuredtext](https://docutils.sourceforge.io/rst.html) syntax as
-  recommended by [PEP-0258](https://www.python.org/dev/peps/pep-0258/).
-- Instead of
-  [using `pylint`](http://google.github.io/styleguide/pyguide.html#21-lint), use
-  [flake8](https://flake8.pycqa.org/en/latest/).
-- Instead of
-  [using yapf](http://google.github.io/styleguide/pyguide.html#1-background),
-  use [Black](https://github.com/psf/black).
