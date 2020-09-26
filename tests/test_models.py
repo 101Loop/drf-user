@@ -20,17 +20,17 @@ class TestUserModel(TestCase):
     @pytest.mark.django_db
     def test_object_created(self):
         """Check if User object created or not"""
-        assert User.objects.count() == 1
+        self.assertEqual(1, User.objects.count())
 
     @pytest.mark.django_db
     def test_get_full_name(self):
         """Checks that User.get_full_name() method retuns exact name"""
-        assert self.user.get_full_name() == "test_user"
+        self.assertEqual("test_user", self.user.get_full_name())
 
     @pytest.mark.django_db
     def test_str_method(self):
         """Check str method"""
-        assert str(self.user) == "test_user | my_unique_username"
+        self.assertEqual("test_user | my_unique_username", str(self.user))
 
 
 class TestAuthTransactionModel(TestCase):
@@ -48,11 +48,12 @@ class TestAuthTransactionModel(TestCase):
     def test_object_created(self):
         """Check if AuthTransaction object created or not"""
         assert AuthTransaction.objects.count() == 1
+        self.assertEqual(1, AuthTransaction.objects.count())
 
     @pytest.mark.django_db
     def test_str_method(self):
         """Check str method"""
-        assert str(self.auth_transaction) == "test_name | test_username"
+        self.assertEqual("test_name | test_username", str(self.auth_transaction))
 
 
 class TestOTPValidationModel(TestCase):
@@ -65,9 +66,9 @@ class TestOTPValidationModel(TestCase):
     @pytest.mark.django_db
     def test_object_created(self):
         """Check if OTPValidation object created or not"""
-        assert OTPValidation.objects.count() == 1
+        self.assertEqual(1, OTPValidation.objects.count())
 
     @pytest.mark.django_db
     def test_str_method(self):
         """Check str method"""
-        assert str(self.otp_validation) == "mobile"
+        self.assertEqual("mobile", str(self.otp_validation))
