@@ -17,10 +17,7 @@ class TestCheckUnique(TestCase):
 
     def setUp(self) -> None:
         """Create user object using model_bakery"""
-        self.user = baker.make(
-            "drf_user.User",
-            email="user@email.com",
-        )
+        self.user = baker.make("drf_user.User", email="user@email.com",)
 
     @pytest.mark.django_db
     def test_object_created(self):
