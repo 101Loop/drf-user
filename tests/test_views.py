@@ -30,7 +30,7 @@ class TestLoginView(APITestCase):
     @pytest.mark.django_db
     def test_object_created(self):
         """Check if the User object is created or not"""
-        assert User.objects.count() == 1
+        self.assertEqual(1, User.objects.count())
 
     @pytest.mark.django_db
     def test_successful_login_view(self):
@@ -38,8 +38,7 @@ class TestLoginView(APITestCase):
         response = self.client.post(
             self.url, data={"username": "user", "password": "pass123"}
         )
-
-        assert response.status_code == 200
+        self.assertEqual(200, response.status_code)
 
     @pytest.mark.django_db
     def test_unsuccessful_login_view(self):
@@ -48,7 +47,7 @@ class TestLoginView(APITestCase):
             self.url, data={"username": "user", "password": "pass1234"}
         )
 
-        assert response.status_code == 422
+        self.assertEqual(422, response.status_code)
 
 
 class TestRetrieveUpdateUserAccountView(APITestCase):
@@ -74,8 +73,8 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
     @pytest.mark.django_db
     def test_object_created(self):
         """Check if AuthTransaction object created or not"""
-        assert User.objects.count() == 1
-        assert AuthTransaction.objects.count() == 1
+        self.assertEqual(1, User.objects.count())
+        self.assertEqual(1, AuthTransaction.objects.count())
 
     @pytest.mark.django_db
     def test_get_user_account_view(self):
@@ -83,8 +82,8 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url)
 
-        assert response.status_code == 200
-        assert response.data["username"] == self.user.username
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.user.username, response.data["username"])
 
     @pytest.mark.django_db
     def test_update_username(self):
@@ -94,8 +93,8 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.url, {"username": "updated_username"})
 
-        assert response.status_code == 200
-        assert self.user.username == "updated_username"
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("updated_username", self.user.username)
 
     @pytest.mark.django_db
     def test_update_password(self):
@@ -103,12 +102,12 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         Check patch request to Retrieve Update Profile view updates user's password
         """
         self.client.force_authenticate(self.user)
-        assert self.user.password == "old_password"
+        self.assertEqual("old_password", self.user.password)
 
         response = self.client.patch(self.url, {"password": "my_unique_password"})
 
-        assert response.status_code == 200
-        assert self.user.password == "my_unique_password"
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("my_unique_password", self.user.password)
 
 
 class TestCheckUniqueView(APITestCase):
@@ -128,27 +127,29 @@ class TestCheckUniqueView(APITestCase):
     @pytest.mark.django_db
     def test_user_object_created(self):
         """Check if User object created or not"""
-        assert User.objects.count() == 1
+        self.assertEqual(1, User.objects.count())
 
     @pytest.mark.django_db
     def test_is_unique(self):
         """Check if the user is unique"""
         response = self.client.post(self.url, {"prop": "username", "value": "user7"})
-        assert response.status_code == 200
+
+        self.assertEqual(200, response.status_code)
         self.assertTrue(response.json()["data"][0]["unique"])
 
     @pytest.mark.django_db
     def test_is_not_unique(self):
         """Check if the user is not unique"""
         response = self.client.post(self.url, {"prop": "username", "value": "user"})
-        assert response.status_code == 200
+
+        self.assertEqual(200, response.status_code)
         self.assertFalse(response.json()["data"][0]["unique"])
 
     @pytest.mark.django_db
     def test_data_invalid(self):
         """Check CheckUniqueView view raises 422 code when passed data is invalid"""
         response = self.client.post(self.url, {"prop": "invalid", "value": "user"})
-        assert response.status_code == 422
+        self.assertEqual(422, response.status_code)
 
 
 class TestRegisterView(APITestCase):
@@ -180,23 +181,29 @@ class TestRegisterView(APITestCase):
             "mobile": 8800880080,
         }
 
+    @pytest.mark.django_db
     def test_register_with_validated_email_and_mobile(self):
         """Check user creation when validated mobile and email is passed"""
 
         response = self.client.post(self.url, self.validated_data)
 
-        assert response.status_code == 201
-        assert "my_username" in response.json()["username"]
-        assert "random_name" in response.json()["name"]
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("my_username", response.json()["username"])
+        self.assertEqual("random_name", response.json()["name"])
 
+    @pytest.mark.django_db
     def test_raise_validation_error_when_email_mobile_not_validated(self):
         """Check view raises Validation Error when mobile and email is not validated"""
 
         response = self.client.post(self.url, self.not_validated_data)
 
-        assert response.status_code == 400
-        assert "The email must be pre-validated via OTP." in response.json()["email"]
-        assert "The mobile must be pre-validated via OTP." in response.json()["mobile"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            ["The email must be pre-validated via OTP."], response.json()["email"]
+        )
+        self.assertEqual(
+            ["The mobile must be pre-validated via OTP."], response.json()["mobile"]
+        )
 
 
 class TestOTPView(APITestCase):
@@ -213,6 +220,7 @@ class TestOTPView(APITestCase):
         )
         self.url = reverse("OTP")
 
+    @pytest.mark.django_db
     def test_request_otp_on_email(self):
         """
         Checks when destination and email is passed to OTPView is sends otp on mail
@@ -222,9 +230,10 @@ class TestOTPView(APITestCase):
             self.url, {"destination": "email@django.com", "email": "email@django.com"}
         )
 
-        assert response.status_code == 201
-        assert "Message sent successfully!" in response.json()["message"]
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("Message sent successfully!", response.json()["message"])
 
+    @pytest.mark.django_db
     def test_request_otp_on_email_and_mobile(self):
         """
         Checks when mobile as destination and email is passed to OTPView
@@ -235,9 +244,10 @@ class TestOTPView(APITestCase):
             self.url, {"destination": 1231242492, "email": "email@django.com"}
         )
 
-        assert response.status_code == 201
-        assert "Message sent successfully!" in response.json()["message"]
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("Message sent successfully!", response.json()["message"])
 
+    @pytest.mark.django_db
     def test_raise_api_exception_when_email_invalid(self):
         """Checks OTPView raises validation error when email/mobile is invalid"""
 
@@ -245,9 +255,13 @@ class TestOTPView(APITestCase):
             self.url, {"destination": "a.b", "email": "abc@d.com"}
         )
 
-        assert response.status_code == 500
-        assert "Server configuration error occured:" in response.json()["detail"]
+        self.assertEqual(500, response.status_code)
+        self.assertEqual(
+            "Server configuration error occured: Invalid recipient.",
+            response.json()["detail"],
+        )
 
+    @pytest.mark.django_db
     def test_raise_validation_error_when_email_not_response_when_user_is_new(self):
         """
         Checks OTPView raises validation error when new user
@@ -256,12 +270,13 @@ class TestOTPView(APITestCase):
 
         response = self.client.post(self.url, {"destination": "email@django.com"})
 
-        assert (
-            "email field is compulsory while verifying a non-existing user's OTP."
-            in response.json()["non_field_errors"]
+        self.assertEqual(
+            ["email field is compulsory while verifying a non-existing user's OTP."],
+            response.json()["non_field_errors"],
         )
-        assert response.status_code == 400
+        self.assertEqual(400, response.status_code)
 
+    @pytest.mark.django_db
     def test_raise_validation_error_when_is_login_response_when_user_is_new(self):
         """
         Checks OTPView raises validation error when new user
@@ -272,9 +287,12 @@ class TestOTPView(APITestCase):
             self.url, {"destination": "email@django.com", "is_login": True}
         )
 
-        assert "No user exists with provided details" in response.json()["detail"]
-        assert response.status_code == 404
+        self.assertEqual(
+            "No user exists with provided details", response.json()["detail"]
+        )
+        self.assertEqual(404, response.status_code)
 
+    @pytest.mark.django_db
     def test_verify_otp_in_response(self):
         """Check otp validation"""
         response = self.client.post(
@@ -286,9 +304,10 @@ class TestOTPView(APITestCase):
             },
         )
 
-        assert response.status_code == 202
+        self.assertEqual(202, response.status_code)
         assert "OTP Validated successfully!" in response.json()["OTP"]
 
+    @pytest.mark.django_db
     def test_is_login_in_response(self):
         """Check user login with OTP"""
 
@@ -297,7 +316,7 @@ class TestOTPView(APITestCase):
             {"destination": "user@example.com", "verify_otp": 888383, "is_login": True},
         )
 
-        assert response.status_code == 202
+        self.assertEqual(202, response.status_code)
 
 
 class TestOTPLoginView(APITestCase):
@@ -370,14 +389,16 @@ class TestOTPLoginView(APITestCase):
             "verify_otp": 585858,
         }
 
+    @pytest.mark.django_db
     def test_when_only_name_is_passed(self):
         """Check when only name is passed as data then api raises 400"""
         response = self.client.post(self.url, data={"name": "test"}, format="json")
 
-        assert response.status_code == 400
-        assert "This field is required." in response.json()["email"]
-        assert "This field is required." in response.json()["mobile"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(["This field is required."], response.json()["email"])
+        self.assertEqual(["This field is required."], response.json()["mobile"])
 
+    @pytest.mark.django_db
     def test_when_name_email_is_passed(self):
         """Check when name and email is passed as data, then API raises 400"""
 
@@ -385,9 +406,10 @@ class TestOTPLoginView(APITestCase):
             self.url, data={"name": "test", "email": "test@random.com"}, format="json"
         )
 
-        assert response.status_code == 400
-        assert "This field is required." in response.json()["mobile"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(["This field is required."], response.json()["mobile"])
 
+    @pytest.mark.django_db
     def test_when_name_mobile_is_passed(self):
         """Check when name and mobile is passed as data, then API raises 400"""
 
@@ -395,9 +417,10 @@ class TestOTPLoginView(APITestCase):
             self.url, data={"name": "test", "mobile": 1234838884}, format="json"
         )
 
-        assert response.status_code == 400
-        assert "This field is required." in response.json()["email"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(["This field is required."], response.json()["email"])
 
+    @pytest.mark.django_db
     def test_when_email_mobile_is_passed(self):
         """Check when email and mobile is passed as data, then API raises 400"""
 
@@ -407,9 +430,10 @@ class TestOTPLoginView(APITestCase):
             format="json",
         )
 
-        assert response.status_code == 400
-        assert "This field is required." in response.json()["name"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(["This field is required."], response.json()["name"])
 
+    @pytest.mark.django_db
     def test_sent_otp_when_name_email_mobile_is_passed(self):
         """
         Check when name, email, mobile is passed then OTP
@@ -417,10 +441,15 @@ class TestOTPLoginView(APITestCase):
         """
         response = self.client.post(self.url, data=self.data, format="json")
 
-        assert response.status_code == 201
-        assert "OTP has been sent successfully." in response.json()["email"]["otp"]
-        assert "OTP has been sent successfully." in response.json()["mobile"]["otp"]
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(
+            "OTP has been sent successfully.", response.json()["email"]["otp"]
+        )
+        self.assertEqual(
+            "OTP has been sent successfully.", response.json()["mobile"]["otp"]
+        )
 
+    @pytest.mark.django_db
     def test_login_with_incorrect_otp_for_registered_user(self):
         """Check when data with correct otp is passed, token is generated or not"""
 
@@ -428,20 +457,25 @@ class TestOTPLoginView(APITestCase):
             self.url, data=self.data_with_incorrect_otp, format="json"
         )
 
-        assert response.status_code == 403
-        assert "OTP Validation failed! 2 attempts left!" in response.json()["detail"]
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(
+            "OTP Validation failed! 2 attempts left!", response.json()["detail"]
+        )
 
+    @pytest.mark.django_db
     def test_login_with_incorrect_otp_for_new_user_without_validated_otp(self):
         """Check when data without validated otp is passed, raises 404"""
 
         response = self.client.post(self.url, data=self.data_random_user, format="json")
 
-        assert response.status_code == 404
-        assert (
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(
             "No pending OTP validation request found for provided destination. "
-            "Kindly send an OTP first" in response.json()["detail"]
+            "Kindly send an OTP first",
+            response.json()["detail"],
         )
 
+    @pytest.mark.django_db
     def test_login_with_correct_otp_for_new_user(self):
         """
         Check when data with correct otp is passed, token is generated
@@ -452,10 +486,11 @@ class TestOTPLoginView(APITestCase):
             self.url, data=self.data_with_correct_otp, format="json"
         )
 
-        assert response.status_code == 202
-        assert "token" in response.json()
+        self.assertEqual(202, response.status_code)
+        self.assertContains(text="token", response=response, status_code=202)
         self.assertTrue(User.objects.get(email="random@django.com"))
 
+    @pytest.mark.django_db
     def test_login_with_incorrect_email_mobile(self):
         """
         Checks when wrong data is passed, raises server error
@@ -468,12 +503,13 @@ class TestOTPLoginView(APITestCase):
 
         # TODO: update this test case to assert status_code == 400
         #  when drf_addons is updated
-        assert response.status_code == 500
-        assert (
-            "Server configuration error occured: Invalid recipient."
-            in response.json()["detail"]
+        self.assertEqual(500, response.status_code)
+        self.assertEqual(
+            "Server configuration error occured: Invalid recipient.",
+            response.json()["detail"],
         )
 
+    @pytest.mark.django_db
     def test_login_with_different_email(self):
         """
         Checks when a registered user passed different email,
@@ -483,13 +519,16 @@ class TestOTPLoginView(APITestCase):
             self.url, data=self.data_registered_user_with_different_email, format="json"
         )
 
-        assert response.status_code == 400
-        assert (
-            "Your account is registered with 2848482848 does not has ser@django.com as "
-            "registered email. Please login directly via OTP with your mobile."
-            in response.json()["non_field_errors"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            [
+                "Your account is registered with 2848482848 does not has ser@django.com as "  # noqa:E501
+                "registered email. Please login directly via OTP with your mobile."
+            ],
+            response.json()["non_field_errors"],
         )
 
+    @pytest.mark.django_db
     def test_login_with_different_mobile(self):
         """
         Checks when a registered user passed different mobile,
@@ -501,9 +540,11 @@ class TestOTPLoginView(APITestCase):
             format="json",
         )
 
-        assert response.status_code == 400
-        assert (
-            "Your account is registered with my_user@django.com does not has 2846482848"
-            " as registered mobile. Please login directly via OTP with your email."
-            in response.json()["non_field_errors"]
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            [
+                "Your account is registered with my_user@django.com does not has 2846482848"  # noqa:E501
+                " as registered mobile. Please login directly via OTP with your email."
+            ],
+            response.json()["non_field_errors"],
         )
