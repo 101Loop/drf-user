@@ -99,7 +99,7 @@ questions if something is unclear!
       # But for function, method and module, there should be no blank lines
       # after closing the docstring.
   ```
-  
+
 - We follow
 [reorder_python_imports](https://github.com/asottile/reorder_python_imports) for
 sorting our imports. Similar to [isort](https://github.com/timothycrosley/isort)
