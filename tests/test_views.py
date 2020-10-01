@@ -548,3 +548,86 @@ class TestOTPLoginView(APITestCase):
             ],
             response.json()["non_field_errors"],
         )
+
+
+class TestPasswordResetView(APITestCase):
+    """PasswordResetView Test"""
+
+    def setUp(self) -> None:
+        """SetUp test data"""
+        self.url = reverse("reset_user_password")
+
+        self.user = baker.make(
+            "drf_user.User",
+            username="user",
+            email="user@email.com",
+            name="user",
+            mobile=1234569877,
+            is_active=True,
+        )
+
+        # create otp of registered user
+        self.user_otp = baker.make(
+            "drf_user.OTPValidation", destination="user@email.com", otp=437474
+        )
+
+        self.data_correct_otp = {
+            "otp": 437474,
+            "email": "user@email.com",
+            "password": "test@123",
+        }
+
+        self.data_incorrect_otp = {
+            "otp": 767474,
+            "email": "user@email.com",
+            "password": "test@123",
+        }
+
+        self.data_incorrect_email = {
+            "otp": 437474,
+            "email": "meh@email.com",
+            "password": "test@123",
+        }
+
+        self.user.set_password("pass123")
+        self.user.save()
+
+    @pytest.mark.django_db
+    def test_object_created(self):
+        """Check if the User object is created or not"""
+        self.assertEqual(1, User.objects.count())
+
+    @pytest.mark.django_db
+    def test_when_nothing_is_passed(self):
+        """Check when nothing is passed as data then api raises 400"""
+        response = self.client.post(self.url, data={}, format="json")
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(["This field is required."], response.json()["otp"])
+        self.assertEqual(["This field is required."], response.json()["email"])
+        self.assertEqual(["This field is required."], response.json()["email"])
+
+    @pytest.mark.django_db
+    def test_when_incorrect_email_passed(self):
+        """Check when incorrect email is passed as data then api raises 404"""
+        response = self.client.post(
+            self.url, data=self.data_incorrect_email, format="json"
+        )
+
+        self.assertEqual(404, response.status_code)
+
+    @pytest.mark.django_db
+    def test_when_incorrect_otp_passed(self):
+        """Check when incorrect otp is passed as data then api raises 403"""
+        response = self.client.post(
+            self.url, data=self.data_incorrect_otp, format="json"
+        )
+
+        self.assertEqual(403, response.status_code)
+
+    @pytest.mark.django_db
+    def test_when_correct_otp_email_passed(self):
+        """Check when correct otp and email is passed as data then api raises 202"""
+        response = self.client.post(self.url, data=self.data_correct_otp, format="json")
+
+        self.assertEqual(202, response.status_code)

@@ -405,3 +405,39 @@ class OTPLoginView(APIView):
                 )
 
             return Response(data=message, status=curr_status)
+
+
+class PasswordResetView(APIView):
+    """This API can be used to reset a user's password.
+
+    Usage: First send an otp to the user by making an
+    API call to `api/user/otp/` with `is_login` parameter value false.
+    """
+
+    from rest_framework.permissions import AllowAny
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        from drfaddons.utils import JsonResponse
+        from rest_framework import status
+        from drf_user.utils import validate_otp
+
+        from .models import User
+        from .serializers import PasswordResetSerializer
+
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = User.objects.get(email=serializer.validated_data["email"])
+
+        if validate_otp(
+            serializer.validated_data["email"], serializer.validated_data["otp"]
+        ):
+            # OTP Validated, Change Password
+            user.set_password(serializer.validated_data["password"])
+            user.save()
+            return JsonResponse(
+                content="Password Updated Successfully.",
+                status=status.HTTP_202_ACCEPTED,
+            )

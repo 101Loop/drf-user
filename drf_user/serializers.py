@@ -297,3 +297,68 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
             email=attrs.get("email"), mobile=attrs.get("mobile")
         )
         return attrs
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    """This serializer is for password reset API.
+
+    Params
+    otp: OTP received on your email/mobile
+    email: Email of the user whose password you're trying to reset
+    password: new password for the user
+    """
+
+    otp = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
+
+    def get_user(self, destination: str) -> User:
+        """Provides current user on the basis of property and destination
+        provided.
+
+        Parameters
+        ----------
+        destination: str
+            Provides value of property
+        Returns
+        -------
+        user: User
+        """
+        from .models import User
+
+        try:
+            user = User.objects.get(email=destination)
+        except User.DoesNotExist:
+            user = None
+
+        return user
+
+    def validate(self, attrs: dict) -> dict:
+        """Performs custom validation to check if any user exists with
+        provided email.
+
+        Parameters
+        ----------
+        attrs: dict
+
+        Returns
+        -------
+        attrs: dict
+
+        Raises
+        ------
+        NotFound: If user is not found
+        ValidationError: Email field not provided
+        """
+        from django.core.validators import EmailValidator
+
+        from rest_framework.exceptions import NotFound
+
+        validator = EmailValidator()
+        validator(attrs.get("email"))
+        user = self.get_user(attrs.get("email"))
+
+        if not user:
+            raise NotFound(_("User with the provided email does not exist."))
+
+        return attrs
