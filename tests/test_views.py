@@ -610,14 +610,18 @@ class TestPasswordResetView(APITestCase):
     @pytest.mark.django_db
     def test_when_incorrect_email_passed(self):
         """Check when incorrect email is passed as data then api raises 404"""
-        response = self.client.post(self.url, data=self.data_incorrect_email, format="json")
+        response = self.client.post(
+            self.url, data=self.data_incorrect_email, format="json"
+        )
 
         self.assertEqual(404, response.status_code)
 
     @pytest.mark.django_db
     def test_when_incorrect_otp_passed(self):
         """Check when incorrect otp is passed as data then api raises 403"""
-        response = self.client.post(self.url, data=self.data_incorrect_otp, format="json")
+        response = self.client.post(
+            self.url, data=self.data_incorrect_otp, format="json"
+        )
 
         self.assertEqual(403, response.status_code)
 

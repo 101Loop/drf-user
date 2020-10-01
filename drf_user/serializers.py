@@ -300,8 +300,9 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
 
 
 class PasswordResetSerializer(serializers.Serializer):
-    """
-    This serializer is for password reset API.
+    """This serializer is for password reset API.
+
+    Params
     otp: OTP received on your email/mobile
     email: Email of the user whose password you're trying to reset
     password: new password for the user
@@ -312,9 +313,9 @@ class PasswordResetSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
     def get_user(self, destination: str) -> User:
-        """
-        Provides current user on the basis of property and destination
+        """Provides current user on the basis of property and destination
         provided.
+
         Parameters
         ----------
         destination: str
@@ -333,15 +334,17 @@ class PasswordResetSerializer(serializers.Serializer):
         return user
 
     def validate(self, attrs: dict) -> dict:
-        """
-        Performs custom validation to check if any user exists with
+        """Performs custom validation to check if any user exists with
         provided email.
+
         Parameters
         ----------
         attrs: dict
+
         Returns
         -------
         attrs: dict
+
         Raises
         ------
         NotFound: If user is not found
