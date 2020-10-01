@@ -304,8 +304,9 @@ class PasswordResetSerializer(serializers.Serializer):
     This serializer is for password reset API.
     otp: OTP received on your email/mobile
     email: Email of the user whose password you're trying to reset
-    password: new password for the user 
+    password: new password for the user
     """
+
     otp = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
@@ -351,10 +352,10 @@ class PasswordResetSerializer(serializers.Serializer):
         from rest_framework.exceptions import NotFound
 
         validator = EmailValidator()
-        validator(attrs.get('email'))
-        user = self.get_user(attrs.get('email'))
+        validator(attrs.get("email"))
+        user = self.get_user(attrs.get("email"))
 
         if not user:
-            raise NotFound(_('User with the provided email does not exist.'))
+            raise NotFound(_("User with the provided email does not exist."))
 
         return attrs

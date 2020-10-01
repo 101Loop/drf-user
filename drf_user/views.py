@@ -411,10 +411,10 @@ class PasswordResetView(APIView):
     """
     Password Reset View
 
-    This API can be used to reset a user's password. 
+    This API can be used to reset a user's password.
 
     Usage: First send an otp to the user by making an
-    API call to `api/user/otp/` with `is_login` parameter value false. 
+    API call to `api/user/otp/` with `is_login` parameter value false.
 
     Parameters
     ----------
@@ -422,6 +422,7 @@ class PasswordResetView(APIView):
     email -- Required
     password -- Required (New password)
     """
+
     from rest_framework.permissions import AllowAny
 
     permission_classes = (AllowAny,)
@@ -437,10 +438,15 @@ class PasswordResetView(APIView):
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = User.objects.get(email=serializer.validated_data['email'])
+        user = User.objects.get(email=serializer.validated_data["email"])
 
-        if validate_otp(serializer.validated_data['email'], serializer.validated_data['otp']):
+        if validate_otp(
+            serializer.validated_data["email"], serializer.validated_data["otp"]
+        ):
             # OTP Validated, Change Password
-            user.set_password(serializer.validated_data['password'])
+            user.set_password(serializer.validated_data["password"])
             user.save()
-            return JsonResponse(content="Password Updated Successfully.", status=status.HTTP_202_ACCEPTED)
+            return JsonResponse(
+                content="Password Updated Successfully.",
+                status=status.HTTP_202_ACCEPTED,
+            )
