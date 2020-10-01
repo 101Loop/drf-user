@@ -235,11 +235,7 @@ class OTPView(APIView):
                     )
                 else:
                     return Response(
-                        data={
-                            "OTP": [
-                                _("OTP Validated successfully!"),
-                            ]
-                        },
+                        data={"OTP": [_("OTP Validated successfully!"),]},
                         status=status.HTTP_202_ACCEPTED,
                     )
         else:
@@ -422,6 +418,7 @@ class PasswordResetView(APIView):
     email -- Required
     password -- Required (New password)
     """
+
     from rest_framework.permissions import AllowAny
 
     permission_classes = (AllowAny,)
@@ -437,10 +434,15 @@ class PasswordResetView(APIView):
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = User.objects.get(email=serializer.validated_data['email'])
+        user = User.objects.get(email=serializer.validated_data["email"])
 
-        if validate_otp(serializer.validated_data['email'], serializer.validated_data['otp']):
+        if validate_otp(
+            serializer.validated_data["email"], serializer.validated_data["otp"]
+        ):
             # OTP Validated, Change Password
-            user.set_password(serializer.validated_data['password'])
+            user.set_password(serializer.validated_data["password"])
             user.save()
-            return JsonResponse(content="Password Updated Successfully.", status=status.HTTP_202_ACCEPTED)
+            return JsonResponse(
+                content="Password Updated Successfully.",
+                status=status.HTTP_202_ACCEPTED,
+            )

@@ -24,6 +24,7 @@ urlpatterns = [
         name="Retrieve Update Profile",
     ),
     # ex: api/user/password/reset/
-    path('password/reset/', views.PasswordResetView.as_view(),
-         name='Reset User Password'),
+    path(
+        "password/reset/", views.PasswordResetView.as_view(), name="Reset User Password"
+    ),
 ]
