@@ -304,7 +304,7 @@ class PasswordResetSerializer(serializers.Serializer):
     This serializer is for password reset API.
     otp: OTP received on your email/mobile
     email: Email of the user whose password you're trying to reset
-    password: new password for the user 
+    password: new password for the user
     """
 
     otp = serializers.CharField(required=True)

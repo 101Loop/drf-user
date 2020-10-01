@@ -407,10 +407,10 @@ class PasswordResetView(APIView):
     """
     Password Reset View
 
-    This API can be used to reset a user's password. 
+    This API can be used to reset a user's password.
 
     Usage: First send an otp to the user by making an
-    API call to `api/user/otp/` with `is_login` parameter value false. 
+    API call to `api/user/otp/` with `is_login` parameter value false.
 
     Parameters
     ----------
