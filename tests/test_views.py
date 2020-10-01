@@ -66,8 +66,7 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         )
 
         self.auth_transaction = baker.make(
-            "drf_user.AuthTransaction",
-            created_by=self.user,
+            "drf_user.AuthTransaction", created_by=self.user,
         )
 
     @pytest.mark.django_db
@@ -118,10 +117,7 @@ class TestCheckUniqueView(APITestCase):
         self.url = reverse("Check Unique")
 
         self.user = baker.make(
-            "drf_user.User",
-            username="user",
-            email="user@email.com",
-            mobile=1234569877,
+            "drf_user.User", username="user", email="user@email.com", mobile=1234569877,
         )
 
     @pytest.mark.django_db
@@ -610,14 +606,18 @@ class TestPasswordResetView(APITestCase):
     @pytest.mark.django_db
     def test_when_incorrect_email_passed(self):
         """Check when incorrect email is passed as data then api raises 404"""
-        response = self.client.post(self.url, data=self.data_incorrect_email, format="json")
+        response = self.client.post(
+            self.url, data=self.data_incorrect_email, format="json"
+        )
 
         self.assertEqual(404, response.status_code)
 
     @pytest.mark.django_db
     def test_when_incorrect_otp_passed(self):
         """Check when incorrect otp is passed as data then api raises 403"""
-        response = self.client.post(self.url, data=self.data_incorrect_otp, format="json")
+        response = self.client.post(
+            self.url, data=self.data_incorrect_otp, format="json"
+        )
 
         self.assertEqual(403, response.status_code)
 
