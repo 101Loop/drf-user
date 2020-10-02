@@ -71,6 +71,10 @@ Contents
 
    installation
 
+.. toctree::
+   :maxdepth: 3
+
+   api-doc
 
 Indices and tables
 ==================
