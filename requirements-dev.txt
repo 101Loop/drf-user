@@ -7,4 +7,5 @@ pytest
 pytest-cov
 pytest-django
 sphinx
+sphinxcontrib_httpdomain
 tox
