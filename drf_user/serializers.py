@@ -337,3 +337,19 @@ class PasswordResetSerializer(serializers.Serializer):
             raise NotFound(_("User with the provided email does not exist."))
 
         return attrs
+
+
+class ImageSerializer(serializers.ModelSerializer):
+    """This serializer is for Image Upload API.
+
+    Params
+    profile_image: OTP received on your email/mobile
+    """
+
+    profile_image = serializers.ImageField(required=True)
+
+    class Meta:
+        from .models import User
+
+        model = User
+        fields = ("profile_image",)
