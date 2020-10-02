@@ -27,4 +27,6 @@ urlpatterns = [
     path(
         "password/reset/", views.PasswordResetView.as_view(), name="reset_user_password"
     ),
+    # ex: api/user/uploadImage/
+    path("uploadimage/", views.UploadImageView.as_view(), name="upload_profile_image"),
 ]
