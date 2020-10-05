@@ -186,6 +186,7 @@ use [pre-commit](https://pre-commit.com/) hooks:
 ```
 
 For Windows User:
+
 ```
 # install chocolatey and run "choco install make" to use make functions
 (env) $ cd drf-user
