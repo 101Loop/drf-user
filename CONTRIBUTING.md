@@ -163,7 +163,8 @@ like [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv),
 [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/), and
 [pyenv-virtualenvwrapper](https://github.com/pyenv/pyenv-virtualenvwrapper).
 
-for git related issues refer to https://github.com/101Loop/APIManager-Flutter/blob/master/CONTRIBUTING.md
+for git related issues refer to
+https://github.com/101Loop/APIManager-Flutter/blob/master/CONTRIBUTING.md
 
 Next, get an up to date checkout of the `drf-user` repository:
 
@@ -232,9 +233,8 @@ Submit a pull request through the GitHub website.
 
 ### For setting up in windows system:
 
-You can either install "chocolatey" and run "choco install make" to use make functions
-or
-you can utilize the below commands
+You can either install "chocolatey" and run "choco install make" to use make
+functions or you can utilize the below commands
 
 ```
 (env) $ cd drf-user
@@ -265,16 +265,16 @@ Create a branch for local development:
 (env) $ git checkout -b <branch_name>
 ```
 
-Now you can make your changes locally.
-make sure the format is checked
+Now you can make your changes locally. make sure the format is checked
 
 You can use
+
 ```
 make check
 ```
 
-or
-copy and run this block of commands
+or copy and run this block of commands
+
 ```
 rm -rf build/
 rm -rf dist/
@@ -297,7 +297,6 @@ Commit your changes and push your branch to GitHub:
 (env) $ git commit -m "Your detailed description of your changes."
 (env) $ git push origin name-of-your-bugfix-or-feature
 ```
-
 
 ## Code of Conduct
 
