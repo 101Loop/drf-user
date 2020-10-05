@@ -163,7 +163,11 @@ like [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv),
 [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/), and
 [pyenv-virtualenvwrapper](https://github.com/pyenv/pyenv-virtualenvwrapper).
 
+for git related issues refer to https://github.com/101Loop/APIManager-Flutter/blob/master/CONTRIBUTING.md
+
 Next, get an up to date checkout of the `drf-user` repository:
+
+### For Linux Users:
 
 ```sh
 $ git clone git@github.com:<your-username>/drf-user.git
@@ -183,15 +187,6 @@ use [pre-commit](https://pre-commit.com/) hooks:
 ```sh
 (env) $ cd drf-user
 (env) $ make install
-```
-
-For Windows User:
-```
-# install chocolatey and run "choco install make" to use make functions
-(env) $ cd drf-user
-(env) $ pip install -r requirements-dev.txt
-(env) $ pip install -e .
-pre-commit install
 ```
 
 At this point,
@@ -234,6 +229,75 @@ Commit your changes and push your branch to GitHub:
 ```
 
 Submit a pull request through the GitHub website.
+
+### For setting up in windows system:
+
+You can either install "chocolatey" and run "choco install make" to use make functions
+or
+you can utilize the below commands
+
+```
+(env) $ cd drf-user
+(env) $ pip install -r requirements-dev.txt
+(env) $ pip install -e .
+```
+
+then do
+
+```
+pre-commit install
+```
+
+to test the app
+
+```
+(env) $ python -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/
+(env) $ sphinx-autobuild --port 8888 -b html . _build/html  --open-browser
+
+```
+
+The built documentation can then be found in
+[`localhost:8888`](http://localhost:8888).
+
+Create a branch for local development:
+
+```
+(env) $ git checkout -b <branch_name>
+```
+
+Now you can make your changes locally.
+make sure the format is checked
+
+You can use
+```
+make check
+```
+
+or
+copy and run this block of commands
+```
+rm -rf build/
+rm -rf dist/
+rm -rf *.egg-info
+find . -name '*.pyc' -follow -print0 | xargs -0 rm -f
+find . -name '*.pyo' -follow -print0 | xargs -0 rm -f
+find . -name '__pycache__' -type d -follow -print0 | xargs -0 rm -rf
+rm -rf .coverage coverage*
+rm -rf tests/.coverage test/coverage*
+rm -rf htmlcov/
+flake8  --exclude=*/migrations/* --max-line-length 88 drf_user
+black --exclude .+/migrations/.+\.py drf_user
+(env) $ python -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/
+```
+
+Commit your changes and push your branch to GitHub:
+
+```
+(env) $ git add .
+(env) $ git commit -m "Your detailed description of your changes."
+(env) $ git push origin name-of-your-bugfix-or-feature
+```
+
 
 ## Code of Conduct
 
