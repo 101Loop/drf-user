@@ -166,13 +166,13 @@ like [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv),
 Next, get an up to date checkout of the `drf-user` repository:
 
 ```sh
-$ git clone git@github.com:101loop/drf-user.git
+$ git clone git@github.com:<your-username>/drf-user.git
 ```
 
 or if you want to use git via `https`:
 
 ```sh
-$ git clone https://github.com/101loop/drf-user.git
+$ git clone https://github.com/<your-github-username>/browser-history.git
 ```
 
 Change into the newly created directory and **after activating your virtual
@@ -183,6 +183,15 @@ use [pre-commit](https://pre-commit.com/) hooks:
 ```sh
 (env) $ cd drf-user
 (env) $ make install
+```
+
+For Windows User:
+```
+# install chocolatey and run "choco install make" to use make functions
+(env) $ cd drf-user
+(env) $ pip install -r requirements-dev.txt
+(env) $ pip install -e .
+pre-commit install
 ```
 
 At this point,
