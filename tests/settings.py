@@ -53,22 +53,17 @@ ROOT_URLCONF = "drf_user.urls"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
-STATIC_ROOT = os.path.join(TEST_DIR, '../static')
+STATIC_ROOT = os.path.join(TEST_DIR, "../static")
 
-MEDIA_URL = '/media/'
+MEDIA_URL = "/media/"
 
-MEDIA_ROOT = os.path.join(TEST_DIR, '../media')
+MEDIA_ROOT = os.path.join(TEST_DIR, "../media")
 
 # DATABASE
 # ------------------------------------------------------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    }
-}
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:",}}
 
 AUTH_USER_MODEL = "drf_user.User"
 

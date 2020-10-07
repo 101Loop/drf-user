@@ -66,8 +66,7 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         )
 
         self.auth_transaction = baker.make(
-            "drf_user.AuthTransaction",
-            created_by=self.user,
+            "drf_user.AuthTransaction", created_by=self.user,
         )
 
     @pytest.mark.django_db
@@ -118,10 +117,7 @@ class TestCheckUniqueView(APITestCase):
         self.url = reverse("Check Unique")
 
         self.user = baker.make(
-            "drf_user.User",
-            username="user",
-            email="user@email.com",
-            mobile=1234569877,
+            "drf_user.User", username="user", email="user@email.com", mobile=1234569877,
         )
 
     @pytest.mark.django_db
@@ -650,8 +646,7 @@ class TestUploadImageView(APITestCase):
         )
 
         self.auth_transaction = baker.make(
-            "drf_user.AuthTransaction",
-            created_by=self.user,
+            "drf_user.AuthTransaction", created_by=self.user,
         )
 
         # create otp of registered user
@@ -686,9 +681,11 @@ class TestUploadImageView(APITestCase):
         RES_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "res")
 
         response = None
-        with open(RES_DIR + '/test.jpg', 'rb') as f:
+        with open(RES_DIR + "/test.jpg", "rb") as f:
             self.client.force_authenticate(self.user)
-            response = self.client.post(self.url, data={"profile_image": f}, format="multipart")
+            response = self.client.post(
+                self.url, data={"profile_image": f}, format="multipart"
+            )
 
         self.assertEqual(201, response.status_code)
         self.assertEqual("Profile Image Uploaded.", response.json()["detail"])
