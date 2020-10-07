@@ -13,6 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='profile_image',
-            field=models.ImageField(blank=True, null=True, upload_to='', verbose_name='Profile Photo'),
+            field=models.ImageField(blank=True, null=True, upload_to='user_images', verbose_name='Profile Photo'),
+        ),
+        migrations.AlterField(
+            model_name='user',
+            name='email',
+            field=models.EmailField(max_length=254, unique=True, verbose_name='Email Address'),
         ),
     ]
