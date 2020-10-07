@@ -368,7 +368,7 @@ class ImageSerializer(serializers.ModelSerializer):
     """This serializer is for Image Upload API.
 
     Params
-    profile_image: OTP received on your email/mobile
+    profile_image: Profile Image File
     """
 
     profile_image = serializers.ImageField(required=True)
