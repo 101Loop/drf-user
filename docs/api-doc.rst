@@ -72,10 +72,12 @@ API Docs for Account.
             "is_superuser": true,
             "is_staff": true
         }
+
     :statuscode 200: if request is authenticated
     :statuscode 403: if request is not authenticated
 
 |
+
 .. http:put:: /account/
 
     Update all details of user.
@@ -101,6 +103,7 @@ API Docs for Account.
     :statuscode 403: if request is not authenticated
 
 |
+
 .. http:patch:: /account/
 
     Update some details of user.
@@ -191,6 +194,7 @@ API Docs for Reset Password.
 
     * To reset user's password, first you have to call `/otp/` with `is_login` parameter value false.
     * Then call this API
+
     .. code-block:: json
 
         {
@@ -208,7 +212,7 @@ API Docs for Reset Password.
     :statuscode 403: if supplied otp is invalid
 
 Is Unique
---------
+---------
 
 API Docs for Is Unique.
 
