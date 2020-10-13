@@ -137,7 +137,7 @@ User can define manual user config in ``settings.py`` file in `USER_SETTINGS` va
 
 .. code-block:: python
 
-    USER_SETTINGS = = {
+    USER_SETTINGS = {
         'DEFAULT_ACTIVE_STATE': False,
         'OTP': {
             'LENGTH': 7,
