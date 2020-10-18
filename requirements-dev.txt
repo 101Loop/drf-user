@@ -6,7 +6,6 @@ pre-commit
 pytest
 pytest-cov
 pytest-django
-reorder-python-imports
 sphinx
 sphinxcontrib_httpdomain
 tox
