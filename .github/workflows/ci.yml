@@ -38,7 +38,7 @@ jobs:
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
       - name: Run tox targets for ${{ matrix.python-version }}
-        run: "python -m tox"
+        run: python -m tox
 
       - name: Upload coverage to Codecov
         if: "contains(env.USING_COVERAGE, matrix.python-version)"
