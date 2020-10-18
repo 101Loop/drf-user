@@ -3,7 +3,16 @@ Custom backends to facilitate authorizations
 
 Author: Himanshu Shankar (https://himanshus.com)
 """
+import re
+import uuid
+from calendar import timegm
+from datetime import datetime
+
+from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+from rest_framework_jwt.compat import get_username
+from rest_framework_jwt.compat import get_username_field
+from rest_framework_jwt.settings import api_settings
 
 
 class MultiFieldModelBackend(ModelBackend):
@@ -11,8 +20,6 @@ class MultiFieldModelBackend(ModelBackend):
     This is a ModelBacked that allows authentication with either a
     username or an email address or mobile number.
     """
-
-    from django.contrib.auth import get_user_model
 
     user_model = get_user_model()
 
@@ -40,9 +47,6 @@ class MultiFieldModelBackend(ModelBackend):
         or
         None
         """
-
-        import re
-
         if username is None:
             username = kwargs.get(self.user_model.USERNAME_FIELD)
 
@@ -94,16 +98,6 @@ def jwt_payload_handler(user):
     -------
     payload: dict
     """
-
-    import uuid
-
-    from calendar import timegm
-    from datetime import datetime
-
-    from rest_framework_jwt.compat import get_username
-    from rest_framework_jwt.compat import get_username_field
-    from rest_framework_jwt.settings import api_settings
-
     username_field = get_username_field()
     username = get_username(user)
 

@@ -1,8 +1,36 @@
 """Views for drf-user"""
+from datetime import datetime
+
 from django.utils.text import gettext_lazy as _
+from drfaddons.utils import get_client_ip
+from drfaddons.utils import JsonResponse
+from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_jwt.serializers import JSONWebTokenSerializer
+from rest_framework_jwt.settings import api_settings
+
+from drf_user.models import AuthTransaction
+from drf_user.models import User
+from drf_user.serializers import CheckUniqueSerializer
+from drf_user.serializers import OTPLoginRegisterSerializer
+from drf_user.serializers import OTPSerializer
+from drf_user.serializers import PasswordResetSerializer
+from drf_user.serializers import UserSerializer
+from drf_user.utils import check_unique
+from drf_user.utils import generate_otp
+from drf_user.utils import login_user
+from drf_user.utils import send_otp
+from drf_user.utils import validate_otp
+from drf_user.variables import EMAIL
+from drf_user.variables import MOBILE
 
 
 class RegisterView(CreateAPIView):
@@ -16,19 +44,12 @@ class RegisterView(CreateAPIView):
             Aditya Gupta (https://github.com/ag93999)
     """
 
-    from .serializers import UserSerializer
-    from rest_framework.permissions import AllowAny
-    from rest_framework.renderers import JSONRenderer
-
     renderer_classes = (JSONRenderer,)
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
 
     def perform_create(self, serializer):
         """Override perform_create to create user"""
-
-        from .models import User
-
         user = User.objects.create_user(
             username=serializer.validated_data["username"],
             email=serializer.validated_data["email"],
@@ -53,27 +74,12 @@ class LoginView(APIView):
             Aditya Gupta (https://github.com/ag93999)
     """
 
-    from rest_framework_jwt.serializers import JSONWebTokenSerializer
-    from rest_framework.permissions import AllowAny
-    from rest_framework.renderers import JSONRenderer
-
     renderer_classes = (JSONRenderer,)
     permission_classes = (AllowAny,)
     serializer_class = JSONWebTokenSerializer
 
     def validated(self, serialized_data, *args, **kwargs):
         """Validates the response"""
-
-        from rest_framework_jwt.settings import api_settings
-
-        from datetime import datetime
-
-        from .models import AuthTransaction
-
-        from drfaddons.utils import get_client_ip
-
-        from rest_framework.response import Response
-
         user = serialized_data.object.get("user") or self.request.user
         token = serialized_data.object.get("token")
         response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(
@@ -100,11 +106,6 @@ class LoginView(APIView):
 
     def post(self, request):
         """Overrides post method to validate serialized data"""
-
-        from drfaddons.utils import JsonResponse
-
-        from rest_framework import status
-
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
             return self.validated(serialized_data=serialized_data)
@@ -127,21 +128,12 @@ class CheckUniqueView(APIView):
             Aditya Gupta (https://github.com/ag93999)
     """
 
-    from .serializers import CheckUniqueSerializer
-    from rest_framework.permissions import AllowAny
-    from rest_framework.renderers import JSONRenderer
-
     renderer_classes = (JSONRenderer,)
     permission_classes = (AllowAny,)
     serializer_class = CheckUniqueSerializer
 
     def validated(self, serialized_data, *args, **kwargs):
         """Validates the response"""
-
-        from .utils import check_unique
-
-        from rest_framework import status
-
         return (
             {
                 "unique": check_unique(
@@ -154,10 +146,6 @@ class CheckUniqueView(APIView):
 
     def post(self, request):
         """Overrides post method to validate serialized data"""
-
-        from drfaddons.utils import JsonResponse
-        from rest_framework import status
-
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
             return JsonResponse(self.validated(serialized_data=serialized_data))
@@ -201,23 +189,11 @@ class OTPView(APIView):
             Aditya Gupta (https://github.com/ag93999)
     """
 
-    from .serializers import OTPSerializer
-
-    from rest_framework.permissions import AllowAny
-
     permission_classes = (AllowAny,)
     serializer_class = OTPSerializer
 
     def post(self, request, *args, **kwargs):
         """Overrides post method to validate serialized data"""
-
-        from rest_framework.response import Response
-        from rest_framework import status
-
-        from rest_framework.exceptions import APIException
-
-        from .utils import validate_otp, login_user, generate_otp, send_otp
-
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -269,11 +245,6 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
             Aditya Gupta( https://github.com/ag93999)
     """
 
-    from .serializers import UserSerializer
-    from .models import User
-
-    from rest_framework.permissions import IsAuthenticated
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
@@ -316,12 +287,6 @@ class OTPLoginView(APIView):
             Aditya Gupta (https://github.com/ag93999)
     """
 
-    from rest_framework.permissions import AllowAny
-    from rest_framework.renderers import JSONRenderer
-    from rest_framework.parsers import JSONParser
-
-    from .serializers import OTPLoginRegisterSerializer
-
     permission_classes = (AllowAny,)
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
@@ -329,17 +294,6 @@ class OTPLoginView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Overrides post method to validate serialized data"""
-
-        from rest_framework.response import Response
-        from rest_framework import status
-
-        from rest_framework.exceptions import APIException
-
-        from .utils import validate_otp, generate_otp, send_otp
-        from .utils import login_user
-        from .models import User
-        from .variables import EMAIL, MOBILE
-
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -414,18 +368,10 @@ class PasswordResetView(APIView):
     API call to `api/user/otp/` with `is_login` parameter value false.
     """
 
-    from rest_framework.permissions import AllowAny
-
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        from drfaddons.utils import JsonResponse
-        from rest_framework import status
-        from drf_user.utils import validate_otp
-
-        from .models import User
-        from .serializers import PasswordResetSerializer
-
+        """Overrides post method to validate OTP and reset password"""
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

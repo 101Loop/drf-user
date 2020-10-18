@@ -5,6 +5,8 @@ __version__ = "0.0.8"
 __author__ = "101Loop"
 __license__ = "GPLv3"
 
+from django.conf import settings
+
 default_app_config = "drf_user.apps.DRFUserConfig"
 
 user_settings = {
@@ -41,8 +43,6 @@ def update_user_settings() -> dict:
 
     Author: Himanshu Shankar (https://himanshus.com)
     """
-    from django.conf import settings
-
     custom_settings = getattr(settings, "USER_SETTINGS", None)
 
     if custom_settings:

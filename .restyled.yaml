@@ -16,6 +16,9 @@ remote_files: []
 
 auto: false
 
+commit_template: |
+  Restyled by ${restyler.name}
+
 pull_requests: true
 
 comments: false
@@ -32,9 +35,11 @@ labels: []
 ignore_labels:
   - restyled-ignore
 
-restylers_version: "20200825"
+restylers_version: stable
 
 restylers:
+  - black:
+      enabled: false
   - autopep8:
       enabled: false
   - isort:

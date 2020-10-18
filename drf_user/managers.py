@@ -1,6 +1,8 @@
 """Custom Managers for drf-user"""
 from django.contrib.auth.base_user import BaseUserManager
 
+from drf_user import update_user_settings
+
 
 class UserManager(BaseUserManager):
     """
@@ -47,9 +49,6 @@ class UserManager(BaseUserManager):
         User Instance
         Author: Himanshu Shankar (https://himanshus.com)
         """
-
-        from . import update_user_settings
-
         vals = update_user_settings()
 
         extra_fields.setdefault("is_superuser", False)
@@ -79,8 +78,6 @@ class UserManager(BaseUserManager):
 
         Author: Himanshu Shankar (https://himanshus.com)
         """
-        from . import update_user_settings
-
         vals = update_user_settings()
 
         extra_fields.setdefault("is_superuser", True)

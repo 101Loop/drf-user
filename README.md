@@ -27,19 +27,22 @@ attributes and functionalities. The current stable version includes:
 - [x] Change Password
 - [x] Update Profile
 - [x] Generic Configuration based on settings.py
-- [ ] Signal based mails: Pending in OTP section
-- [ ] Mail based activation (optional alternative for OTP based activation)
+- [x] Signal based mails
+- [x] Mail based activation (optional alternative for OTP based activation)
 - [ ] Social Auth Endpoints(Login using fb/google)
 
 # Documentation
 
-For more information on installation and configuration see the documentation at:
-https://drf-user.readthedocs.io/
+- For more information on installation and configuration see the documentation
+  at: https://drf-user.readthedocs.io/
 
 # Contributing
 
-Please file bugs and send pull requests to the
-[GitHub repository](https://github.com/101loop/drf-user) and
-[issue tracker](https://github.com/101loop/drf-user/issues). See
-[CONTRIBUTING.md](https://github.com/101Loop/drf-user/blob/master/CONTRIBUTING.md)
-for details.
+- Please file bugs and send pull requests to the
+  [GitHub repository](https://github.com/101loop/drf-user) and
+  [issue tracker](https://github.com/101loop/drf-user/issues). See
+  [CONTRIBUTING.md](https://github.com/101Loop/drf-user/blob/master/CONTRIBUTING.md)
+  for details.
+
+* For help and support please reach out to us on
+  [Slack](https://101loop.slack.com).

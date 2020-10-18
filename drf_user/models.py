@@ -5,6 +5,10 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils.text import gettext_lazy as _
 
+from drf_user.managers import UserManager
+from drf_user.variables import DESTINATION_CHOICES
+from drf_user.variables import EMAIL
+
 
 class Role(Group):
     """
@@ -29,8 +33,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     Author: Himanshu Shankar (https://himanshus.com)
     """
-
-    from .managers import UserManager
 
     username = models.CharField(
         verbose_name=_("Unique UserName"), max_length=254, unique=True
@@ -117,8 +119,6 @@ class OTPValidation(models.Model):
 
     Author: Himanshu Shankar (https://himanshus.com)
     """
-
-    from .variables import EMAIL, DESTINATION_CHOICES
 
     otp = models.CharField(verbose_name=_("OTP Code"), max_length=10)
     destination = models.CharField(
