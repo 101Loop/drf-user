@@ -1,9 +1,16 @@
 """Serializers related to drf-user"""
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import EmailValidator
+from django.core.validators import ValidationError
 from django.utils.text import gettext_lazy as _
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 
-from .models import User
+from drf_user import user_settings
+from drf_user.models import User
+from drf_user.utils import check_validation
+from drf_user.variables import EMAIL
+from drf_user.variables import MOBILE
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,11 +32,6 @@ class UserSerializer(serializers.ModelSerializer):
         value: str
 
         """
-
-        from . import user_settings
-
-        from .utils import check_validation
-
         if user_settings["EMAIL_VALIDATION"]:
             if check_validation(value=value):
                 return value
@@ -53,11 +55,6 @@ class UserSerializer(serializers.ModelSerializer):
         value: str
 
         """
-
-        from . import user_settings
-
-        from .utils import check_validation
-
         if user_settings["MOBILE_VALIDATION"]:
             if check_validation(value=value):
                 return value
@@ -75,8 +72,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Passing model metadata"""
-
-        from .models import User
 
         model = User
         fields = (
@@ -101,8 +96,6 @@ class UserShowSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Passing model metadata"""
-
-        from .models import User
 
         model = User
         fields = ("id", "username", "name")
@@ -163,9 +156,6 @@ class OTPSerializer(serializers.Serializer):
         user: User
 
         """
-        from .models import User
-        from .variables import MOBILE
-
         if prop == MOBILE:
             try:
                 user = User.objects.get(mobile=destination)
@@ -196,12 +186,6 @@ class OTPSerializer(serializers.Serializer):
         NotFound: If user is not found
         ValidationError: Email field not provided
         """
-        from django.core.validators import EmailValidator, ValidationError
-
-        from rest_framework.exceptions import NotFound
-
-        from .variables import EMAIL, MOBILE
-
         validator = EmailValidator()
         try:
             validator(attrs["destination"])
@@ -252,8 +236,6 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
     verify_otp: Required in step 2, OTP from user
     """
 
-    from rest_framework import serializers
-
     name = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     verify_otp = serializers.CharField(default=None, required=False)
@@ -262,7 +244,6 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
     @staticmethod
     def get_user(email: str, mobile: str):
         """Fetches user object"""
-
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
@@ -324,8 +305,6 @@ class PasswordResetSerializer(serializers.Serializer):
         -------
         user: User
         """
-        from .models import User
-
         try:
             user = User.objects.get(email=destination)
         except User.DoesNotExist:
@@ -350,10 +329,6 @@ class PasswordResetSerializer(serializers.Serializer):
         NotFound: If user is not found
         ValidationError: Email field not provided
         """
-        from django.core.validators import EmailValidator
-
-        from rest_framework.exceptions import NotFound
-
         validator = EmailValidator()
         validator(attrs.get("email"))
         user = self.get_user(attrs.get("email"))

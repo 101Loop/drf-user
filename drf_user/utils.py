@@ -1,8 +1,22 @@
 """Collection of general helper functions."""
-from django.utils.text import gettext_lazy as _
+import datetime
 
-from . import update_user_settings
-from .models import User
+import pytz
+from django.utils import timezone
+from django.utils.text import gettext_lazy as _
+from drfaddons.utils import get_client_ip
+from drfaddons.utils import send_message
+from rest_framework.exceptions import APIException
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import PermissionDenied
+from rest_framework_jwt.utils import jwt_encode_handler
+
+from drf_user import update_user_settings
+from drf_user.auth import jwt_payload_handler
+from drf_user.models import AuthTransaction
+from drf_user.models import OTPValidation
+from drf_user.models import User
 
 user_settings = update_user_settings()
 otp_settings = user_settings["OTP"]
@@ -22,10 +36,6 @@ def datetime_passed_now(source):
 
     Author: Himanshu Shankar (https://himanshus.com)
     """
-    import datetime
-
-    import pytz
-
     if source.tzinfo is not None and source.tzinfo.utcoffset(source) is not None:
         return source <= datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
     else:
@@ -88,13 +98,6 @@ def generate_otp(prop, value):
     >>> print(generate_otp('email', 'test@testing.com').otp)
     5039164
     """
-
-    import datetime
-
-    from django.utils import timezone
-
-    from .models import OTPValidation
-
     # Create a random number
     random_number = User.objects.make_random_password(
         length=otp_settings["LENGTH"], allowed_chars=otp_settings["ALLOWED_CHARS"]
@@ -152,15 +155,6 @@ def send_otp(value, otpobj, recip):
     -------
 
     """
-
-    import datetime
-
-    from django.utils import timezone
-
-    from drfaddons.utils import send_message
-
-    from rest_framework.exceptions import PermissionDenied, APIException
-
     otp = otpobj.otp
 
     if not datetime_passed_now(otpobj.reactive_at):
@@ -206,16 +200,6 @@ def login_user(user: User, request) -> (dict, int):
         data: dict
         status_code: int
     """
-
-    from django.utils import timezone
-
-    from rest_framework_jwt.utils import jwt_encode_handler
-
-    from drfaddons.utils import get_client_ip
-
-    from .models import AuthTransaction
-    from .auth import jwt_payload_handler
-
     token = jwt_encode_handler(jwt_payload_handler(user))
     user.last_login = timezone.now()
     user.save()
@@ -249,8 +233,6 @@ def check_validation(value):
     True
 
     """
-    from .models import OTPValidation
-
     try:
         otp_object = OTPValidation.objects.get(destination=value)
         return otp_object.is_validated
@@ -273,10 +255,6 @@ def validate_otp(value, otp):
     -------
     bool: True, if OTP is validated
     """
-    from .models import OTPValidation
-
-    from rest_framework.exceptions import AuthenticationFailed, NotFound
-
     try:
         # Try to get OTP Object from Model and initialize data dictionary
         otp_object = OTPValidation.objects.get(destination=value, is_validated=False)
