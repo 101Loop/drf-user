@@ -66,13 +66,13 @@ format:
 test:
 	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/
 
-test-coverage: clean-test
-	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report html
+test-coverage:
+	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report=xml
 
 test-all:
 	tox
 
-check: clean-build clean-pyc clean-test lint format test
+check: clean-build clean-pyc clean-test lint format test-coverage
 
 release: clean
 	python setup.py sdist upload
