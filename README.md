@@ -33,16 +33,16 @@ attributes and functionalities. The current stable version includes:
 
 # Documentation
 
-- For more information on installation and configuration see the documentation at:
-https://drf-user.readthedocs.io/
+- For more information on installation and configuration see the documentation
+  at: https://drf-user.readthedocs.io/
 
 # Contributing
 
 - Please file bugs and send pull requests to the
-[GitHub repository](https://github.com/101loop/drf-user) and
-[issue tracker](https://github.com/101loop/drf-user/issues). See
-[CONTRIBUTING.md](https://github.com/101Loop/drf-user/blob/master/CONTRIBUTING.md)
-for details.
+  [GitHub repository](https://github.com/101loop/drf-user) and
+  [issue tracker](https://github.com/101loop/drf-user/issues). See
+  [CONTRIBUTING.md](https://github.com/101Loop/drf-user/blob/master/CONTRIBUTING.md)
+  for details.
 
-
-- For help and support please reach out to us on [Slack](https://101loop.slack.com).
+* For help and support please reach out to us on
+  [Slack](https://101loop.slack.com).
