@@ -14,22 +14,22 @@ on:
 
 jobs:
   tests:
-    name: Python ${{ matrix.python-version }} on Ubuntu
-    runs-on: ubuntu-latest
+    name: "Python ${{ matrix.python-version }} on Ubuntu"
+    runs-on: "ubuntu-latest"
     env:
       USING_COVERAGE: '3.6,3.7,3.8,3.9'
     strategy:
       matrix:
         python-version: [ "3.6", "3.7", "3.8", "3.9" ]
-    steps:
-      - uses: actions/checkout@v2
 
-      - name: Setup Python ${{ matrix.python-version }}
-      - uses: actions/setup-python@v2
+    steps:
+      - uses: "actions/checkout@v2"
+
+      - uses: "actions/setup-python@v2"
         with:
           python-version: "${{ matrix.python-version }}"
 
-      - name: Install dependencies
+      - name: "Install dependencies"
         run: |
           set -xe
           python -VV
@@ -37,12 +37,12 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel virtualenv tox tox-gh-actions pytest-xdist
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
-      - name: Run tox targets for ${{ matrix.python-version }}
-        run: python -m tox
+      - name: "Run tox targets for ${{ matrix.python-version }}"
+        run: "python -m tox"
 
-      - name: Upload coverage to Codecov
+      - name: "Upload coverage to Codecov"
         if: "contains(env.USING_COVERAGE, matrix.python-version)"
-        uses: codecov/codecov-action@v1
+        uses: "codecov/codecov-action@v1"
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
