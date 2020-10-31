@@ -387,3 +387,38 @@ class PasswordResetView(APIView):
                 content="Password Updated Successfully.",
                 status=status.HTTP_202_ACCEPTED,
             )
+
+
+class UploadImageView(APIView):
+    """This API can be used to upload a profile picture for user.
+
+    usage: Create a multipart request to this API, with your image
+    attached to `profile_image` parameter.
+    """
+
+    from .models import User
+    from .serializers import ImageSerializer
+    from rest_framework.permissions import IsAuthenticated
+    from rest_framework.parsers import MultiPartParser
+
+    queryset = User.objects.all()
+    serializer_class = ImageSerializer
+    permission_classes = (IsAuthenticated,)
+    parser_class = (MultiPartParser,)
+
+    def post(self, request, *args, **kwargs):
+        from .serializers import ImageSerializer
+        from rest_framework.response import Response
+        from rest_framework import status
+
+        image_serializer = ImageSerializer(data=request.data)
+
+        if image_serializer.is_valid():
+            image_serializer.update(
+                instance=request.user, validated_data=image_serializer.validated_data
+            )
+            return Response(
+                {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -37,11 +37,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(
         verbose_name=_("Unique UserName"), max_length=254, unique=True
     )
-    email = models.EmailField(verbose_name=_("EMail Address"), unique=True)
+    email = models.EmailField(verbose_name=_("Email Address"), unique=True)
     mobile = models.CharField(
-        verbose_name=_("Mobile Number"), max_length=150, unique=True
+        verbose_name=_("Mobile Number"),
+        max_length=150,
+        unique=True,
+        null=True,
+        blank=True,
     )
     name = models.CharField(verbose_name=_("Full Name"), max_length=500, blank=False)
+    profile_image = models.ImageField(
+        verbose_name=_("Profile Photo"), upload_to="user_images", null=True, blank=True
+    )
     date_joined = models.DateTimeField(verbose_name=_("Date Joined"), auto_now_add=True)
     update_date = models.DateTimeField(verbose_name=_("Date Modified"), auto_now=True)
     is_active = models.BooleanField(verbose_name=_("Activated"), default=False)

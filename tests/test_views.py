@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
+from tests.settings import BASE_DIR
 
 
 class TestLoginView(APITestCase):
@@ -631,3 +632,48 @@ class TestPasswordResetView(APITestCase):
         response = self.client.post(self.url, data=self.data_correct_otp, format="json")
 
         self.assertEqual(202, response.status_code)
+
+
+class TestUploadImageView(APITestCase):
+    """UploadImageView Test"""
+
+    def setUp(self) -> None:
+        """SetUp test data"""
+        self.url = reverse("upload_profile_image")
+
+        self.user = baker.make(
+            "drf_user.User",
+            username="user",
+            email="user@email.com",
+            name="user",
+            mobile=1234569877,
+            is_active=True,
+        )
+
+    @pytest.mark.django_db
+    def test_object_created(self):
+        """Check if the User object is created or not"""
+        self.assertEqual(1, User.objects.count())
+
+    @pytest.mark.django_db
+    def test_when_nothing_is_passed(self):
+        """Check when nothing is passed as data then api raises 400"""
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url, data={}, format="multipart")
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("No file was submitted.", response.json()["profile_image"][0])
+
+    @pytest.mark.django_db
+    def test_when_upload_image_passed(self):
+        """Check when image is passed as data then api raises 201"""
+
+        self.client.force_authenticate(self.user)
+        with open(f"{BASE_DIR}/tests/fixtures/test.jpg", "rb") as f:
+            response = self.client.post(
+                self.url, data={"profile_image": f}, format="multipart"
+            )
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("Profile Image Uploaded.", response.json()["detail"])

@@ -63,6 +63,8 @@ coverage.xml
 *.log
 db.sqlite3
 local_settings.py
+media/
+static/
 
 # Flask stuff:
 instance/

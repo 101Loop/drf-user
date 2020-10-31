@@ -25,7 +25,7 @@ class DRFUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        (_("Personal info"), {"fields": ("name", "email", "mobile")}),
+        (_("Personal info"), {"fields": ("name", "profile_image", "email", "mobile")}),
         (
             _("Permissions"),
             {
