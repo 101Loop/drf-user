@@ -1,11 +1,10 @@
-include LICENSE *.py *.yml *.yaml *.txt
+include LICENSE *.py *.yml *.yaml *.txt *.md
 include Makefile
-include README.md
-graft .github
 
 # Tests
 include tox.ini
 recursive-include tests *.py
+recursive-include tests *.jpg
 
 # Documentation
 include docs/Makefile
