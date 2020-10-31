@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
-from tests.settings import TEST_DIR
+from tests.settings import BASE_DIR
 
 
 class TestLoginView(APITestCase):
@@ -670,7 +670,7 @@ class TestUploadImageView(APITestCase):
         """Check when image is passed as data then api raises 201"""
 
         self.client.force_authenticate(self.user)
-        with open(f"{TEST_DIR}/tests/fixtures/test.jpg", "rb") as f:
+        with open(f"{BASE_DIR}/tests/fixtures/test.jpg", "rb") as f:
             response = self.client.post(
                 self.url, data={"profile_image": f}, format="multipart"
             )
