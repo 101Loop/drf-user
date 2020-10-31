@@ -2,7 +2,7 @@
 
 __title__ = "User - Django REST Framework"
 __version__ = "0.0.8"
-__author__ = "101Loop"
+__author__ = "Himanshu Shankar"
 __license__ = "GPLv3"
 
 from django.conf import settings
