@@ -183,8 +183,8 @@ API Docs for OTP Register Login.
     :statuscode 400: if supplied params are invalid
     :statuscode 403: if supplied otp is invalid
 
-Password
---------
+Reset Password
+--------------
 
 API Docs for Reset Password.
 
@@ -232,3 +232,24 @@ API Docs for Is Unique.
 
     :statuscode 200: if supplied params are valid
     :statuscode 400: if supplied params are invalid
+
+Upload Image
+------------
+
+API Docs for Upload Image.
+
+.. http:post:: /uploadimage/
+
+    Upload user's profile image.
+
+    .. code-block:: json
+
+        {
+            "profile_image": "<file_name>"
+        }
+
+    :jsonparam file profile_image: image file
+
+    :statuscode 201: if supplied params are valid
+    :statuscode 400: if image not passed
+    :statuscode 403: if jwt token is not passed or invalid
