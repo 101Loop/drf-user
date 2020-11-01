@@ -407,6 +407,8 @@ class UploadImageView(APIView):
     parser_class = (MultiPartParser,)
 
     def post(self, request, *args, **kwargs):
+        """Validate serializer and upload user profile image"""
+
         from .serializers import ImageSerializer
         from rest_framework.response import Response
         from rest_framework import status
