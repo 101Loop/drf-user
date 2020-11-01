@@ -349,7 +349,7 @@ class ImageSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(required=True)
 
     class Meta:
-        from .models import User
+        """Passing model metadata"""
 
         model = User
         fields = ("profile_image",)
