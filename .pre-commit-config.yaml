@@ -17,7 +17,7 @@ repos:
         - id: reorder-python-imports
 
     - repo: https://github.com/econchick/interrogate
-      rev: 1.3.1
+      rev: 1.3.2
       hooks:
         - id: interrogate
           args: [--fail-under=100, -v]
