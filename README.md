@@ -7,6 +7,7 @@
 
 # Django REST Framework - User
 
+---
 **User APP for Django REST Framework with API Views.**<br>
 
 `DRF User` is a Django app that overrides default user app to provide additional
@@ -33,14 +34,42 @@ attributes and functionalities. The current stable version includes:
 
 # Documentation
 
+---
 - For more information on installation and configuration see the documentation
   at: https://drf-user.readthedocs.io/
 
+# Example
+
+---
+
+To get the example project running do:
+
+- Clone this repo
+    ```shell
+    $ git clone https://github.com/101Loop/drf-user.git
+    ```
+- Go to `example` folder in newly created directory `drf-user`
+    ```shell
+    $ cd drf-user/example
+    ```
+- Create and activate virtual environment.
+- Install requirements
+    ```shell
+    (.venv) $ pip install -r requirements.txt
+    ```
+- Run testing server:
+    ```shell
+    (.venv) $ python manage.py runserver
+    ```
+
+Take a look at `http://localhost:8000/swagger`. Swagger will list all the APIs of drf-user.
+
 # Contributing
 
+---
 - Please file bugs and send pull requests to the
-  [GitHub repository](https://github.com/101loop/drf-user) and
-  [issue tracker](https://github.com/101loop/drf-user/issues). See
+  [GitHub Repository](https://github.com/101loop/drf-user) and
+  [Issue Tracker](https://github.com/101loop/drf-user/issues). See
   [CONTRIBUTING.md](https://github.com/101Loop/drf-user/blob/master/CONTRIBUTING.md)
   for details.
 

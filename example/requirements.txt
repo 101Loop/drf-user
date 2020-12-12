@@ -1,1 +1,2 @@
+drf-yasg
 drf_user
