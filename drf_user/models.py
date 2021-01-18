@@ -98,8 +98,15 @@ class AuthTransaction(models.Model):
     """
 
     ip_address = models.GenericIPAddressField(blank=False, null=False)
-    token = models.TextField(verbose_name=_("JWT Token passed"))
+    token = models.TextField(verbose_name=_("JWT Access Token"))
     session = models.TextField(verbose_name=_("Session Passed"))
+    refresh_token = models.TextField(
+        blank=True,
+        verbose_name=_("JWT Refresh Token"),
+    )
+    expires_at = models.DateTimeField(
+        blank=True, null=True, verbose_name=_("Expires At")
+    )
     create_date = models.DateTimeField(
         verbose_name=_("Create Date/Time"), auto_now_add=True
     )

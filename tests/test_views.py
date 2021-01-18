@@ -49,7 +49,8 @@ class TestLoginView(APITestCase):
             self.url, data={"username": "user", "password": "pass1234"}
         )
 
-        self.assertEqual(422, response.status_code)
+        self.assertEqual(403, response.status_code)
+        self.assertEqual("username or password is invalid.", response.json()["detail"])
 
 
 class TestRetrieveUpdateUserAccountView(APITestCase):
