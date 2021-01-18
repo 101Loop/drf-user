@@ -23,6 +23,7 @@ attributes and functionalities. The current stable version includes:
       `is_login: true` while sending JSON request)
 - [x] OTP Verification for mobile and email
 - [x] API to register / login with OTP (no pre-registration required)
+- [x] API to set user's profile image
 - [x] Mail sending feature upon successful registration
 - [x] SMS sending feature upon successful registration
 - [x] Change Password

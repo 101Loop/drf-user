@@ -46,6 +46,8 @@ Feature List
 
 |check_| API to register / login with OTP (no pre-registration required)
 
+|check_| API to set user's profile image
+
 |check_| Mail sending feature upon successful registration
 
 |check_| SMS sending feature upon successful registration
@@ -56,9 +58,9 @@ Feature List
 
 |check_| Generic Configuration based on `settings.py`
 
-|uncheck_| Signal based mails: Pending in OTP section
+|check_| Signal based mails: Pending in OTP section
 
-|uncheck_| Mail based activation (optional alternative for OTP based activation)
+|check_| Mail based activation (optional alternative for OTP based activation)
 
 |uncheck_| Social Auth Endpoints(Login using fb/google)
 
