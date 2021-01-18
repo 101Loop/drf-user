@@ -299,20 +299,17 @@ class OTPLoginView(APIView):
         email = serializer.validated_data.get("email")
         user = serializer.validated_data.get("user", None)
 
-        message = {}
-
         if verify_otp:
-            if validate_otp(email, verify_otp):
-                if not user:
-                    user = User.objects.create_user(
-                        name=name,
-                        mobile=mobile,
-                        email=email,
-                        username=mobile,
-                        password=User.objects.make_random_password(),
-                    )
-                    user.is_active = True
-                    user.save()
+            if validate_otp(email, verify_otp) and not user:
+                user = User.objects.create_user(
+                    name=name,
+                    mobile=mobile,
+                    email=email,
+                    username=mobile,
+                    password=User.objects.make_random_password(),
+                )
+                user.is_active = True
+                user.save()
             return Response(
                 login_user(user, self.request), status=status.HTTP_202_ACCEPTED
             )
@@ -328,6 +325,8 @@ class OTPLoginView(APIView):
             # Send OTP to Email & Mobile
             sentotp_email = send_otp(email, otp_obj_email, email)
             sentotp_mobile = send_otp(mobile, otp_obj_mobile, email)
+
+            message = {}
 
             if sentotp_email["success"]:
                 otp_obj_email.send_counter += 1
@@ -411,12 +410,12 @@ class UploadImageView(APIView):
 
         image_serializer = ImageSerializer(data=request.data)
 
-        if image_serializer.is_valid():
-            image_serializer.update(
-                instance=request.user, validated_data=image_serializer.validated_data
-            )
-            return Response(
-                {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
-            )
-        else:
+        if not image_serializer.is_valid():
             return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        image_serializer.update(
+            instance=request.user, validated_data=image_serializer.validated_data
+        )
+        return Response(
+            {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
+        )
