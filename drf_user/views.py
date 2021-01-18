@@ -38,7 +38,7 @@ class RegisterView(CreateAPIView):
     Register View
 
     Register a new user to the system.
-    The data required are username, email, name, password and mobile.
+    The data required are username, email, name, password and mobile (optional).
 
     Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta (https://github.com/ag93999)
@@ -50,14 +50,17 @@ class RegisterView(CreateAPIView):
 
     def perform_create(self, serializer):
         """Override perform_create to create user"""
-        user = User.objects.create_user(
-            username=serializer.validated_data["username"],
-            email=serializer.validated_data["email"],
-            name=serializer.validated_data["name"],
-            password=serializer.validated_data["password"],
-            mobile=serializer.validated_data["mobile"],
-        )
-        serializer = self.get_serializer(user)
+        data = {
+            "username": serializer.validated_data["username"],
+            "email": serializer.validated_data["email"],
+            "name": serializer.validated_data["name"],
+            "password": serializer.validated_data["password"],
+        }
+        try:
+            data["mobile"] = serializer.validated_data["mobile"]
+            return User.objects.create_user(**data)
+        except KeyError:
+            return User.objects.create_user(**data)
 
 
 class LoginView(APIView):

@@ -182,6 +182,13 @@ class TestRegisterView(APITestCase):
             "mobile": 8800880080,
         }
 
+        self.data_without_mobile = {
+            "username": "jake123",
+            "password": "test_password",
+            "name": "jake",
+            "email": "random@django.com",
+        }
+
     @pytest.mark.django_db
     def test_register_with_validated_email_and_mobile(self):
         """Check user creation when validated mobile and email is passed"""
@@ -205,6 +212,16 @@ class TestRegisterView(APITestCase):
         self.assertEqual(
             ["The mobile must be pre-validated via OTP."], response.json()["mobile"]
         )
+
+    @pytest.mark.django_db
+    def test_register_user_without_mobile_number(self):
+        """
+        As we have made mobile optional, user should be able to
+        register without passing mobile
+        """
+        response = self.client.post(self.url, self.data_without_mobile)
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("jake", response.json()["name"])
 
 
 class TestOTPView(APITestCase):

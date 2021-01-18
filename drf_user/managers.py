@@ -15,7 +15,15 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
-    def _create_user(self, username, email, password, fullname, mobile, **extra_fields):
+    def _create_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        fullname: str,
+        mobile: str = None,
+        **extra_fields: dict
+    ):
         """
         Creates and saves a User with the given email and password
 
@@ -31,23 +39,31 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, username, email, password, name, mobile, **extra_fields):
+    def create_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        name: str,
+        mobile: str = None,
+        **extra_fields: dict
+    ):
         """
         Creates a normal user considering the specified user settings
         from Django Project's settings.py
+
         Parameters
         ----------
         username: str
         email: str
         password: str
         name: str
-        mobile: str
+        mobile: str, optional
         extra_fields: dict
 
         Returns
         -------
         User Instance
-        Author: Himanshu Shankar (https://himanshus.com)
         """
         vals = update_user_settings()
 
@@ -75,8 +91,6 @@ class UserManager(BaseUserManager):
         Returns
         -------
         User Instance
-
-        Author: Himanshu Shankar (https://himanshus.com)
         """
         vals = update_user_settings()
 
