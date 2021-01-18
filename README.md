@@ -1,5 +1,7 @@
 ![Build Status](https://github.com/101loop/drf-user/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/gh/101Loop/drf-user/branch/master/graph/badge.svg)](https://codecov.io/gh/101Loop/drf-user)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/101Loop/drf-user.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/101Loop/drf-user/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/101Loop/drf-user.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/101Loop/drf-user/context:python)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/101Loop/drf-user/master.svg)](https://results.pre-commit.ci/latest/github/101Loop/drf-user/master)
 [![Documentation Status](https://readthedocs.org/projects/drf-user/badge/?version=latest)](https://drf-user.readthedocs.io/en/latest/?badge=latest)
