@@ -2,6 +2,7 @@
 import datetime
 
 import pytz
+from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
 from drfaddons.utils import get_client_ip
@@ -10,10 +11,10 @@ from rest_framework.exceptions import APIException
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import PermissionDenied
-from rest_framework_jwt.utils import jwt_encode_handler
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.utils import datetime_from_epoch
 
 from drf_user import update_user_settings
-from drf_user.auth import jwt_payload_handler
 from drf_user.models import AuthTransaction
 from drf_user.models import OTPValidation
 from drf_user.models import User
@@ -185,10 +186,11 @@ def send_otp(value, otpobj, recip):
     return rdata
 
 
-def login_user(user: User, request) -> (dict, int):
+def login_user(user: User, request: HttpRequest) -> dict:
     """
     This function is used to login a user. It saves the authentication in
     AuthTransaction model.
+
     Parameters
     ----------
     user: django.contrib.auth.get_user_model
@@ -196,22 +198,38 @@ def login_user(user: User, request) -> (dict, int):
 
     Returns
     -------
-    tuple:
-        data: dict
-        status_code: int
+    dict:
+        Generated JWT tokens for user.
     """
-    token = jwt_encode_handler(jwt_payload_handler(user))
+    token = RefreshToken.for_user(user)
+
+    # Add custom claims
+    if hasattr(user, "email"):
+        token["email"] = user.email
+
+    if hasattr(user, "mobile"):
+        token["mobile"] = user.mobile
+
+    if hasattr(user, "name"):
+        token["name"] = user.name
+
     user.last_login = timezone.now()
     user.save()
+
     AuthTransaction(
         created_by=user,
         ip_address=get_client_ip(request),
-        token=token,
+        token=str(token.access_token),
+        refresh_token=str(token),
         session=user.get_session_auth_hash(),
+        expires_at=datetime_from_epoch(token["exp"]),
     ).save()
 
-    data = {"session": user.get_session_auth_hash(), "token": token}
-    return data
+    return {
+        "refresh_token": str(token),
+        "token": str(token.access_token),
+        "session": user.get_session_auth_hash(),
+    }
 
 
 def check_validation(value):

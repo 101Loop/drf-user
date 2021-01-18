@@ -17,7 +17,7 @@ INSTALLED_APPS = (
     "rest_framework",
     "django_filters",
 )
-# pytest --ds=tests.settings_unique tests/tst_unique.py
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
