@@ -1,9 +1,12 @@
 """Tests for drf_user/views.py module"""
+from datetime import timedelta
+
 import pytest
 from django.test import override_settings
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
@@ -32,10 +35,10 @@ class TestLoginView(APITestCase):
     @pytest.mark.django_db
     def test_fields_missing(self):
         """Test when API was called without fields then it raises 400"""
-        res = self.client.post(self.url, data={})
-        self.assertEqual(res.status_code, 400)
-        self.assertIn(User.USERNAME_FIELD, res.data)
-        self.assertIn("password", res.data)
+        response = self.client.post(self.url, data={})
+        self.assertEqual(400, response.status_code)
+        self.assertIn(User.USERNAME_FIELD, response.data)
+        self.assertIn("password", response.data)
 
     @pytest.mark.django_db
     def test_object_created(self):
@@ -752,3 +755,61 @@ class TestUploadImageView(APITestCase):
 
         self.assertEqual(201, response.status_code)
         self.assertEqual("Profile Image Uploaded.", response.json()["detail"])
+
+
+class TestCustomTokenRefreshView(APITestCase):
+    """CustomTokenRefreshView"""
+
+    def setUp(self) -> None:
+        """SetUp test data"""
+        self.url = reverse("refresh_token")
+
+        self.login_url = reverse("Login")
+
+        self.user = baker.make(
+            "drf_user.User",
+            username="user",
+            email="user@email.com",
+            name="user",
+            mobile=1234569877,
+            is_active=True,
+        )
+
+        self.user.set_password("pass123")
+        self.user.save()
+
+    def test_fields_missing(self):
+        """Test when API was called without refresh_token then it raises 400"""
+        res = self.client.post(self.url, data={})
+        self.assertEqual(400, res.status_code)
+        self.assertIn("refresh", res.data)
+
+    def test_api_should_return_401_if_token_invalid(self):
+        """Test api returns 401 when refresh token is invalid."""
+        token = RefreshToken()
+        del token["exp"]
+
+        response = self.client.post(self.url, data={"refresh": str(token)})
+        self.assertEqual(401, response.status_code)
+        self.assertEqual("token_not_valid", response.data["code"])
+
+        token.set_exp(lifetime=-timedelta(seconds=1))
+
+        response = self.client.post(self.url, data={"refresh": str(token)})
+        self.assertEqual(401, response.status_code)
+        self.assertEqual("token_not_valid", response.data["code"])
+
+    @pytest.mark.django_db
+    def test_it_should_return_access_token_if_everything_ok(self):
+        """Test when refresh token is valid then it generated new access token"""
+        # generate tokens using login api
+        login_response = self.client.post(
+            self.login_url, data={"username": "user", "password": "pass123"}
+        )
+
+        response = self.client.post(
+            self.url, data={"refresh": str(login_response.data["refresh_token"])}
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertIn("token", response.data)

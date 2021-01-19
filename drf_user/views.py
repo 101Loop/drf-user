@@ -459,4 +459,4 @@ class CustomTokenRefreshView(TokenRefreshView):
         )
         auth_transaction.save(update_fields=["token", "expires_at"])
 
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        return Response({"token": str(token)}, status=status.HTTP_200_OK)
