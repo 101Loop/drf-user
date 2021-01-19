@@ -50,7 +50,8 @@ API Docs for Login.
     :jsonparam str password: password of user
 
     :statuscode 200: if supplied params are valid
-    :statuscode 422: if supplied params are invalid
+    :statuscode 400: if some fields are missing
+    :statuscode 401: if supplied params are invalid
 
 Account
 -------
@@ -74,7 +75,7 @@ API Docs for Account.
         }
 
     :statuscode 200: if request is authenticated
-    :statuscode 403: if request is not authenticated
+    :statuscode 401: if request is not authenticated
 
 |
 
@@ -100,7 +101,7 @@ API Docs for Account.
 
     :statuscode 200: if request is authenticated
     :statuscode 400: if any param is not supplied
-    :statuscode 403: if request is not authenticated
+    :statuscode 401: if request is not authenticated
 
 |
 
@@ -123,7 +124,7 @@ API Docs for Account.
 
     :statuscode 200: if request is authenticated
     :statuscode 400: if any param is not supplied
-    :statuscode 403: if request is not authenticated
+    :statuscode 401: if request is not authenticated
 
 OTP
 ---
@@ -238,7 +239,7 @@ Upload Image
 
 API Docs for Upload Image.
 
-.. http:post:: /uploadimage/
+.. http:post:: /upload-image/
 
     Upload user's profile image.
 
@@ -252,4 +253,26 @@ API Docs for Upload Image.
 
     :statuscode 201: if supplied params are valid
     :statuscode 400: if image not passed
-    :statuscode 403: if jwt token is not passed or invalid
+    :statuscode 401: if supplied token is invalid
+
+Refresh Token
+------------
+
+API Docs for Refresh Token.
+
+.. http:post:: /refresh-token/
+
+    When short-lived access token expires, you can use the longer-lived refresh
+    token to obtain another access token.
+
+    .. code-block:: json
+
+        {
+            "refresh": "generated refresh token"
+        }
+
+    :jsonparam str refresh: refresh token
+
+    :statuscode 200: if supplied refresh token is valid
+    :statuscode 400: if refresh token is not passed
+    :statuscode 401: if refresh token is invalid
