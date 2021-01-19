@@ -71,6 +71,8 @@ DATABASES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = ["drf_user.auth.MultiFieldModelBackend"]
+
 AUTH_USER_MODEL = "drf_user.User"
 
 USER_SETTINGS = {
