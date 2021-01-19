@@ -1,9 +1,7 @@
 """Urls module for drf-user"""
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from drf_user import views
-
 
 app_name = "drf_user"
 
@@ -31,5 +29,7 @@ urlpatterns = [
     # ex: api/user/upload-image/
     path("upload-image/", views.UploadImageView.as_view(), name="upload_profile_image"),
     # ex: api/user/refresh-token/
-    path("refresh-token/", TokenRefreshView.as_view(), name="refresh_token"),
+    path(
+        "refresh-token/", views.CustomTokenRefreshView.as_view(), name="refresh_token"
+    ),
 ]

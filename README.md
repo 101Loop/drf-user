@@ -12,17 +12,17 @@
 ---
 **User APP for Django REST Framework with API Views.**<br>
 
-`DRF User` is a Django app that overrides default user app to provide additional
-attributes and functionalities. The current stable version includes:
+`DRF User` is a Django app that overrides default user app to provide additional attributes and functionalities. The
+current stable version includes:
 
+- [x] JWT Support (Using [Simple JWT](https://django-rest-framework-simplejwt.readthedocs.io/))
 - [x] Mobile Number
 - [x] Single field for full name
 - [x] REST API to register
 - [x] REST API to login
-- [x] MultiModelBackend: User can login using either of mobile, email or
-      username
+- [x] MultiModelBackend: User can login using either of mobile, email or username
 - [x] REST API to login with OTP (Same API endpoint as for OTP Verification; Set
-      `is_login: true` while sending JSON request)
+  `is_login: true` while sending JSON request)
 - [x] OTP Verification for mobile and email
 - [x] API to register / login with OTP (no pre-registration required)
 - [x] API to set user's profile image
@@ -38,8 +38,8 @@ attributes and functionalities. The current stable version includes:
 # Documentation
 
 ---
-- For more information on installation and configuration see the documentation
-  at: https://drf-user.readthedocs.io/
+
+- For more information on installation and configuration see the documentation at: https://drf-user.readthedocs.io/
 
 # Example
 
@@ -70,6 +70,7 @@ Take a look at `http://localhost:8000/swagger`. Swagger will list all the APIs o
 # Contributing
 
 ---
+
 - Please file bugs and send pull requests to the
   [GitHub Repository](https://github.com/101loop/drf-user) and
   [Issue Tracker](https://github.com/101loop/drf-user/issues). See

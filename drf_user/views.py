@@ -17,7 +17,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
@@ -425,3 +428,35 @@ class UploadImageView(APIView):
         return Response(
             {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
         )
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Subclassing TokenRefreshView so that we can update
+    AuthTransaction model when access token is updated
+    """
+
+    def post(self, request, *args, **kwargs):
+        """
+        Process request to generate new access token using
+        refresh token.
+        """
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        token = serializer.validated_data.get("access")
+
+        auth_transaction = AuthTransaction.objects.get(
+            refresh_token=request.data["refresh"]
+        )
+        auth_transaction.token = token
+        auth_transaction.expires_at = (
+            timezone.now() + api_settings.ACCESS_TOKEN_LIFETIME
+        )
+        auth_transaction.save(update_fields=["token", "expires_at"])
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
