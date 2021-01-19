@@ -1,4 +1,5 @@
 """Views for drf-user"""
+from django.utils import timezone
 from django.utils.text import gettext_lazy as _
 from drfaddons.utils import get_client_ip
 from drfaddons.utils import JsonResponse
@@ -12,8 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import InvalidToken
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.settings import api_settings
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
@@ -83,10 +83,7 @@ class LoginView(APIView):
         """
         serializer = self.serializer_class(data=request.data)
 
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            raise InvalidToken(e.args[0])
+        serializer.is_valid(raise_exception=True)
 
         # if data is valid then create a record in auth transaction model
         user = serializer.user
@@ -99,6 +96,7 @@ class LoginView(APIView):
             refresh_token=str(refresh_token),
             ip_address=get_client_ip(self.request),
             session=user.get_session_auth_hash(),
+            expires_at=timezone.now() + api_settings.ACCESS_TOKEN_LIFETIME,
         ).save()
 
         # For backward compatibility, returning custom response

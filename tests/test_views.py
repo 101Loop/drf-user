@@ -29,6 +29,14 @@ class TestLoginView(APITestCase):
         self.user.save()
 
     @pytest.mark.django_db
+    def test_fields_missing(self):
+        """Test when API was called without fields then it raises 400"""
+        res = self.client.post(self.url, data={})
+        self.assertEqual(res.status_code, 400)
+        self.assertIn(User.USERNAME_FIELD, res.data)
+        self.assertIn("password", res.data)
+
+    @pytest.mark.django_db
     def test_object_created(self):
         """Check if the User object is created or not"""
         self.assertEqual(1, User.objects.count())
@@ -40,6 +48,37 @@ class TestLoginView(APITestCase):
             self.url, data={"username": "user", "password": "pass123"}
         )
         self.assertEqual(200, response.status_code)
+        self.assertIn("token", response.data)
+        self.assertIn("refresh_token", response.data)
+
+        # verify that auth transaction object created
+        self.assertEqual(1, AuthTransaction.objects.count())
+
+    @pytest.mark.django_db
+    def test_login_using_mobile_as_username(self):
+        """Test that user can login using mobile number"""
+        response = self.client.post(
+            self.url, data={"username": "1234569877", "password": "pass123"}
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIn("token", response.data)
+        self.assertIn("refresh_token", response.data)
+
+        # verify that auth transaction object created
+        self.assertEqual(1, AuthTransaction.objects.count())
+
+    @pytest.mark.django_db
+    def test_login_using_email_as_username(self):
+        """Test that user can login using email"""
+        response = self.client.post(
+            self.url, data={"username": "user@email.com", "password": "pass123"}
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIn("token", response.data)
+        self.assertIn("refresh_token", response.data)
+
+        # verify that auth transaction object created
+        self.assertEqual(1, AuthTransaction.objects.count())
 
     @pytest.mark.django_db
     def test_unsuccessful_login_view(self):
@@ -49,7 +88,7 @@ class TestLoginView(APITestCase):
         )
 
         self.assertEqual(403, response.status_code)
-        self.assertEqual("username or password is invalid.", response.json()["detail"])
+        self.assertIn("username or password is invalid.", response.data["detail"])
 
 
 class TestRetrieveUpdateUserAccountView(APITestCase):

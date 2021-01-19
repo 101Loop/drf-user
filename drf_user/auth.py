@@ -4,15 +4,9 @@ Custom backends to facilitate authorizations
 Author: Himanshu Shankar (https://himanshus.com)
 """
 import re
-import uuid
-from calendar import timegm
-from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from rest_framework_jwt.compat import get_username
-from rest_framework_jwt.compat import get_username_field
-from rest_framework_jwt.settings import api_settings
 
 
 class MultiFieldModelBackend(ModelBackend):
@@ -82,55 +76,3 @@ class MultiFieldModelBackend(ModelBackend):
             return self.user_model.objects.get(pk=username)
         except self.user_model.DoesNotExist:
             return None
-
-
-def jwt_payload_handler(user):
-    """
-    A custom JWT Payload Handler that adds certain extra data in
-    payload such as: email, mobile, name
-
-    Source: Himanshu Shankar (https://github.com/iamhssingh)
-    Parameters
-    ----------
-    user: get_user_model()
-
-    Returns
-    -------
-    payload: dict
-    """
-    username_field = get_username_field()
-    username = get_username(user)
-
-    payload = {
-        "user_id": user.pk,
-        "is_admin": user.is_staff,
-        "exp": datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA,
-    }
-
-    if hasattr(user, "email"):
-        payload["email"] = user.email
-
-    if hasattr(user, "mobile"):
-        payload["mobile"] = user.mobile
-
-    if hasattr(user, "name"):
-        payload["name"] = user.name
-
-    if isinstance(user.pk, uuid.UUID):
-        payload["user_id"] = str(user.pk)
-
-    payload[username_field] = username
-
-    # Include original issued at time for a brand new token,
-    # to allow token refresh
-
-    if api_settings.JWT_ALLOW_REFRESH:
-        payload["orig_iat"] = timegm(datetime.utcnow().utctimetuple())
-
-    if api_settings.JWT_AUDIENCE is not None:
-        payload["aud"] = api_settings.JWT_AUDIENCE
-
-    if api_settings.JWT_ISSUER is not None:
-        payload["iss"] = api_settings.JWT_ISSUER
-
-    return payload
