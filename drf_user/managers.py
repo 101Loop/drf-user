@@ -1,4 +1,6 @@
 """Custom Managers for drf-user"""
+from typing import Optional
+
 from django.contrib.auth.base_user import BaseUserManager
 
 from drf_user import update_user_settings
@@ -21,8 +23,8 @@ class UserManager(BaseUserManager):
         email: str,
         password: str,
         fullname: str,
-        mobile: str = None,
-        **kwargs: dict
+        mobile: Optional[str] = None,
+        **kwargs
     ):
         """
         Creates and saves a User with the given email and password
@@ -45,8 +47,8 @@ class UserManager(BaseUserManager):
         email: str,
         password: str,
         name: str,
-        mobile: str = None,
-        **kwargs: dict
+        mobile: Optional[str] = None,
+        **kwargs
     ):
         """
         Creates a normal user considering the specified user settings
@@ -59,7 +61,7 @@ class UserManager(BaseUserManager):
         password: str
         name: str
         mobile: str, optional
-        kwargs: dict
+        kwargs
 
         Returns
         -------
@@ -79,8 +81,8 @@ class UserManager(BaseUserManager):
         email: str,
         password: str,
         name: str,
-        mobile: str = None,
-        **kwargs: dict
+        mobile: Optional[str] = None,
+        **kwargs
     ):
         """
         Creates a super user considering the specified user settings
@@ -91,8 +93,8 @@ class UserManager(BaseUserManager):
         email: str
         password: str
         name: str
-        mobile: str
-        kwargs: dict
+        mobile: str, optional
+        kwargs
 
         Returns
         -------
