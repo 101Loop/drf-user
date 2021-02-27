@@ -10,6 +10,7 @@ from django.conf import settings
 default_app_config = "drf_user.apps.DRFUserConfig"
 
 user_settings = {
+    "MOBILE_OPTIONAL": True,
     "DEFAULT_ACTIVE_STATE": False,
     "OTP": {
         "LENGTH": 5,

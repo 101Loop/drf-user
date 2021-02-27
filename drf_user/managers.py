@@ -75,7 +75,15 @@ class UserManager(BaseUserManager):
             username, email, password, name, mobile, **extra_fields
         )
 
-    def create_superuser(self, username, email, password, name, mobile, **extra_fields):
+    def create_superuser(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        name: str,
+        mobile: str = None,
+        **extra_fields: dict
+    ):
         """
         Creates a super user considering the specified user settings
         from Django Project's settings.py

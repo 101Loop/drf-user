@@ -6,6 +6,7 @@ from drfaddons.utils import get_client_ip
 from drfaddons.utils import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.parsers import JSONParser
@@ -17,6 +18,7 @@ from rest_framework.views import APIView
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from rest_framework_jwt.settings import api_settings
 
+from drf_user import user_settings
 from drf_user.models import AuthTransaction
 from drf_user.models import User
 from drf_user.serializers import CheckUniqueSerializer
@@ -56,11 +58,17 @@ class RegisterView(CreateAPIView):
             "name": serializer.validated_data["name"],
             "password": serializer.validated_data["password"],
         }
+        if (
+            not user_settings["MOBILE_OPTIONAL"]
+            and "mobile" not in serializer.validated_data
+        ):
+            raise ValidationError("Mobile is required.")
+
         try:
             data["mobile"] = serializer.validated_data["mobile"]
-            return User.objects.create_user(**data)
         except KeyError:
-            return User.objects.create_user(**data)
+            pass
+        return User.objects.create_user(**data)
 
 
 class LoginView(APIView):
