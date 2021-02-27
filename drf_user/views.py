@@ -1,6 +1,7 @@
 """Views for drf-user"""
 from datetime import datetime
 
+from django.conf import settings
 from django.utils.text import gettext_lazy as _
 from drfaddons.utils import get_client_ip
 from drfaddons.utils import JsonResponse
@@ -18,7 +19,6 @@ from rest_framework.views import APIView
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from rest_framework_jwt.settings import api_settings
 
-from drf_user import user_settings
 from drf_user.models import AuthTransaction
 from drf_user.models import User
 from drf_user.serializers import CheckUniqueSerializer
@@ -59,10 +59,10 @@ class RegisterView(CreateAPIView):
             "password": serializer.validated_data["password"],
         }
         if (
-            not user_settings["MOBILE_OPTIONAL"]
+            not settings.USER_SETTINGS["MOBILE_OPTIONAL"]
             and "mobile" not in serializer.validated_data
         ):
-            raise ValidationError("Mobile is required.")
+            raise ValidationError({"error": "Mobile is required."})
 
         try:
             data["mobile"] = serializer.validated_data["mobile"]

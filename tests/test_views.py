@@ -1,5 +1,6 @@
 """Tests for drf_user/views.py module"""
 import pytest
+from django.test import override_settings
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework.test import APITestCase
@@ -222,6 +223,23 @@ class TestRegisterView(APITestCase):
         response = self.client.post(self.url, self.data_without_mobile)
         self.assertEqual(201, response.status_code)
         self.assertEqual("jake", response.json()["name"])
+
+    @pytest.mark.django_db
+    def test_register_user_with_mobile(self):
+        """
+        Checks when setting `MOBILE_OPTIONAL` is set to False
+            - it gives 400 if mobile is not passed
+            - it gives proper error message
+            - user object is being created when mobile is passed
+        """
+        with override_settings(USER_SETTINGS={"MOBILE_OPTIONAL": False}):
+            response = self.client.post(self.url, self.data_without_mobile)
+            self.assertEqual(400, response.status_code)
+            self.assertEqual("Mobile is required.", response.json()["error"])
+
+            response = self.client.post(self.url, self.validated_data)
+            self.assertEqual(201, response.status_code)
+            self.assertEqual("1234567890", response.json()["mobile"])
 
 
 class TestOTPView(APITestCase):

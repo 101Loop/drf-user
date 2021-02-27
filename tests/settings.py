@@ -17,7 +17,7 @@ INSTALLED_APPS = (
     "rest_framework",
     "django_filters",
 )
-# pytest --ds=tests.settings_unique tests/tst_unique.py
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
@@ -74,6 +74,7 @@ DATABASES = {
 AUTH_USER_MODEL = "drf_user.User"
 
 USER_SETTINGS = {
+    "MOBILE_OPTIONAL": True,
     "DEFAULT_ACTIVE_STATE": False,
     "OTP": {
         "LENGTH": 7,
