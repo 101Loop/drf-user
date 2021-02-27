@@ -58,16 +58,11 @@ class RegisterView(CreateAPIView):
             "name": serializer.validated_data["name"],
             "password": serializer.validated_data["password"],
         }
-        if (
-            not settings.USER_SETTINGS["MOBILE_OPTIONAL"]
-            and "mobile" not in serializer.validated_data
-        ):
-            raise ValidationError({"error": "Mobile is required."})
-
         try:
             data["mobile"] = serializer.validated_data["mobile"]
         except KeyError:
-            pass
+            if not settings.USER_SETTINGS["MOBILE_OPTIONAL"]:
+                raise ValidationError({"error": "Mobile is required."})
         return User.objects.create_user(**data)
 
 
