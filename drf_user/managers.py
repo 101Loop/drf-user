@@ -27,12 +27,8 @@ class UserManager(BaseUserManager):
         **kwargs
     ):
         """
-        Creates and saves a User with the given email and password
-
-        Author: Himanshu Shankar (https://himanshus.com)
+        Creates and saves a User with given details
         """
-        if not email:
-            raise ValueError("The given email must be set")
         email = self.normalize_email(email)
         user = self.model(
             username=username, email=email, name=fullname, mobile=mobile, **kwargs
