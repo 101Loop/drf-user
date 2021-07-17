@@ -1,6 +1,4 @@
 """Views for drf-user"""
-from datetime import datetime
-
 from django.conf import settings
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _

@@ -63,8 +63,8 @@ lint:
 format:
 	black --exclude .+/migrations/.+\.py drf_user
 
-test-local:
-	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report=html
+test:
+	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/
 
 test-html-coverage:
 	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report=html
