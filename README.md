@@ -15,25 +15,25 @@
 `DRF User` is a Django app that overrides default user app to provide additional attributes and functionalities. The
 current stable version includes:
 
-- [x] JWT Support (Using [Simple JWT](https://django-rest-framework-simplejwt.readthedocs.io/))
-- [x] Mobile Number
-- [x] Single field for full name
-- [x] REST API to register
-- [x] REST API to login
-- [x] MultiModelBackend: User can login using either of mobile, email or username
-- [x] REST API to login with OTP (Same API endpoint as for OTP Verification; Set
+- JWT Support (Using [Simple JWT](https://django-rest-framework-simplejwt.readthedocs.io/))
+- Mobile Number
+- Single field for full name
+- REST API to register
+- REST API to login
+- MultiModelBackend: User can login using either of mobile, email or username
+- REST API to login with OTP (Same API endpoint as for OTP Verification; Set
   `is_login: true` while sending JSON request)
-- [x] OTP Verification for mobile and email
-- [x] API to register / login with OTP (no pre-registration required)
-- [x] API to set user's profile image
-- [x] Mail sending feature upon successful registration
-- [x] SMS sending feature upon successful registration
-- [x] Change Password
-- [x] Update Profile
-- [x] Generic Configuration based on settings.py
-- [x] Signal based mails
-- [x] Mail based activation (optional alternative for OTP based activation)
-- [ ] Social Auth Endpoints(Login using fb/google)
+- OTP Verification for mobile and email
+- API to register / login with OTP (no pre-registration required)
+- API to set user's profile image
+- Mail sending feature upon successful registration
+- SMS sending feature upon successful registration
+- Change Password
+- Update Profile
+- Generic Configuration based on settings.py
+- Signal based mails
+- Mail based activation (optional alternative for OTP based activation)
+- Social Auth Endpoints(Login using fb/google) (WIP)
 
 # Documentation
 
