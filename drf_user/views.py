@@ -1,11 +1,13 @@
 """Views for drf-user"""
 from datetime import datetime
 
+from django.conf import settings
 from django.utils.text import gettext_lazy as _
 from drfaddons.utils import get_client_ip
 from drfaddons.utils import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.parsers import JSONParser
@@ -38,7 +40,7 @@ class RegisterView(CreateAPIView):
     Register View
 
     Register a new user to the system.
-    The data required are username, email, name, password and mobile.
+    The data required are username, email, name, password and mobile (optional).
 
     Author: Himanshu Shankar (https://himanshus.com)
             Aditya Gupta (https://github.com/ag93999)
@@ -50,14 +52,18 @@ class RegisterView(CreateAPIView):
 
     def perform_create(self, serializer):
         """Override perform_create to create user"""
-        user = User.objects.create_user(
-            username=serializer.validated_data["username"],
-            email=serializer.validated_data["email"],
-            name=serializer.validated_data["name"],
-            password=serializer.validated_data["password"],
-            mobile=serializer.validated_data["mobile"],
-        )
-        serializer = self.get_serializer(user)
+        data = {
+            "username": serializer.validated_data["username"],
+            "email": serializer.validated_data["email"],
+            "name": serializer.validated_data["name"],
+            "password": serializer.validated_data["password"],
+        }
+        try:
+            data["mobile"] = serializer.validated_data["mobile"]
+        except KeyError:
+            if not settings.USER_SETTINGS["MOBILE_OPTIONAL"]:
+                raise ValidationError({"error": "Mobile is required."})
+        return User.objects.create_user(**data)
 
 
 class LoginView(APIView):
@@ -303,20 +309,17 @@ class OTPLoginView(APIView):
         email = serializer.validated_data.get("email")
         user = serializer.validated_data.get("user", None)
 
-        message = {}
-
         if verify_otp:
-            if validate_otp(email, verify_otp):
-                if not user:
-                    user = User.objects.create_user(
-                        name=name,
-                        mobile=mobile,
-                        email=email,
-                        username=mobile,
-                        password=User.objects.make_random_password(),
-                    )
-                    user.is_active = True
-                    user.save()
+            if validate_otp(email, verify_otp) and not user:
+                user = User.objects.create_user(
+                    name=name,
+                    mobile=mobile,
+                    email=email,
+                    username=mobile,
+                    password=User.objects.make_random_password(),
+                )
+                user.is_active = True
+                user.save()
             return Response(
                 login_user(user, self.request), status=status.HTTP_202_ACCEPTED
             )
@@ -332,6 +335,8 @@ class OTPLoginView(APIView):
             # Send OTP to Email & Mobile
             sentotp_email = send_otp(email, otp_obj_email, email)
             sentotp_mobile = send_otp(mobile, otp_obj_mobile, email)
+
+            message = {}
 
             if sentotp_email["success"]:
                 otp_obj_email.send_counter += 1
@@ -415,12 +420,12 @@ class UploadImageView(APIView):
 
         image_serializer = ImageSerializer(data=request.data)
 
-        if image_serializer.is_valid():
-            image_serializer.update(
-                instance=request.user, validated_data=image_serializer.validated_data
-            )
-            return Response(
-                {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
-            )
-        else:
+        if not image_serializer.is_valid():
             return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        image_serializer.update(
+            instance=request.user, validated_data=image_serializer.validated_data
+        )
+        return Response(
+            {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
+        )

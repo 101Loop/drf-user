@@ -66,6 +66,9 @@ format:
 test:
 	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/
 
+test-html-coverage:
+	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report=html
+
 test-coverage:
 	$(PYTHON) -m pytest --disable-pytest-warnings --ds=tests.settings --cov=drf_user tests/ --cov-report=xml
 

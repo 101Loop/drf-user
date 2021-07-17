@@ -1,6 +1,8 @@
 -r requirements.txt
 black
+Faker
 flake8
+ipython
 model_bakery
 pre-commit
 pytest

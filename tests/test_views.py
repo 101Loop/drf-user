@@ -1,5 +1,6 @@
 """Tests for drf_user/views.py module"""
 import pytest
+from django.test import override_settings
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework.test import APITestCase
@@ -182,6 +183,13 @@ class TestRegisterView(APITestCase):
             "mobile": 8800880080,
         }
 
+        self.data_without_mobile = {
+            "username": "jake123",
+            "password": "test_password",
+            "name": "jake",
+            "email": "random@django.com",
+        }
+
     @pytest.mark.django_db
     def test_register_with_validated_email_and_mobile(self):
         """Check user creation when validated mobile and email is passed"""
@@ -205,6 +213,33 @@ class TestRegisterView(APITestCase):
         self.assertEqual(
             ["The mobile must be pre-validated via OTP."], response.json()["mobile"]
         )
+
+    @pytest.mark.django_db
+    def test_register_user_without_mobile_number(self):
+        """
+        As we have made mobile optional, user should be able to
+        register without passing mobile
+        """
+        response = self.client.post(self.url, self.data_without_mobile)
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("jake", response.json()["name"])
+
+    @pytest.mark.django_db
+    def test_register_user_with_mobile(self):
+        """
+        Checks when setting `MOBILE_OPTIONAL` is set to False
+            - it gives 400 if mobile is not passed
+            - it gives proper error message
+            - user object is being created when mobile is passed
+        """
+        with override_settings(USER_SETTINGS={"MOBILE_OPTIONAL": False}):
+            response = self.client.post(self.url, self.data_without_mobile)
+            self.assertEqual(400, response.status_code)
+            self.assertEqual("Mobile is required.", response.json()["error"])
+
+            response = self.client.post(self.url, self.validated_data)
+            self.assertEqual(201, response.status_code)
+            self.assertEqual("1234567890", response.json()["mobile"])
 
 
 class TestOTPView(APITestCase):

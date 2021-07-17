@@ -70,7 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["name", "mobile", "email"]
+    REQUIRED_FIELDS = ["name", "email"]
 
     class Meta:
         """Passing model metadata"""
