@@ -1,7 +1,7 @@
 """Django REST Framework - User! User App for Django with API Views"""
 
 __title__ = "User - Django REST Framework"
-__version__ = "0.0.8"
+__version__ = "1.0.0"
 __author__ = "Himanshu Shankar"
 __license__ = "GPLv3"
 
