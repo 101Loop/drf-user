@@ -1,7 +1,7 @@
 exclude: .+/migrations/.+\.py
 repos:
     - repo: https://github.com/psf/black
-      rev: 21.5b2
+      rev: 21.6b0
       hooks:
         - id: black
 
