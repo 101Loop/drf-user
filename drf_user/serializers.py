@@ -33,15 +33,15 @@ class UserSerializer(serializers.ModelSerializer):
         value: str
 
         """
-        if user_settings["EMAIL_VALIDATION"]:
-            if check_validation(value=value):
-                return value
-            else:
-                raise serializers.ValidationError(
-                    "The email must be " "pre-validated via OTP."
-                )
-        else:
+        if not user_settings["EMAIL_VALIDATION"]:
             return value
+
+        if check_validation(value=value):
+            return value
+        else:
+            raise serializers.ValidationError(
+                "The email must be " "pre-validated via OTP."
+            )
 
     def validate_mobile(self, value: str) -> str:
         """
@@ -56,15 +56,15 @@ class UserSerializer(serializers.ModelSerializer):
         value: str
 
         """
-        if user_settings["MOBILE_VALIDATION"]:
-            if check_validation(value=value):
-                return value
-            else:
-                raise serializers.ValidationError(
-                    "The mobile must be " "pre-validated via OTP."
-                )
-        else:
+        if not user_settings["MOBILE_VALIDATION"]:
             return value
+
+        if check_validation(value=value):
+            return value
+        else:
+            raise serializers.ValidationError(
+                "The mobile must be " "pre-validated via OTP."
+            )
 
     def validate_password(self, value: str) -> str:
         """Validate whether the password meets all django validator requirements."""
