@@ -3,7 +3,6 @@ from django.urls import path
 
 from drf_user import views
 
-
 app_name = "drf_user"
 
 urlpatterns = [
@@ -27,6 +26,10 @@ urlpatterns = [
     path(
         "password/reset/", views.PasswordResetView.as_view(), name="reset_user_password"
     ),
-    # ex: api/user/uploadImage/
-    path("uploadimage/", views.UploadImageView.as_view(), name="upload_profile_image"),
+    # ex: api/user/upload-image/
+    path("upload-image/", views.UploadImageView.as_view(), name="upload_profile_image"),
+    # ex: api/user/refresh-token/
+    path(
+        "refresh-token/", views.CustomTokenRefreshView.as_view(), name="refresh_token"
+    ),
 ]

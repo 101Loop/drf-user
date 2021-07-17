@@ -1,2 +1,2 @@
+-e ../
 drf-yasg
-drf_user

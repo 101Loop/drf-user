@@ -5,6 +5,7 @@ from django.core.validators import ValidationError
 from django.utils.text import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from drf_user import user_settings
 from drf_user.models import User
@@ -32,15 +33,15 @@ class UserSerializer(serializers.ModelSerializer):
         value: str
 
         """
-        if user_settings["EMAIL_VALIDATION"]:
-            if check_validation(value=value):
-                return value
-            else:
-                raise serializers.ValidationError(
-                    "The email must be " "pre-validated via OTP."
-                )
-        else:
+        if not user_settings["EMAIL_VALIDATION"]:
             return value
+
+        if check_validation(value=value):
+            return value
+        else:
+            raise serializers.ValidationError(
+                "The email must be " "pre-validated via OTP."
+            )
 
     def validate_mobile(self, value: str) -> str:
         """
@@ -55,15 +56,15 @@ class UserSerializer(serializers.ModelSerializer):
         value: str
 
         """
-        if user_settings["MOBILE_VALIDATION"]:
-            if check_validation(value=value):
-                return value
-            else:
-                raise serializers.ValidationError(
-                    "The mobile must be " "pre-validated via OTP."
-                )
-        else:
+        if not user_settings["MOBILE_VALIDATION"]:
             return value
+
+        if check_validation(value=value):
+            return value
+        else:
+            raise serializers.ValidationError(
+                "The mobile must be " "pre-validated via OTP."
+            )
 
     def validate_password(self, value: str) -> str:
         """Validate whether the password meets all django validator requirements."""
@@ -353,3 +354,32 @@ class ImageSerializer(serializers.ModelSerializer):
 
         model = User
         fields = ("profile_image",)
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Custom Token Obtain Pair Serializer
+
+    Custom serializer subclassing TokenObtainPairSerializer to add
+    certain extra data in payload such as: email, mobile, name
+    """
+
+    default_error_messages = {
+        "no_active_account": _("username or password is invalid.")
+    }
+
+    @classmethod
+    def get_token(cls, user):
+        """Generate token, then add extra data to the token."""
+        token = super().get_token(user)
+
+        # Add custom claims
+        if hasattr(user, "email"):
+            token["email"] = user.email
+
+        if hasattr(user, "mobile"):
+            token["mobile"] = user.mobile
+
+        if hasattr(user, "name"):
+            token["name"] = user.name
+
+        return token

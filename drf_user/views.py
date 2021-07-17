@@ -1,7 +1,6 @@
 """Views for drf-user"""
-from datetime import datetime
-
 from django.conf import settings
+from django.utils import timezone
 from django.utils.text import gettext_lazy as _
 from drfaddons.utils import get_client_ip
 from drfaddons.utils import JsonResponse
@@ -16,12 +15,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_jwt.serializers import JSONWebTokenSerializer
-from rest_framework_jwt.settings import api_settings
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from drf_user.models import AuthTransaction
 from drf_user.models import User
 from drf_user.serializers import CheckUniqueSerializer
+from drf_user.serializers import CustomTokenObtainPairSerializer
 from drf_user.serializers import OTPLoginRegisterSerializer
 from drf_user.serializers import OTPSerializer
 from drf_user.serializers import PasswordResetSerializer
@@ -82,43 +84,38 @@ class LoginView(APIView):
 
     renderer_classes = (JSONRenderer,)
     permission_classes = (AllowAny,)
-    serializer_class = JSONWebTokenSerializer
+    serializer_class = CustomTokenObtainPairSerializer
 
-    def validated(self, serialized_data, *args, **kwargs):
-        """Validates the response"""
-        user = serialized_data.object.get("user") or self.request.user
-        token = serialized_data.object.get("token")
-        response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(
-            token, user, self.request
-        )
-        response = Response(response_data)
-        if api_settings.JWT_AUTH_COOKIE:
-            expiration = datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA
-            response.set_cookie(
-                api_settings.JWT_AUTH_COOKIE, token, expires=expiration, httponly=True
-            )
+    def post(self, request, *args, **kwargs):
+        """
+        Process a login request via username/password.
+        """
+        serializer = self.serializer_class(data=request.data)
 
-        user.last_login = datetime.now()
-        user.save()
+        serializer.is_valid(raise_exception=True)
+
+        # if data is valid then create a record in auth transaction model
+        user = serializer.user
+        token = serializer.validated_data.get("access")
+        refresh_token = serializer.validated_data.get("refresh")
 
         AuthTransaction(
             created_by=user,
-            token=token,
+            token=str(token),
+            refresh_token=str(refresh_token),
             ip_address=get_client_ip(self.request),
             session=user.get_session_auth_hash(),
+            expires_at=timezone.now() + api_settings.ACCESS_TOKEN_LIFETIME,
         ).save()
 
-        return response
-
-    def post(self, request):
-        """Overrides post method to validate serialized data"""
-        serialized_data = self.serializer_class(data=request.data)
-        if serialized_data.is_valid():
-            return self.validated(serialized_data=serialized_data)
-        else:
-            return JsonResponse(
-                serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY
-            )
+        # For backward compatibility, returning custom response
+        # as simple_jwt returns `access` and `refresh`
+        resp = {
+            "refresh_token": str(refresh_token),
+            "token": str(token),
+            "session": user.get_session_auth_hash(),
+        }
+        return Response(resp, status=status.HTTP_200_OK)
 
 
 class CheckUniqueView(APIView):
@@ -429,3 +426,35 @@ class UploadImageView(APIView):
         return Response(
             {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
         )
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Subclassing TokenRefreshView so that we can update
+    AuthTransaction model when access token is updated
+    """
+
+    def post(self, request, *args, **kwargs):
+        """
+        Process request to generate new access token using
+        refresh token.
+        """
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        token = serializer.validated_data.get("access")
+
+        auth_transaction = AuthTransaction.objects.get(
+            refresh_token=request.data["refresh"]
+        )
+        auth_transaction.token = token
+        auth_transaction.expires_at = (
+            timezone.now() + api_settings.ACCESS_TOKEN_LIFETIME
+        )
+        auth_transaction.save(update_fields=["token", "expires_at"])
+
+        return Response({"token": str(token)}, status=status.HTTP_200_OK)

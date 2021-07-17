@@ -7,6 +7,18 @@
 Welcome to drf-user's documentation!
 ====================================
 
+.. image:: https://readthedocs.org/projects/drf-instamojo/badge/?version=latest
+   :target: https://drf-bulk.readthedocs.io/en/latest/
+   :alt: Documentation Status
+.. image:: https://github.com/101loop/drf-user/workflows/CI/badge.svg
+   :target: https://github.com/101loop/drf-user
+   :alt: CI
+.. image:: https://codecov.io/gh/101Loop/drf-user/branch/master/graph/badge.svg?token=e0AVdjOABf
+   :target: https://codecov.io/gh/101Loop/drf-user
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+   :alt: Code style: black
+
 User APP for Django REST Framework with API Views.
 
 
@@ -29,6 +41,8 @@ Overview
 ============
 Feature List
 ============
+
+|check_| JWT Support (Using `Simple JWT <https://django-rest-framework-simplejwt.readthedocs.io/>`__)
 
 |check_| Mobile Number
 
