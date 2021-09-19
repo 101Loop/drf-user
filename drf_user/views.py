@@ -1,5 +1,8 @@
 """Views for drf-user"""
+from urllib.parse import urlencode
+
 from django.conf import settings
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
 from drfaddons.utils import get_client_ip
@@ -10,8 +13,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.parsers import JSONParser
-from rest_framework.permissions import AllowAny
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,16 +21,22 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from drf_user.google_auth import google_get_access_token
+from drf_user.google_auth import google_get_user_info
+from drf_user.mixins import AuthAPIMixin
+from drf_user.mixins import PublicAPIMixin
 from drf_user.models import AuthTransaction
 from drf_user.models import User
 from drf_user.serializers import CheckUniqueSerializer
 from drf_user.serializers import CustomTokenObtainPairSerializer
+from drf_user.serializers import GoogleLoginSerializer
 from drf_user.serializers import OTPLoginRegisterSerializer
 from drf_user.serializers import OTPSerializer
 from drf_user.serializers import PasswordResetSerializer
 from drf_user.serializers import UserSerializer
 from drf_user.utils import check_unique
 from drf_user.utils import generate_otp
+from drf_user.utils import get_or_create_user
 from drf_user.utils import login_user
 from drf_user.utils import send_otp
 from drf_user.utils import validate_otp
@@ -37,19 +44,15 @@ from drf_user.variables import EMAIL
 from drf_user.variables import MOBILE
 
 
-class RegisterView(CreateAPIView):
+class RegisterView(PublicAPIMixin, CreateAPIView):
     """
     Register View
 
     Register a new user to the system.
     The data required are username, email, name, password and mobile (optional).
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     renderer_classes = (JSONRenderer,)
-    permission_classes = (AllowAny,)
     serializer_class = UserSerializer
 
     def perform_create(self, serializer):
@@ -68,7 +71,7 @@ class RegisterView(CreateAPIView):
         return User.objects.create_user(**data)
 
 
-class LoginView(APIView):
+class LoginView(PublicAPIMixin, APIView):
     """
     Login View
 
@@ -77,13 +80,9 @@ class LoginView(APIView):
 
     username -- Either username or mobile or email address.
     password -- Password of the user.
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     renderer_classes = (JSONRenderer,)
-    permission_classes = (AllowAny,)
     serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
@@ -118,7 +117,7 @@ class LoginView(APIView):
         return Response(resp, status=status.HTTP_200_OK)
 
 
-class CheckUniqueView(APIView):
+class CheckUniqueView(PublicAPIMixin, APIView):
     """
     Check Unique API View
 
@@ -126,13 +125,9 @@ class CheckUniqueView(APIView):
     doesn't exists yet)
     'prop' -- A property to check for uniqueness (username/email/mobile)
     'value' -- Value against property which is to be checked for.
-
-     Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     renderer_classes = (JSONRenderer,)
-    permission_classes = (AllowAny,)
     serializer_class = CheckUniqueSerializer
 
     def validated(self, serialized_data, *args, **kwargs):
@@ -158,7 +153,7 @@ class CheckUniqueView(APIView):
             )
 
 
-class OTPView(APIView):
+class OTPView(PublicAPIMixin, APIView):
     """
     OTP Validate | OTP Login
 
@@ -187,12 +182,8 @@ class OTPView(APIView):
 
     >>> {"destination": "me@himanshus.com", "is_login": True,
     >>>  "verify_otp": 1234232}
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
-    permission_classes = (AllowAny,)
     serializer_class = OTPSerializer
 
     def post(self, request, *args, **kwargs):
@@ -236,21 +227,17 @@ class OTPView(APIView):
                 )
 
 
-class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
+class RetrieveUpdateUserAccountView(AuthAPIMixin, RetrieveUpdateAPIView):
     """
     Retrieve Update User Account View
 
     get: Fetch Account Details
     put: Update all details
     patch: Update some details
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta( https://github.com/ag93999)
     """
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated,)
     lookup_field = "created_by"
 
     def get_object(self):
@@ -270,7 +257,7 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
         )
 
 
-class OTPLoginView(APIView):
+class OTPLoginView(PublicAPIMixin, APIView):
     """
     OTP Login View
 
@@ -285,12 +272,8 @@ class OTPLoginView(APIView):
     email -- Required
     mobile -- Required
     verify_otp -- Not Required (only when verifying OTP)
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
-    permission_classes = (AllowAny,)
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     serializer_class = OTPLoginRegisterSerializer
@@ -363,14 +346,12 @@ class OTPLoginView(APIView):
             return Response(data=message, status=curr_status)
 
 
-class PasswordResetView(APIView):
+class PasswordResetView(PublicAPIMixin, APIView):
     """This API can be used to reset a user's password.
 
     Usage: First send an otp to the user by making an
     API call to `api/user/otp/` with `is_login` parameter value false.
     """
-
-    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         """Overrides post method to validate OTP and reset password"""
@@ -391,21 +372,18 @@ class PasswordResetView(APIView):
             )
 
 
-class UploadImageView(APIView):
+class UploadImageView(AuthAPIMixin, APIView):
     """This API can be used to upload a profile picture for user.
 
     usage: Create a multipart request to this API, with your image
     attached to `profile_image` parameter.
     """
 
-    from .models import User
     from .serializers import ImageSerializer
-    from rest_framework.permissions import IsAuthenticated
     from rest_framework.parsers import MultiPartParser
 
     queryset = User.objects.all()
     serializer_class = ImageSerializer
-    permission_classes = (IsAuthenticated,)
     parser_class = (MultiPartParser,)
 
     def post(self, request, *args, **kwargs):
@@ -458,3 +436,51 @@ class CustomTokenRefreshView(TokenRefreshView):
         auth_transaction.save(update_fields=["token", "expires_at"])
 
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
+
+
+# Google Auth API View
+class GoogleLoginView(PublicAPIMixin, APIView):
+    """Google Login View
+
+    Implements Google Oauth2 Login View
+    """
+
+    def get(self, request, *args, **kwargs):
+        """Google Login View"""
+        serializer = GoogleLoginSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+
+        code = validated_data.get("code")
+        error = validated_data.get("error")
+
+        # set login url to redirect if google auth fails
+        login_url = f"{settings.FRONTEND_LOGIN_URL}"
+        if not login_url:
+            raise ValueError("FRONTEND_LOGIN_URL must be set in your settings file.")
+
+        if error or not code:
+            params = urlencode({"error": error})
+            return redirect(f"{login_url}?{params}")
+
+        # set redirect uri
+        redirect_uri = settings.REDIRECT_URI
+        if not redirect_uri:
+            raise ValueError("REDIRECT_URI must be set in your settings file.")
+
+        access_token = google_get_access_token(code=code, redirect_uri=redirect_uri)
+
+        user_data = google_get_user_info(access_token=access_token)
+
+        profile_data = {
+            "username": user_data["email"],
+            "email": user_data["email"],
+            "name": f"{user_data.get('givenName', '')} {user_data.get('familyName', '')}",  # NOQA
+        }
+
+        # if user exists with google email then return user otherwise create one
+        user = get_or_create_user(**profile_data)
+
+        # return jwt token
+        return Response(login_user(user, request), status=status.HTTP_200_OK)

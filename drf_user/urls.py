@@ -32,4 +32,5 @@ urlpatterns = [
     path(
         "refresh-token/", views.CustomTokenRefreshView.as_view(), name="refresh_token"
     ),
+    path("google/", views.GoogleLoginView.as_view(), name="login-with-google"),
 ]

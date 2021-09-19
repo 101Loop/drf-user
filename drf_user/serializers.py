@@ -383,3 +383,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             token["name"] = user.name
 
         return token
+
+
+class GoogleLoginSerializer(serializers.Serializer):
+    """Google Login Serializer
+
+    Serializer to handle google oauth2 callback
+    Params
+    code: If the Google OAuth2 was successful,
+          Google will call our callback API with a code GET parameter.
+    error: If the Google OAuth2 was not successful,
+           Google will call our API with an error GET parameter.
+    """
+
+    code = serializers.CharField(required=False)
+    error = serializers.CharField(required=False)

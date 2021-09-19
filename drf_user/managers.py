@@ -4,6 +4,7 @@ from typing import Optional
 from django.contrib.auth.base_user import BaseUserManager
 
 from drf_user import update_user_settings
+from drf_user.models import User
 
 
 class UserManager(BaseUserManager):
@@ -21,19 +22,22 @@ class UserManager(BaseUserManager):
         self,
         username: str,
         email: str,
-        password: str,
-        fullname: str,
+        name: str,
+        password: Optional[str] = None,
         mobile: Optional[str] = None,
         **kwargs
-    ):
+    ) -> User:
         """
         Creates and saves a User with given details
         """
         email = self.normalize_email(email)
         user = self.model(
-            username=username, email=email, name=fullname, mobile=mobile, **kwargs
+            username=username, email=email, name=name, mobile=mobile, **kwargs
         )
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -41,11 +45,11 @@ class UserManager(BaseUserManager):
         self,
         username: str,
         email: str,
-        password: str,
         name: str,
+        password: Optional[str] = None,
         mobile: Optional[str] = None,
         **kwargs
-    ):
+    ) -> User:
         """
         Creates a normal user considering the specified user settings
         from Django Project's settings.py
@@ -69,7 +73,14 @@ class UserManager(BaseUserManager):
         kwargs.setdefault("is_staff", False)
         kwargs.setdefault("is_active", vals.get("DEFAULT_ACTIVE_STATE", False))
 
-        return self._create_user(username, email, password, name, mobile, **kwargs)
+        return self._create_user(
+            username=username,
+            email=email,
+            name=name,
+            password=password,
+            mobile=mobile,
+            **kwargs
+        )
 
     def create_superuser(
         self,
@@ -79,10 +90,11 @@ class UserManager(BaseUserManager):
         name: str,
         mobile: Optional[str] = None,
         **kwargs
-    ):
+    ) -> User:
         """
         Creates a super user considering the specified user settings
         from Django Project's settings.py
+
         Parameters
         ----------
         username: str
@@ -108,4 +120,11 @@ class UserManager(BaseUserManager):
         if kwargs.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
 
-        return self._create_user(username, email, password, name, mobile, **kwargs)
+        return self._create_user(
+            username=username,
+            email=email,
+            name=name,
+            password=password,
+            mobile=mobile,
+            **kwargs
+        )

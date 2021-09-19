@@ -1,7 +1,10 @@
 """Collection of general helper functions."""
 import datetime
+from typing import Dict
+from typing import Optional
 
 import pytz
+from django.db import transaction
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
@@ -43,7 +46,7 @@ def datetime_passed_now(source):
         return source <= datetime.datetime.now()
 
 
-def check_unique(prop, value):
+def check_unique(prop, value) -> bool:
     """
     This function checks if the value provided is present in Database
     or can be created in DBMS as unique data.
@@ -72,7 +75,7 @@ def check_unique(prop, value):
     return user.count() == 0
 
 
-def generate_otp(prop, value):
+def generate_otp(prop, value) -> OTPValidation:
     """
     This function generates an OTP and saves it into Model. It also
     sets various counters, such as send_counter,
@@ -186,7 +189,7 @@ def send_otp(value, otpobj, recip):
     return rdata
 
 
-def login_user(user: User, request: HttpRequest) -> dict:
+def login_user(user: User, request: HttpRequest) -> Dict:
     """
     This function is used to login a user. It saves the authentication in
     AuthTransaction model.
@@ -232,7 +235,7 @@ def login_user(user: User, request: HttpRequest) -> dict:
     }
 
 
-def check_validation(value):
+def check_validation(value) -> bool:
     """
     This functions check if given value is already validated via OTP or not.
     Parameters
@@ -258,7 +261,7 @@ def check_validation(value):
         return False
 
 
-def validate_otp(value, otp):
+def validate_otp(value, otp) -> Optional[bool]:
     """
     This function is used to validate the OTP for a particular value.
     It also reduces the attempt count by 1 and resets OTP.
@@ -308,3 +311,14 @@ def validate_otp(value, otp):
                 "destination. Kindly send an OTP first"
             )
         )
+
+
+@transaction.atomic
+def get_or_create_user(*, email: str, **extra_data) -> User:
+    """Check if user exists or not. Create user if not exists."""
+    user = User.objects.filter(email=email).first()
+
+    if user:
+        return user
+
+    return User.objects.create_user(email=email, **extra_data)
