@@ -6,10 +6,9 @@ import requests
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
-GOOGLE_ID_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo"
-GOOGLE_ACCESS_TOKEN_OBTAIN_URL = "https://oauth2.googleapis.com/token"
-GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
-GOOGLE_AUTHORIZATION_CODE: str = "authorization_code"
+from drf_user.variables import GOOGLE_ACCESS_TOKEN_OBTAIN_URL
+from drf_user.variables import GOOGLE_AUTHORIZATION_CODE
+from drf_user.variables import GOOGLE_USER_INFO_URL
 
 
 def google_get_access_token(*, code: str, redirect_uri: str) -> str:

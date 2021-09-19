@@ -10,8 +10,6 @@ from drf_user.models import User
 class UserManager(BaseUserManager):
     """
     UserManager class for Custom User Model
-
-    Author: Himanshu Shankar (https://himanshus.com)
     Source: Can't find link but the following solution is inspired
     from a solution provided on internet.
     """

@@ -26,7 +26,7 @@ user_settings = update_user_settings()
 otp_settings = user_settings["OTP"]
 
 
-def datetime_passed_now(source):
+def datetime_passed_now(source) -> bool:
     """
     Compares provided datetime with current time on the basis of Django
     settings. Checks source is in future or in past. False if it's in future.
@@ -37,8 +37,6 @@ def datetime_passed_now(source):
     Returns
     -------
     bool
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
     if source.tzinfo is not None and source.tzinfo.utcoffset(source) is not None:
         return source <= datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -167,19 +165,14 @@ def send_otp(value, otpobj, recip):
         )
 
     message = (
-        "OTP for verifying "
-        + otpobj.get_prop_display()
-        + ": "
-        + value
-        + " is "
-        + otp
-        + ". Don't share this with anyone!"
+        f"OTP for verifying {otpobj.get_prop_display()}: {value} is {otp}."
+        f" Don't share this with anyone!"
     )
 
     try:
         rdata = send_message(message, otp_settings["SUBJECT"], [value], [recip])
     except ValueError as err:
-        raise APIException(_("Server configuration error occured: %s") % str(err))
+        raise APIException(_(f"Server configuration error occurred: {str(err)}"))
 
     otpobj.reactive_at = timezone.now() + datetime.timedelta(
         minutes=otp_settings["COOLING_PERIOD"]
@@ -291,7 +284,7 @@ def validate_otp(value, otp) -> Optional[bool]:
         elif otp_object.validate_attempt <= 0:
             generate_otp(otp_object.prop, value)
             raise AuthenticationFailed(
-                detail=_("Incorrect OTP. Attempt exceeded! OTP has been " "reset.")
+                detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset.")
             )
 
         else:

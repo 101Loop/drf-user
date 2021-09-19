@@ -1,12 +1,14 @@
 """
 Custom backends to facilitate authorizations
-
-Author: Himanshu Shankar (https://himanshus.com)
 """
 import re
+from typing import Optional
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+from django.http import HttpRequest
+
+from drf_user.models import User
 
 
 class MultiFieldModelBackend(ModelBackend):
@@ -17,7 +19,9 @@ class MultiFieldModelBackend(ModelBackend):
 
     user_model = get_user_model()
 
-    def authenticate(self, request, username=None, password=None, **kwargs) -> None:
+    def authenticate(
+        self, request: HttpRequest, username: str = None, password: str = None, **kwargs
+    ) -> Optional[User]:
         """
         This function is used to authenticate a user. User can send
         either of email, mobile or username in request to
@@ -57,7 +61,7 @@ class MultiFieldModelBackend(ModelBackend):
         except self.user_model.DoesNotExist:
             return None
 
-    def get_user(self, username: int) -> None:
+    def get_user(self, username: int) -> Optional[User]:
         """Returns user object if exists otherwise None
 
         Parameters
