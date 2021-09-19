@@ -4,7 +4,6 @@ from typing import Optional
 from django.contrib.auth.base_user import BaseUserManager
 
 from drf_user import update_user_settings
-from drf_user.models import User
 
 
 class UserManager(BaseUserManager):
@@ -24,7 +23,7 @@ class UserManager(BaseUserManager):
         password: Optional[str] = None,
         mobile: Optional[str] = None,
         **kwargs
-    ) -> User:
+    ):
         """
         Creates and saves a User with given details
         """
@@ -47,7 +46,7 @@ class UserManager(BaseUserManager):
         password: Optional[str] = None,
         mobile: Optional[str] = None,
         **kwargs
-    ) -> User:
+    ):
         """
         Creates a normal user considering the specified user settings
         from Django Project's settings.py
@@ -88,7 +87,7 @@ class UserManager(BaseUserManager):
         name: str,
         mobile: Optional[str] = None,
         **kwargs
-    ) -> User:
+    ):
         """
         Creates a super user considering the specified user settings
         from Django Project's settings.py

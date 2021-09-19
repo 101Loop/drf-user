@@ -336,7 +336,7 @@ class TestOTPView(APITestCase):
 
         self.assertEqual(500, response.status_code)
         self.assertEqual(
-            "Server configuration error occured: Invalid recipient.",
+            "Server configuration error occurred: Invalid recipient.",
             response.json()["detail"],
         )
 
@@ -584,7 +584,7 @@ class TestOTPLoginView(APITestCase):
         #  when drf_addons is updated
         self.assertEqual(500, response.status_code)
         self.assertEqual(
-            "Server configuration error occured: Invalid recipient.",
+            "Server configuration error occurred: Invalid recipient.",
             response.json()["detail"],
         )
 
