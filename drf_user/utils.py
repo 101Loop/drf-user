@@ -172,7 +172,7 @@ def send_otp(value, otpobj, recip):
     try:
         rdata = send_message(message, otp_settings["SUBJECT"], [value], [recip])
     except ValueError as err:
-        raise APIException(_(f'Server configuration error occurred: {err}'))
+        raise APIException(_(f"Server configuration error occurred: {err}"))
 
     otpobj.reactive_at = timezone.now() + datetime.timedelta(
         minutes=otp_settings["COOLING_PERIOD"]
