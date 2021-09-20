@@ -225,8 +225,8 @@ Commit your changes and push your branch to GitHub:
 ```
 
 Submit a pull request through the GitHub website.
- 
-``` 
+
+```
 Windows:
 For developing in windows follow the following instructions
 
