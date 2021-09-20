@@ -9,5 +9,6 @@ pytest
 pytest-cov
 pytest-django
 sphinx
+sphinx-autobuild==2021.3.14
 sphinxcontrib_httpdomain
 tox
