@@ -1,8 +1,12 @@
 .PHONY: clean-pyc clean-build docs clean
 
-VIRTUALENV = virtualenv --python=python3
-PYTHON = $(VENV)/bin/python
-VENV := $(shell echo $${VIRTUAL_ENV-.venv})
+VENV = venv
+PYTHON=$(VENV)/bin/python
+
+# make it work on windows too
+ifeq ($(OS), Windows_NT)
+    PYTHON=$(VENV)/Scripts/python
+endif
 
 TEST_FLAGS=--verbosity=2
 COVER_FLAGS=--source=drf_user
