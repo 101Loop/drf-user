@@ -152,6 +152,16 @@ files for some of their features (e.g. automatically picking up the
 
 ## Local Development Environment
 
+Steps to Install make for windows
+
+- Install chocolatey from [here](https://chocolatey.org/install).
+
+- And then run following command
+
+```sh
+$ choco install make
+```
+
 <!-- You can (and should) run our test suite using [tox](https://tox.readthedocs.io/). However, you’ll probably want a more traditional environment as well. We highly recommend to develop using the latest Python 3 release because `interrogate` tries to take advantage of modern features whenever possible. -->
 
 First create a [virtual environment](https://virtualenv.pypa.io/). It’s out of
