@@ -152,16 +152,6 @@ files for some of their features (e.g. automatically picking up the
 
 ## Local Development Environment
 
-Steps to Install make for windows
-
-- Install chocolatey from [here](https://chocolatey.org/install).
-
-- And then run following command
-
-```sh
-$ choco install make
-```
-
 <!-- You can (and should) run our test suite using [tox](https://tox.readthedocs.io/). However, you’ll probably want a more traditional environment as well. We highly recommend to develop using the latest Python 3 release because `interrogate` tries to take advantage of modern features whenever possible. -->
 
 First create a [virtual environment](https://virtualenv.pypa.io/). It’s out of
@@ -189,6 +179,12 @@ Change into the newly created directory and **after activating your virtual
 environment** install an editable version of `drf-user` along with its tests,
 docs requirements and to avoid committing code that violates our style guide, we
 use [pre-commit](https://pre-commit.com/) hooks:
+
+Note : For **windows** users, please refer this link to install choco [here](https://chocolatey.org/install) and then use following command to setup make
+
+```sh
+$ choco install make
+```
 
 ```sh
 (env) $ cd drf-user
