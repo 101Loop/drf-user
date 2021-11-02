@@ -41,8 +41,6 @@ def update_user_settings() -> dict:
     Returns
     -------
     user_settings: dict
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
     custom_settings = getattr(settings, "USER_SETTINGS", None)
 

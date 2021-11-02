@@ -30,8 +30,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     mobile: Mobile Number of the user
     name: Name of the user. Replaces last_name & first_name
     update_date: DateTime instance when the user was updated
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
 
     username = models.CharField(
@@ -93,8 +91,6 @@ class AuthTransaction(models.Model):
     """
     Represents all authentication in the system that took place via
     REST API.
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
 
     ip_address = models.GenericIPAddressField(blank=False, null=False)
@@ -130,8 +126,6 @@ class AuthTransaction(models.Model):
 class OTPValidation(models.Model):
     """
     Represents all OTP Validation in the System.
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
 
     otp = models.CharField(verbose_name=_("OTP Code"), max_length=10)

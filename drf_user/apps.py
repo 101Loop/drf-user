@@ -13,10 +13,6 @@ class DRFUserConfig(AppConfig):
         Register signals
         Call update_user_settings() to update the user setting as per
         django configurations
-        Returns
-        -------
-
-        Author: Himanshu Shankar (https://himanshus.com)
         """
 
         from . import update_user_settings

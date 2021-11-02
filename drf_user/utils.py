@@ -1,7 +1,10 @@
 """Collection of general helper functions."""
 import datetime
+from typing import Dict
+from typing import Optional
 
 import pytz
+from django.db import transaction
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
@@ -23,7 +26,7 @@ user_settings = update_user_settings()
 otp_settings = user_settings["OTP"]
 
 
-def datetime_passed_now(source):
+def datetime_passed_now(source) -> bool:
     """
     Compares provided datetime with current time on the basis of Django
     settings. Checks source is in future or in past. False if it's in future.
@@ -34,8 +37,6 @@ def datetime_passed_now(source):
     Returns
     -------
     bool
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
     if source.tzinfo is not None and source.tzinfo.utcoffset(source) is not None:
         return source <= datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -43,7 +44,7 @@ def datetime_passed_now(source):
         return source <= datetime.datetime.now()
 
 
-def check_unique(prop, value):
+def check_unique(prop, value) -> bool:
     """
     This function checks if the value provided is present in Database
     or can be created in DBMS as unique data.
@@ -72,7 +73,7 @@ def check_unique(prop, value):
     return user.count() == 0
 
 
-def generate_otp(prop, value):
+def generate_otp(prop, value) -> OTPValidation:
     """
     This function generates an OTP and saves it into Model. It also
     sets various counters, such as send_counter,
@@ -164,19 +165,14 @@ def send_otp(value, otpobj, recip):
         )
 
     message = (
-        "OTP for verifying "
-        + otpobj.get_prop_display()
-        + ": "
-        + value
-        + " is "
-        + otp
-        + ". Don't share this with anyone!"
+        f"OTP for verifying {otpobj.get_prop_display()}: {value} is {otp}."
+        f" Don't share this with anyone!"
     )
 
     try:
         rdata = send_message(message, otp_settings["SUBJECT"], [value], [recip])
     except ValueError as err:
-        raise APIException(_("Server configuration error occured: %s") % str(err))
+        raise APIException(_(f"Server configuration error occurred: {err}"))
 
     otpobj.reactive_at = timezone.now() + datetime.timedelta(
         minutes=otp_settings["COOLING_PERIOD"]
@@ -186,7 +182,7 @@ def send_otp(value, otpobj, recip):
     return rdata
 
 
-def login_user(user: User, request: HttpRequest) -> dict:
+def login_user(user: User, request: HttpRequest) -> Dict:
     """
     This function is used to login a user. It saves the authentication in
     AuthTransaction model.
@@ -232,7 +228,7 @@ def login_user(user: User, request: HttpRequest) -> dict:
     }
 
 
-def check_validation(value):
+def check_validation(value) -> bool:
     """
     This functions check if given value is already validated via OTP or not.
     Parameters
@@ -258,7 +254,7 @@ def check_validation(value):
         return False
 
 
-def validate_otp(value, otp):
+def validate_otp(value, otp) -> Optional[bool]:
     """
     This function is used to validate the OTP for a particular value.
     It also reduces the attempt count by 1 and resets OTP.
@@ -288,7 +284,7 @@ def validate_otp(value, otp):
         elif otp_object.validate_attempt <= 0:
             generate_otp(otp_object.prop, value)
             raise AuthenticationFailed(
-                detail=_("Incorrect OTP. Attempt exceeded! OTP has been " "reset.")
+                detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset.")
             )
 
         else:
@@ -308,3 +304,14 @@ def validate_otp(value, otp):
                 "destination. Kindly send an OTP first"
             )
         )
+
+
+@transaction.atomic
+def get_or_create_user(*, email: str, **extra_data) -> User:
+    """Check if user exists or not. Create user if not exists."""
+    user = User.objects.filter(email=email).first()
+
+    if user:
+        return user
+
+    return User.objects.create_user(email=email, **extra_data)

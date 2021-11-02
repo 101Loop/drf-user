@@ -1,4 +1,7 @@
 """Serializers related to drf-user"""
+from typing import Dict
+from typing import Optional
+
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import EmailValidator
 from django.core.validators import ValidationError
@@ -40,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
             return value
         else:
             raise serializers.ValidationError(
-                "The email must be " "pre-validated via OTP."
+                "The email must be pre-validated via OTP."
             )
 
     def validate_mobile(self, value: str) -> str:
@@ -133,8 +136,6 @@ class OTPSerializer(serializers.Serializer):
     >>> OTPSerializer(data={"destination": "88xx6xx5xx",
     >>>                     "email": "me@himanshus.com",
     >>>                     "verify_otp": 2930433, "is_login": True})
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
 
     email = serializers.EmailField(required=False)
@@ -142,7 +143,7 @@ class OTPSerializer(serializers.Serializer):
     verify_otp = serializers.CharField(required=False)
     destination = serializers.CharField(required=True)
 
-    def get_user(self, prop: str, destination: str) -> User:
+    def get_user(self, prop: str, destination: str) -> Optional[User]:
         """
         Provides current user on the basis of property and destination
         provided.
@@ -170,7 +171,7 @@ class OTPSerializer(serializers.Serializer):
 
         return user
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, attrs: Dict) -> Dict:
         """
         Performs custom validation to check if any user exists with
         provided details.
@@ -243,7 +244,7 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
     mobile = serializers.CharField(required=True)
 
     @staticmethod
-    def get_user(email: str, mobile: str):
+    def get_user(email: str, mobile: str) -> Optional[User]:
         """Fetches user object"""
         try:
             user = User.objects.get(email=email)
@@ -272,7 +273,7 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
                 )
         return user
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, attrs: Dict) -> Dict:
         """Validates the response"""
 
         attrs["user"] = self.get_user(
@@ -294,7 +295,7 @@ class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
 
-    def get_user(self, destination: str) -> User:
+    def get_user(self, destination: str) -> Optional[User]:
         """Provides current user on the basis of property and destination
         provided.
 
@@ -313,7 +314,7 @@ class PasswordResetSerializer(serializers.Serializer):
 
         return user
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, attrs: Dict) -> Dict:
         """Performs custom validation to check if any user exists with
         provided email.
 
@@ -368,7 +369,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     }
 
     @classmethod
-    def get_token(cls, user):
+    def get_token(cls, user: User) -> str:
         """Generate token, then add extra data to the token."""
         token = super().get_token(user)
 
@@ -383,3 +384,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             token["name"] = user.name
 
         return token
+
+
+class GoogleLoginSerializer(serializers.Serializer):
+    """Google Login Serializer
+
+    Serializer to handle google oauth2 callback
+    Params
+    code: If the Google OAuth2 was successful,
+          Google will call our callback API with a code GET parameter.
+    error: If the Google OAuth2 was not successful,
+           Google will call our API with an error GET parameter.
+    """
+
+    code = serializers.CharField(required=False)
+    error = serializers.CharField(required=False)
