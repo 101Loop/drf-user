@@ -4,6 +4,12 @@ VIRTUALENV = virtualenv --python=python3
 PYTHON = $(VENV)/bin/python
 VENV := $(shell echo $${VIRTUAL_ENV-.venv})
 
+# make it work on windows too
+ifeq ($(OS), Windows_NT)
+	VENV = venv
+    PYTHON=$(VENV)/Scripts/python
+endif
+
 TEST_FLAGS=--verbosity=2
 COVER_FLAGS=--source=drf_user
 

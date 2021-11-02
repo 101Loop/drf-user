@@ -180,6 +180,12 @@ environment** install an editable version of `drf-user` along with its tests,
 docs requirements and to avoid committing code that violates our style guide, we
 use [pre-commit](https://pre-commit.com/) hooks:
 
+Note : For **windows** users, please refer this link to install choco [here](https://chocolatey.org/install) and then use following command to setup make
+
+```sh
+$ choco install make
+```
+
 ```sh
 (env) $ cd drf-user
 (env) $ make install
