@@ -1,11 +1,13 @@
 """Collection of general helper functions."""
 import datetime
+from typing import Dict
+from typing import Optional
+from typing import Union
 
 import pytz
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
-from drfaddons.utils import get_client_ip
 from drfaddons.utils import send_message
 from rest_framework.exceptions import APIException
 from rest_framework.exceptions import AuthenticationFailed
@@ -19,11 +21,34 @@ from drf_user.models import AuthTransaction
 from drf_user.models import OTPValidation
 from drf_user.models import User
 
-user_settings = update_user_settings()
-otp_settings = user_settings["OTP"]
+user_settings: Dict[
+    str, Union[bool, Dict[str, Union[int, str, bool]]]
+] = update_user_settings()
+otp_settings: Dict[str, Union[str, int]] = user_settings["OTP"]
 
 
-def datetime_passed_now(source):
+def get_client_ip(request: HttpRequest) -> Optional[str]:
+    """
+    Fetches the IP address of a client from Request and
+    return in proper format.
+    Source: https://stackoverflow.com/a/4581997
+
+    Parameters
+    ----------
+    request: django.http.HttpRequest
+
+    Returns
+    -------
+    ip: str or None
+    """
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0]
+    else:
+        return request.META.get("REMOTE_ADDR")
+
+
+def datetime_passed_now(source: datetime.datetime) -> bool:
     """
     Compares provided datetime with current time on the basis of Django
     settings. Checks source is in future or in past. False if it's in future.
@@ -43,7 +68,7 @@ def datetime_passed_now(source):
         return source <= datetime.datetime.now()
 
 
-def check_unique(prop, value):
+def check_unique(prop: str, value: str) -> bool:
     """
     This function checks if the value provided is present in Database
     or can be created in DBMS as unique data.
@@ -72,7 +97,7 @@ def check_unique(prop, value):
     return user.count() == 0
 
 
-def generate_otp(prop, value):
+def generate_otp(prop: str, value: str) -> OTPValidation:
     """
     This function generates an OTP and saves it into Model. It also
     sets various counters, such as send_counter,
@@ -100,7 +125,7 @@ def generate_otp(prop, value):
     5039164
     """
     # Create a random number
-    random_number = User.objects.make_random_password(
+    random_number: str = User.objects.make_random_password(
         length=otp_settings["LENGTH"], allowed_chars=otp_settings["ALLOWED_CHARS"]
     )
 
@@ -109,16 +134,16 @@ def generate_otp(prop, value):
     while OTPValidation.objects.filter(otp__exact=random_number).filter(
         is_validated=False
     ):
-        random_number = User.objects.make_random_password(
+        random_number: str = User.objects.make_random_password(
             length=otp_settings["LENGTH"], allowed_chars=otp_settings["ALLOWED_CHARS"]
         )
 
     # Get or Create new instance of Model with value of provided value
     # and set proper counter.
     try:
-        otp_object = OTPValidation.objects.get(destination=value)
+        otp_object: OTPValidation = OTPValidation.objects.get(destination=value)
     except OTPValidation.DoesNotExist:
-        otp_object = OTPValidation()
+        otp_object: OTPValidation = OTPValidation()
         otp_object.destination = value
     else:
         if not datetime_passed_now(otp_object.reactive_at):
@@ -139,7 +164,7 @@ def generate_otp(prop, value):
     return otp_object
 
 
-def send_otp(value, otpobj, recip):
+def send_otp(value: str, otpobj: OTPValidation, recip: str) -> Dict:
     """
     This function sends OTP to specified value.
     Parameters
@@ -156,27 +181,22 @@ def send_otp(value, otpobj, recip):
     -------
 
     """
-    otp = otpobj.otp
+    otp: str = otpobj.otp
 
     if not datetime_passed_now(otpobj.reactive_at):
         raise PermissionDenied(
-            detail=_("OTP sending not allowed until: " + str(otpobj.reactive_at))
+            detail=_(f"OTP sending not allowed until: {otpobj.reactive_at}")
         )
 
     message = (
-        "OTP for verifying "
-        + otpobj.get_prop_display()
-        + ": "
-        + value
-        + " is "
-        + otp
-        + ". Don't share this with anyone!"
+        f"OTP for verifying {otpobj.get_prop_display()}: {value} is {otp}."
+        f"  Don't share this with anyone!"
     )
 
     try:
-        rdata = send_message(message, otp_settings["SUBJECT"], [value], [recip])
+        rdata: dict = send_message(message, otp_settings["SUBJECT"], [value], [recip])
     except ValueError as err:
-        raise APIException(_("Server configuration error occured: %s") % str(err))
+        raise APIException(_(f"Server configuration error occurred: {err}"))
 
     otpobj.reactive_at = timezone.now() + datetime.timedelta(
         minutes=otp_settings["COOLING_PERIOD"]
@@ -186,7 +206,7 @@ def send_otp(value, otpobj, recip):
     return rdata
 
 
-def login_user(user: User, request: HttpRequest) -> dict:
+def login_user(user: User, request: HttpRequest) -> Dict[str, str]:
     """
     This function is used to login a user. It saves the authentication in
     AuthTransaction model.
@@ -201,7 +221,7 @@ def login_user(user: User, request: HttpRequest) -> dict:
     dict:
         Generated JWT tokens for user.
     """
-    token = RefreshToken.for_user(user)
+    token: RefreshToken = RefreshToken.for_user(user)
 
     # Add custom claims
     if hasattr(user, "email"):
@@ -232,7 +252,7 @@ def login_user(user: User, request: HttpRequest) -> dict:
     }
 
 
-def check_validation(value):
+def check_validation(value: str) -> bool:
     """
     This functions check if given value is already validated via OTP or not.
     Parameters
@@ -252,13 +272,13 @@ def check_validation(value):
 
     """
     try:
-        otp_object = OTPValidation.objects.get(destination=value)
+        otp_object: OTPValidation = OTPValidation.objects.get(destination=value)
         return otp_object.is_validated
     except OTPValidation.DoesNotExist:
         return False
 
 
-def validate_otp(value, otp):
+def validate_otp(value: str, otp: int) -> bool:
     """
     This function is used to validate the OTP for a particular value.
     It also reduces the attempt count by 1 and resets OTP.
@@ -275,36 +295,37 @@ def validate_otp(value, otp):
     """
     try:
         # Try to get OTP Object from Model and initialize data dictionary
-        otp_object = OTPValidation.objects.get(destination=value, is_validated=False)
-
-        # Decrement validate_attempt
-        otp_object.validate_attempt -= 1
-
-        if str(otp_object.otp) == str(otp):
-            otp_object.is_validated = True
-            otp_object.save()
-            return True
-
-        elif otp_object.validate_attempt <= 0:
-            generate_otp(otp_object.prop, value)
-            raise AuthenticationFailed(
-                detail=_("Incorrect OTP. Attempt exceeded! OTP has been " "reset.")
-            )
-
-        else:
-            otp_object.save()
-            raise AuthenticationFailed(
-                detail=_(
-                    "OTP Validation failed! "
-                    + str(otp_object.validate_attempt)
-                    + " attempts left!"
-                )
-            )
-
+        otp_object: OTPValidation = OTPValidation.objects.get(
+            destination=value, is_validated=False
+        )
     except OTPValidation.DoesNotExist:
         raise NotFound(
             detail=_(
                 "No pending OTP validation request found for provided "
                 "destination. Kindly send an OTP first"
+            )
+        )
+    # Decrement validate_attempt
+    otp_object.validate_attempt -= 1
+
+    if str(otp_object.otp) == str(otp):
+        # match otp
+        otp_object.is_validated = True
+        otp_object.save()
+        return True
+
+    elif otp_object.validate_attempt <= 0:
+        # check if attempts exceeded and regenerate otp and raise error
+        generate_otp(otp_object.prop, value)
+        raise AuthenticationFailed(
+            detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset.")
+        )
+
+    else:
+        # update attempts and raise error
+        otp_object.save()
+        raise AuthenticationFailed(
+            detail=_(
+                f"OTP Validation failed! {otp_object.validate_attempt} attempts left!"
             )
         )

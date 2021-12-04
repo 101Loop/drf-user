@@ -2,7 +2,6 @@
 from django.conf import settings
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
-from drfaddons.utils import get_client_ip
 from drfaddons.utils import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -30,6 +29,7 @@ from drf_user.serializers import PasswordResetSerializer
 from drf_user.serializers import UserSerializer
 from drf_user.utils import check_unique
 from drf_user.utils import generate_otp
+from drf_user.utils import get_client_ip
 from drf_user.utils import login_user
 from drf_user.utils import send_otp
 from drf_user.utils import validate_otp
