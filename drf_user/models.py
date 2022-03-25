@@ -86,7 +86,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """String representation of model"""
 
-        return f'{str(self.name)} | {str(self.username)}'
+        return f"{str(self.name)} | {str(self.username)}"
 
 
 class AuthTransaction(models.Model):
@@ -118,7 +118,7 @@ class AuthTransaction(models.Model):
     def __str__(self):
         """String representation of model"""
 
-        return f'{str(self.created_by.name)} | {str(self.created_by.username)}'
+        return f"{str(self.created_by.name)} | {str(self.created_by.username)}"
 
     class Meta:
         """Passing model metadata"""
