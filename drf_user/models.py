@@ -55,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(verbose_name=_("Staff Status"), default=False)
 
     # Renamed Groups to Roles
-    groups = models.ManyToManyField(
+    roles = models.ManyToManyField(
         Role,
         verbose_name=_("Roles"),
         blank=True,
