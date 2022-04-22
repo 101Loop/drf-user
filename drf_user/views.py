@@ -261,13 +261,14 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         """Updates user's password"""
 
+        response = super(RetrieveUpdateUserAccountView, self).update(
+            request, *args, **kwargs
+        )
+        # we need to set_password after save the user otherwise it'll save the raw_password in db.
         if "password" in request.data.keys():
             self.request.user.set_password(request.data["password"])
             self.request.user.save()
-
-        return super(RetrieveUpdateUserAccountView, self).update(
-            request, *args, **kwargs
-        )
+        return response
 
 
 class OTPLoginView(APIView):
@@ -340,9 +341,7 @@ class OTPLoginView(APIView):
                 otp_obj_email.save()
                 message["email"] = {"otp": _("OTP has been sent successfully.")}
             else:
-                message["email"] = {
-                    "otp": _("OTP sending failed {}".format(sentotp_email["message"]))
-                }
+                message["email"] = {"otp": _(f'OTP sending failed {sentotp_email["message"]}')}
 
             if sentotp_mobile["success"]:
                 otp_obj_mobile.send_counter += 1
@@ -350,8 +349,9 @@ class OTPLoginView(APIView):
                 message["mobile"] = {"otp": _("OTP has been sent successfully.")}
             else:
                 message["mobile"] = {
-                    "otp": _("OTP sending failed {}".format(sentotp_mobile["message"]))
+                    "otp": _(f'OTP sending failed {sentotp_mobile["message"]}')
                 }
+
 
             if sentotp_email["success"] or sentotp_mobile["success"]:
                 curr_status = status.HTTP_201_CREATED
