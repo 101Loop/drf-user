@@ -43,9 +43,6 @@ class RegisterView(CreateAPIView):
 
     Register a new user to the system.
     The data required are username, email, name, password and mobile (optional).
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     renderer_classes = (JSONRenderer,)
@@ -77,9 +74,6 @@ class LoginView(APIView):
 
     username -- Either username or mobile or email address.
     password -- Password of the user.
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     renderer_classes = (JSONRenderer,)
@@ -126,9 +120,6 @@ class CheckUniqueView(APIView):
     doesn't exists yet)
     'prop' -- A property to check for uniqueness (username/email/mobile)
     'value' -- Value against property which is to be checked for.
-
-     Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     renderer_classes = (JSONRenderer,)
@@ -187,9 +178,6 @@ class OTPView(APIView):
 
     >>> {"destination": "me@himanshus.com", "is_login": True,
     >>>  "verify_otp": 1234232}
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     permission_classes = (AllowAny,)
@@ -243,9 +231,6 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     get: Fetch Account Details
     put: Update all details
     patch: Update some details
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta( https://github.com/ag93999)
     """
 
     queryset = User.objects.all()
@@ -261,13 +246,14 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         """Updates user's password"""
 
+        response = super(RetrieveUpdateUserAccountView, self).update(
+            request, *args, **kwargs
+        )
+        # we need to set_password after save the user otherwise it'll save the raw_password in db. # noqa
         if "password" in request.data.keys():
             self.request.user.set_password(request.data["password"])
             self.request.user.save()
-
-        return super(RetrieveUpdateUserAccountView, self).update(
-            request, *args, **kwargs
-        )
+        return response
 
 
 class OTPLoginView(APIView):
@@ -285,9 +271,6 @@ class OTPLoginView(APIView):
     email -- Required
     mobile -- Required
     verify_otp -- Not Required (only when verifying OTP)
-
-    Author: Himanshu Shankar (https://himanshus.com)
-            Aditya Gupta (https://github.com/ag93999)
     """
 
     permission_classes = (AllowAny,)
@@ -341,7 +324,7 @@ class OTPLoginView(APIView):
                 message["email"] = {"otp": _("OTP has been sent successfully.")}
             else:
                 message["email"] = {
-                    "otp": _("OTP sending failed {}".format(sentotp_email["message"]))
+                    "otp": _(f'OTP sending failed {sentotp_email["message"]}')
                 }
 
             if sentotp_mobile["success"]:
@@ -350,7 +333,7 @@ class OTPLoginView(APIView):
                 message["mobile"] = {"otp": _("OTP has been sent successfully.")}
             else:
                 message["mobile"] = {
-                    "otp": _("OTP sending failed {}".format(sentotp_mobile["message"]))
+                    "otp": _(f'OTP sending failed {sentotp_mobile["message"]}')
                 }
 
             if sentotp_email["success"] or sentotp_mobile["success"]:
