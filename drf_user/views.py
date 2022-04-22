@@ -261,14 +261,13 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         """Updates user's password"""
 
-        response = super(RetrieveUpdateUserAccountView, self).update(
-            request, *args, **kwargs
-        )
-        # we need to set_password after save the user otherwise it'll save the raw_password in db.
         if "password" in request.data.keys():
             self.request.user.set_password(request.data["password"])
             self.request.user.save()
-        return response
+
+        return super(RetrieveUpdateUserAccountView, self).update(
+            request, *args, **kwargs
+        )
 
 
 class OTPLoginView(APIView):
