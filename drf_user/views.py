@@ -341,7 +341,9 @@ class OTPLoginView(APIView):
                 otp_obj_email.save()
                 message["email"] = {"otp": _("OTP has been sent successfully.")}
             else:
-                message["email"] = {"otp": _(f'OTP sending failed {sentotp_email["message"]}')}
+                message["email"] = {
+                    "otp": _(f'OTP sending failed {sentotp_email["message"]}')
+                }
 
             if sentotp_mobile["success"]:
                 otp_obj_mobile.send_counter += 1
@@ -351,7 +353,6 @@ class OTPLoginView(APIView):
                 message["mobile"] = {
                     "otp": _(f'OTP sending failed {sentotp_mobile["message"]}')
                 }
-
 
             if sentotp_email["success"] or sentotp_mobile["success"]:
                 curr_status = status.HTTP_201_CREATED
