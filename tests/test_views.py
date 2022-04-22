@@ -152,7 +152,7 @@ class TestRetrieveUpdateUserAccountView(APITestCase):
         response = self.client.patch(self.url, {"password": "my_unique_password"})
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual("my_unique_password", self.user.password)
+        self.assertIn("md5", self.user.password)
 
 
 class TestCheckUniqueView(APITestCase):
