@@ -6,7 +6,7 @@ ipython==7.16.3
 model_bakery==1.5.0
 pre-commit==2.15.0
 pytest==6.2.5
-pytest-cov==2.12.1
+pytest-cov==3.0.0
 pytest-django==4.4.0
 sphinx==4.2.0
 sphinx-autobuild==2021.3.14
