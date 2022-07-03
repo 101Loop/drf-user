@@ -11,4 +11,4 @@ pytest-django==4.5.2
 sphinx==4.2.0
 sphinx-autobuild==2021.3.14
 sphinxcontrib_httpdomain==1.7.0
-tox==3.25.0
+tox==3.25.1
