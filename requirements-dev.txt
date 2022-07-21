@@ -1,5 +1,5 @@
 -r requirements.txt
-black==22.3.0
+black==22.6.0
 Faker==13.14.0
 flake8==4.0.1
 ipython==7.16.3
