@@ -1,6 +1,6 @@
 -r requirements.txt
 black==22.6.0
-Faker==13.14.0
+Faker==13.15.0
 flake8==4.0.1
 ipython==7.16.3
 model_bakery==1.5.0
