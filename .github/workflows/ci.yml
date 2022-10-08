@@ -26,6 +26,20 @@ jobs:
         with:
           python-version: "${{ matrix.python-version }}"
 
+      - name: "Get pip cache dir"
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+
+      - name: "Cache"
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key:
+            ${{ matrix.python-version }}-v1-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/tox.ini') }}
+          restore-keys: |
+            ${{ matrix.python-version }}-v1-
+
       - name: "Install dependencies"
         run: |
           set -xe
@@ -41,8 +55,8 @@ jobs:
         if: "contains(env.USING_COVERAGE, matrix.python-version)"
         uses: "codecov/codecov-action@v3"
         with:
+          name: Python ${{ matrix.python-version }}
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           files: ./coverage1.xml,./coverage2.xml
-          name: codecov-umbrella
           fail_ci_if_error: true
