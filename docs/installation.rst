@@ -22,7 +22,7 @@ Or Install from ``source code``::
 Requirements
 ------------
 
-``drf-user`` supports Python 3.6 and above.
+``drf-user`` supports Python 3.7 and above.
 
 Prerequisites
 -------------
