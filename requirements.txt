@@ -1,6 +1,6 @@
-Django>=1.11
+Django>=3.2
 django-filter==21.1
-djangorestframework>=3.8.0
-djangorestframework-simplejwt>=4.4.0
+djangorestframework>=3.12
+djangorestframework-simplejwt>=5.0.0
 drfaddons>=0.1.0
-Pillow>=7.2.0
+Pillow>=8.0.0

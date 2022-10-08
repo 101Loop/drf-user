@@ -1,4 +1,5 @@
 ![Build Status](https://github.com/101loop/drf-user/workflows/CI/badge.svg)
+[![codecov](https://codecov.io/gh/101Loop/drf-user/branch/master/graph/badge.svg)](https://codecov.io/gh/101Loop/drf-user)
 [![Downloads](https://static.pepy.tech/personalized-badge/drf-user?period=total&units=international_system&left_color=black&right_color=blue&left_text=Total%20Downloads)](https://pepy.tech/project/drf-user)
 [![Downloads](https://static.pepy.tech/personalized-badge/drf-user?period=month&units=international_system&left_color=black&right_color=blue&left_text=Downloads/Month)](https://pepy.tech/project/drf-user)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
