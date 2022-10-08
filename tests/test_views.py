@@ -5,6 +5,7 @@ import pytest
 from django.test import override_settings
 from django.urls import reverse
 from model_bakery import baker
+from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -180,21 +181,21 @@ class TestCheckUniqueView(APITestCase):
         response = self.client.post(self.url, {"prop": "username", "value": "user7"})
 
         self.assertEqual(200, response.status_code)
-        self.assertTrue(response.json()["data"][0]["unique"])
+        self.assertTrue(response.json()["unique"])
 
     @pytest.mark.django_db
     def test_is_not_unique(self):
         """Check if the user is not unique"""
         response = self.client.post(self.url, {"prop": "username", "value": "user"})
 
-        self.assertEqual(200, response.status_code)
-        self.assertFalse(response.json()["data"][0]["unique"])
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(response.json()["unique"])
 
     @pytest.mark.django_db
     def test_data_invalid(self):
         """Check CheckUniqueView view raises 422 code when passed data is invalid"""
         response = self.client.post(self.url, {"prop": "invalid", "value": "user"})
-        self.assertEqual(422, response.status_code)
+        self.assertEqual(status.HTTP_422_UNPROCESSABLE_ENTITY, response.status_code)
 
 
 class TestRegisterView(APITestCase):
@@ -309,8 +310,8 @@ class TestOTPView(APITestCase):
             self.url, {"destination": "email@django.com", "email": "email@django.com"}
         )
 
-        self.assertEqual(201, response.status_code)
-        self.assertEqual("Message sent successfully!", response.json()["message"])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["message"], "Email Message sent successfully!")
 
     @pytest.mark.django_db
     def test_request_otp_on_email_and_mobile(self):
@@ -320,25 +321,35 @@ class TestOTPView(APITestCase):
         """
 
         response = self.client.post(
-            self.url, {"destination": 1231242492, "email": "email@django.com"}
+            self.url, {"destination": 9999999999, "email": "email@django.com"}
         )
 
-        self.assertEqual(201, response.status_code)
-        self.assertEqual("Message sent successfully!", response.json()["message"])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["message"], "Email Message sent successfully!")
+        self.assertEqual(
+            response.json()["mobile_message"], "Mobile Message sent successfully!"
+        )
 
     @pytest.mark.django_db
-    def test_raise_api_exception_when_email_invalid(self):
-        """Checks OTPView raises validation error when email/mobile is invalid"""
+    def test_raise_api_exception_when_destination_as_mobile_is_invalid(self):
+        """Checks OTPView raises validation error when mobile is invalid"""
 
         response = self.client.post(
             self.url, {"destination": "a.b", "email": "abc@d.com"}
         )
-
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            "Server configuration error occurred: Invalid recipient.",
             response.json()["detail"],
+            "OTP sending failed! because ['Invalid Mobile Number']",
         )
+
+    @pytest.mark.django_db
+    def test_raise_api_exception_when_email_is_invalid(self):
+        """Checks OTPView raises validation error when email is invalid"""
+
+        response = self.client.post(self.url, {"destination": "abc", "email": "abc"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["email"], ["Enter a valid email address."])
 
     @pytest.mark.django_db
     def test_raise_validation_error_when_email_not_response_when_user_is_new(self):
@@ -350,10 +361,10 @@ class TestOTPView(APITestCase):
         response = self.client.post(self.url, {"destination": "email@django.com"})
 
         self.assertEqual(
-            ["email field is compulsory while verifying a non-existing user's OTP."],
             response.json()["non_field_errors"],
+            ["Email field is compulsory while verifying a non-existing user's OTP."],
         )
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @pytest.mark.django_db
     def test_raise_validation_error_when_is_login_response_when_user_is_new(self):
@@ -410,7 +421,7 @@ class TestOTPLoginView(APITestCase):
             "drf_user.User",
             username="my_user",
             email="my_user@django.com",
-            mobile=2848482848,
+            mobile=9848482848,
         )
         # create otp of registered user
         self.user_otp = baker.make(
@@ -424,7 +435,7 @@ class TestOTPLoginView(APITestCase):
         self.data = {
             "name": "random_name",
             "email": "random@django.com",
-            "mobile": 1234567890,
+            "mobile": 7634567890,
         }
         self.data_with_incorrect_email_mobile = {
             "name": "name",
@@ -434,37 +445,37 @@ class TestOTPLoginView(APITestCase):
         self.data_with_correct_otp = {
             "name": "random_name",
             "email": "random@django.com",
-            "mobile": 1234567890,
+            "mobile": 9234567890,
             "verify_otp": 888383,
         }
         self.data_with_incorrect_otp = {
             "name": "random_name",
             "email": "random@django.com",
-            "mobile": 1234567890,
+            "mobile": 7334567890,
             "verify_otp": 999999,
         }
         self.data_registered_user = {
             "name": "my_user",
             "email": "my_user@django.com",
-            "mobile": 2848482848,
+            "mobile": 6848482848,
             "verify_otp": 437474,
         }
         self.data_registered_user_with_different_mobile = {
             "name": "my_user",
             "email": "my_user@django.com",
-            "mobile": 2846482848,
+            "mobile": 7846482848,
             "verify_otp": 437474,
         }
         self.data_registered_user_with_different_email = {
             "name": "my_user",
             "email": "ser@django.com",
-            "mobile": 2848482848,
+            "mobile": 6848482848,
             "verify_otp": 437474,
         }
         self.data_random_user = {
             "name": "test_user1",
             "email": "test_user1@django.com",
-            "mobile": 2848444448,
+            "mobile": 8848444448,
             "verify_otp": 585858,
         }
 
@@ -565,7 +576,7 @@ class TestOTPLoginView(APITestCase):
             self.url, data=self.data_with_correct_otp, format="json"
         )
 
-        self.assertEqual(202, response.status_code)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertContains(text="token", response=response, status_code=202)
         self.assertTrue(User.objects.get(email="random@django.com"))
 

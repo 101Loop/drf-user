@@ -6,8 +6,7 @@ from django.db import models
 from django.utils.text import gettext_lazy as _
 
 from drf_user.managers import UserManager
-from drf_user.variables import DESTINATION_CHOICES
-from drf_user.variables import EMAIL
+from drf_user.constants import DESTINATION_CHOICES, EMAIL
 
 
 class Role(Group):
@@ -86,7 +85,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """String representation of model"""
 
-        return str(self.name) + " | " + str(self.username)
+        return f"{str(self.name)} | {str(self.username)}"
 
 
 class AuthTransaction(models.Model):
@@ -118,7 +117,7 @@ class AuthTransaction(models.Model):
     def __str__(self):
         """String representation of model"""
 
-        return str(self.created_by.name) + " | " + str(self.created_by.username)
+        return f"{str(self.created_by.name)} | {str(self.created_by.username)}"
 
     class Meta:
         """Passing model metadata"""

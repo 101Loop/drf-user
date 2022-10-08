@@ -10,8 +10,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from drf_user import user_settings
 from drf_user.models import User
 from drf_user.utils import check_validation
-from drf_user.variables import EMAIL
-from drf_user.variables import MOBILE
+from drf_user.constants import EMAIL, MOBILE
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -203,8 +202,7 @@ class OTPSerializer(serializers.Serializer):
             if "email" not in attrs.keys() and "verify_otp" not in attrs.keys():
                 raise serializers.ValidationError(
                     _(
-                        "email field is compulsory while verifying a"
-                        " non-existing user's OTP."
+                        "Email field is compulsory while verifying a non-existing user's OTP."
                     )
                 )
         else:
@@ -250,26 +248,27 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
         except User.DoesNotExist:
             try:
                 user = User.objects.get(mobile=mobile)
-            except User.DoesNotExist:
-                user = None
+            except User.DoesNotExist as e:
+                raise NotFound(
+                    _(f"No user exists either for email={email} or mobile={mobile}")
+                ) from e
 
-        if user:
-            if user.email != email:
-                raise serializers.ValidationError(
-                    _(
-                        "Your account is registered with {mobile} does not has "
-                        "{email} as registered email. Please login directly via "
-                        "OTP with your mobile.".format(mobile=mobile, email=email)
-                    )
+        if user.email != email:
+            raise serializers.ValidationError(
+                _(
+                    "Your account is registered with {mobile} does not has "
+                    "{email} as registered email. Please login directly via "
+                    "OTP with your mobile.".format(mobile=mobile, email=email)
                 )
-            if user.mobile != mobile:
-                raise serializers.ValidationError(
-                    _(
-                        "Your account is registered with {email} does not has "
-                        "{mobile} as registered mobile. Please login directly via "
-                        "OTP with your email.".format(mobile=mobile, email=email)
-                    )
+            )
+        if user.mobile != mobile:
+            raise serializers.ValidationError(
+                _(
+                    "Your account is registered with {email} does not has "
+                    "{mobile} as registered mobile. Please login directly via "
+                    "OTP with your email.".format(mobile=mobile, email=email)
                 )
+            )
         return user
 
     def validate(self, attrs: dict) -> dict:

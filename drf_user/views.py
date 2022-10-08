@@ -1,40 +1,46 @@
 """Views for drf-user"""
+from typing import Optional
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db.models import F
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
-from drfaddons.utils import JsonResponse
-from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework import status, serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import CreateAPIView
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.parsers import JSONParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import InvalidToken
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from drf_user.models import AuthTransaction
-from drf_user.models import User
-from drf_user.serializers import CheckUniqueSerializer
-from drf_user.serializers import CustomTokenObtainPairSerializer
-from drf_user.serializers import OTPLoginRegisterSerializer
-from drf_user.serializers import OTPSerializer
-from drf_user.serializers import PasswordResetSerializer
-from drf_user.serializers import UserSerializer
-from drf_user.utils import check_unique
-from drf_user.utils import generate_otp
-from drf_user.utils import get_client_ip
-from drf_user.utils import login_user
-from drf_user.utils import send_otp
-from drf_user.utils import validate_otp
-from drf_user.variables import EMAIL
-from drf_user.variables import MOBILE
+from drf_user.models import AuthTransaction, OTPValidation
+from drf_user.serializers import (
+    CheckUniqueSerializer,
+    CustomTokenObtainPairSerializer,
+    OTPLoginRegisterSerializer,
+    OTPSerializer,
+    PasswordResetSerializer,
+    UserSerializer,
+    ImageSerializer,
+)
+from drf_user.utils import (
+    check_unique,
+    generate_otp,
+    get_client_ip,
+    login_user,
+    validate_otp,
+    send_otp,
+)
+from drf_user.constants import EMAIL, CoreConstants
+
+User = get_user_model()
 
 
 class RegisterView(CreateAPIView):
@@ -59,9 +65,9 @@ class RegisterView(CreateAPIView):
         }
         try:
             data["mobile"] = serializer.validated_data["mobile"]
-        except KeyError:
+        except KeyError as e:
             if not settings.USER_SETTINGS["MOBILE_OPTIONAL"]:
-                raise ValidationError({"error": "Mobile is required."})
+                raise ValidationError({"error": "Mobile is required."}) from e
         return User.objects.create_user(**data)
 
 
@@ -69,7 +75,7 @@ class LoginView(APIView):
     """
     Login View
 
-    This is used to Login into system.
+    This is used to Log in into system.
     The data required are 'username' and 'password'.
 
     username -- Either username or mobile or email address.
@@ -126,26 +132,22 @@ class CheckUniqueView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = CheckUniqueSerializer
 
-    def validated(self, serialized_data, *args, **kwargs):
-        """Validates the response"""
-        return (
-            {
-                "unique": check_unique(
-                    serialized_data.validated_data["prop"],
-                    serialized_data.validated_data["value"],
-                )
-            },
-            status.HTTP_200_OK,
-        )
-
     def post(self, request):
         """Overrides post method to validate serialized data"""
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
-            return JsonResponse(self.validated(serialized_data=serialized_data))
+            return Response(
+                data={
+                    "unique": check_unique(
+                        serialized_data.validated_data["prop"],
+                        serialized_data.validated_data["value"],
+                    )
+                },
+                status=status.HTTP_200_OK,
+            )
         else:
-            return JsonResponse(
-                serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            return Response(
+                data=serialized_data.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY
             )
 
 
@@ -185,43 +187,52 @@ class OTPView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Overrides post method to validate serialized data"""
-        serializer = self.serializer_class(data=request.data)
+        serializer: OTPSerializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        destination = serializer.validated_data.get("destination")
-        prop = serializer.validated_data.get("prop")
-        user = serializer.validated_data.get("user")
-        email = serializer.validated_data.get("email")
-        is_login = serializer.validated_data.get("is_login")
+        destination: str = serializer.validated_data[
+            "destination"
+        ]  # destination is a required field
+        destination_property: str = serializer.validated_data.get(
+            "prop"
+        )  # can be email or mobile
+        user: User = serializer.validated_data.get("user")
+        email: Optional[str] = serializer.validated_data.get("email")
+        is_login: bool = serializer.validated_data.get("is_login")
 
         if "verify_otp" in request.data.keys():
-            if validate_otp(destination, request.data.get("verify_otp")):
+            if validate_otp(
+                destination=destination, otp_val=request.data["verify_otp"]
+            ):
                 if is_login:
                     return Response(
                         login_user(user, self.request), status=status.HTTP_202_ACCEPTED
                     )
                 else:
                     return Response(
-                        data={
-                            "OTP": [
-                                _("OTP Validated successfully!"),
-                            ]
-                        },
+                        data={"OTP": _("OTP Validated successfully!")},
                         status=status.HTTP_202_ACCEPTED,
                     )
         else:
-            otp_obj = generate_otp(prop, destination)
-            sentotp = send_otp(destination, otp_obj, email)
+            otp_obj: OTPValidation = generate_otp(
+                destination_property=destination_property, destination=destination
+            )
+            recip_mobile: Optional[str] = None
+            if destination_property == CoreConstants.MOBILE_PROP:
+                recip_mobile = destination
 
-            if sentotp["success"]:
-                otp_obj.send_counter += 1
-                otp_obj.save()
+            sent_otp_resp: dict = send_otp(
+                otp_obj=otp_obj, recip_email=email, recip_mobile=recip_mobile
+            )
 
-                return Response(sentotp, status=status.HTTP_201_CREATED)
-            else:
-                raise APIException(
-                    detail=_("A Server Error occurred: " + sentotp["message"])
-                )
+            if sent_otp_resp["success"]:
+                otp_obj.send_counter = F("send_counter") + 1
+                otp_obj.save(update_fields=["send_counter"])
+                return Response(sent_otp_resp, status=status.HTTP_201_CREATED)
+
+            raise serializers.ValidationError(
+                detail=_(f"OTP could not be sent! {sent_otp_resp['message']}")
+            )
 
 
 class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
@@ -283,14 +294,14 @@ class OTPLoginView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        verify_otp = serializer.validated_data.get("verify_otp", None)
-        name = serializer.validated_data.get("name")
-        mobile = serializer.validated_data.get("mobile")
-        email = serializer.validated_data.get("email")
-        user = serializer.validated_data.get("user", None)
+        verify_otp = serializer.validated_data.get("verify_otp")
+        name = serializer.validated_data["name"]
+        mobile = serializer.validated_data["mobile"]
+        email = serializer.validated_data["email"]
+        user: User = serializer.validated_data.get("user")
 
         if verify_otp:
-            if validate_otp(email, verify_otp) and not user:
+            if validate_otp(destination=email, otp_val=verify_otp) and not user:
                 user = User.objects.create_user(
                     name=name,
                     mobile=mobile,
@@ -299,51 +310,32 @@ class OTPLoginView(APIView):
                     password=User.objects.make_random_password(),
                 )
                 user.is_active = True
-                user.save()
+                user.save(update_fields=["is_active"])
             return Response(
                 login_user(user, self.request), status=status.HTTP_202_ACCEPTED
             )
 
-        else:
-            otp_obj_email = generate_otp(EMAIL, email)
-            otp_obj_mobile = generate_otp(MOBILE, mobile)
+        otp_obj: OTPValidation = generate_otp(
+            destination_property=EMAIL, destination=email
+        )
+        # Send OTP to Email & Mobile
+        sent_otp_resp: dict = send_otp(
+            otp_obj=otp_obj, recip_email=email, recip_mobile=mobile
+        )
 
-            # Set same OTP for both Email & Mobile
-            otp_obj_mobile.otp = otp_obj_email.otp
-            otp_obj_mobile.save()
+        if not sent_otp_resp["success"]:
+            raise serializers.ValidationError(
+                detail=_(f"OTP could not be sent! {sent_otp_resp['message']}")
+            )
 
-            # Send OTP to Email & Mobile
-            sentotp_email = send_otp(email, otp_obj_email, email)
-            sentotp_mobile = send_otp(mobile, otp_obj_mobile, email)
+        otp_obj.send_counter = F("send_counter") + 1
+        otp_obj.save(update_fields=["send_counter"])
+        message = {
+            "email": {"otp": sent_otp_resp["message"]},
+            "mobile_message": {"otp": sent_otp_resp["mobile_message"]},
+        }
 
-            message = {}
-
-            if sentotp_email["success"]:
-                otp_obj_email.send_counter += 1
-                otp_obj_email.save()
-                message["email"] = {"otp": _("OTP has been sent successfully.")}
-            else:
-                message["email"] = {
-                    "otp": _(f'OTP sending failed {sentotp_email["message"]}')
-                }
-
-            if sentotp_mobile["success"]:
-                otp_obj_mobile.send_counter += 1
-                otp_obj_mobile.save()
-                message["mobile"] = {"otp": _("OTP has been sent successfully.")}
-            else:
-                message["mobile"] = {
-                    "otp": _(f'OTP sending failed {sentotp_mobile["message"]}')
-                }
-
-            if sentotp_email["success"] or sentotp_mobile["success"]:
-                curr_status = status.HTTP_201_CREATED
-            else:
-                raise APIException(
-                    detail=_("A Server Error occurred: " + sentotp_mobile["message"])
-                )
-
-            return Response(data=message, status=curr_status)
+        return Response(data=message, status=status.HTTP_201_CREATED)
 
 
 class PasswordResetView(APIView):
@@ -363,13 +355,14 @@ class PasswordResetView(APIView):
         user = User.objects.get(email=serializer.validated_data["email"])
 
         if validate_otp(
-            serializer.validated_data["email"], serializer.validated_data["otp"]
+            destination=serializer.validated_data["email"],
+            otp_val=serializer.validated_data["otp"],
         ):
             # OTP Validated, Change Password
             user.set_password(serializer.validated_data["password"])
             user.save()
-            return JsonResponse(
-                content="Password Updated Successfully.",
+            return Response(
+                data="Password Updated Successfully.",
                 status=status.HTTP_202_ACCEPTED,
             )
 
@@ -380,11 +373,6 @@ class UploadImageView(APIView):
     usage: Create a multipart request to this API, with your image
     attached to `profile_image` parameter.
     """
-
-    from .models import User
-    from .serializers import ImageSerializer
-    from rest_framework.permissions import IsAuthenticated
-    from rest_framework.parsers import MultiPartParser
 
     queryset = User.objects.all()
     serializer_class = ImageSerializer

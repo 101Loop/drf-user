@@ -9,12 +9,7 @@ repos:
       rev: 5.0.4
       hooks:
         - id: flake8
-          args: [--max-line-length=88]
-
-    - repo: https://github.com/asottile/reorder_python_imports
-      rev: v3.8.3
-      hooks:
-        - id: reorder-python-imports
+          args: [--max-line-length=100]
 
     - repo: https://github.com/econchick/interrogate
       rev: 1.5.0
