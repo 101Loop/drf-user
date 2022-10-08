@@ -15,11 +15,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license=__import__("drf_user").__license__,
     url="https://github.com/101loop/drf-user",
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     packages=setuptools.find_packages(),
     install_requires=open("requirements.txt").read().split(),
     include_package_data=True,
-    classifiers=(
+    classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Framework :: Django",
@@ -31,11 +31,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Topic :: Software Development :: Libraries",
         "Topic :: Internet :: WWW/HTTP",
-    ),
+    ],
 )
