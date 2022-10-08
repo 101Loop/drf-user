@@ -22,6 +22,11 @@ Welcome to drf-user's documentation!
 User APP for Django REST Framework with API Views.
 
 
+.. note::
+
+   One of the winners of `PyCharm Project of the Decade Competition <(https://www.jetbrains.com/lp/pycharm-10-years/>`__
+
+
 ========
 Overview
 ========
