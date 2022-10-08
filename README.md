@@ -1,13 +1,15 @@
 ![Build Status](https://github.com/101loop/drf-user/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/101Loop/drf-user/branch/master/graph/badge.svg)](https://codecov.io/gh/101Loop/drf-user)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/101Loop/drf-user.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/101Loop/drf-user/alerts/)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/101Loop/drf-user.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/101Loop/drf-user/context:python)
+[![Downloads](https://static.pepy.tech/personalized-badge/drf-user?period=total&units=international_system&left_color=black&right_color=blue&left_text=Total%20Downloads)](https://pepy.tech/project/drf-user)
+[![Downloads](https://static.pepy.tech/personalized-badge/drf-user?period=month&units=international_system&left_color=black&right_color=blue&left_text=Downloads/Month)](https://pepy.tech/project/drf-user)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/101Loop/drf-user/master.svg)](https://results.pre-commit.ci/latest/github/101Loop/drf-user/master)
 [![Documentation Status](https://readthedocs.org/projects/drf-user/badge/?version=latest)](https://drf-user.readthedocs.io/en/latest/?badge=latest)
 [![Documentation Coverage](https://drf-user.readthedocs.io/en/latest/_static/interrogate_badge.svg)](https://github.com/101loop/drf-user)
 
 # Django REST Framework - User
+
+> One of the winners of [PyCharm Project of the Decade Competition](https://www.jetbrains.com/lp/pycharm-10-years/)
+
 
 ---
 **User APP for Django REST Framework with API Views.**<br>
