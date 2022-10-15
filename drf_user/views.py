@@ -190,9 +190,8 @@ class OTPView(APIView):
         serializer: OTPSerializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        destination: str = serializer.validated_data[
-            "destination"
-        ]  # destination is a required field
+        # destination is a required field
+        destination: str = serializer.validated_data["destination"]
         destination_property: str = serializer.validated_data.get("prop")  # can be email or mobile
         user: User = serializer.validated_data.get("user")
         email: Optional[str] = serializer.validated_data.get("email")

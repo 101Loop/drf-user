@@ -251,9 +251,10 @@ def validate_mobile(mobile: str) -> bool:
     >>> print(validate_mobile('9999999999'))
     True
     """
-    if is_valid := re.match(r"^[6-9]\d{9}$", mobile) is not None:
-        return is_valid
-    raise ValidationError("Invalid Mobile Number")
+    match = re.match(r"^[6-9]\d{9}$", str(mobile))
+    if match is None:
+        raise ValidationError("Invalid Mobile Number")
+    return True
 
 
 def validate_otp(*, destination: str, otp_val: int) -> bool:
