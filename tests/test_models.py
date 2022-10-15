@@ -13,9 +13,7 @@ class TestUserModel(TestCase):
 
     def setUp(self) -> None:
         """Create user object using model_bakery"""
-        self.user = baker.make(
-            "drf_user.User", name="test_user", username="my_unique_username"
-        )
+        self.user = baker.make("drf_user.User", name="test_user", username="my_unique_username")
 
     @pytest.mark.django_db
     def test_object_created(self):

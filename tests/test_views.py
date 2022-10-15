@@ -49,9 +49,7 @@ class TestLoginView(APITestCase):
     @pytest.mark.django_db
     def test_successful_login_view(self):
         """Check if the credentials are correct"""
-        response = self.client.post(
-            self.url, data={"username": "user", "password": "pass123"}
-        )
+        response = self.client.post(self.url, data={"username": "user", "password": "pass123"})
         self.assertEqual(200, response.status_code)
         self.assertIn("token", response.data)
         self.assertIn("refresh_token", response.data)
@@ -88,9 +86,7 @@ class TestLoginView(APITestCase):
     @pytest.mark.django_db
     def test_unsuccessful_login_view(self):
         """Check if the credentials are incorrect"""
-        response = self.client.post(
-            self.url, data={"username": "user", "password": "pass1234"}
-        )
+        response = self.client.post(self.url, data={"username": "user", "password": "pass1234"})
 
         self.assertEqual(403, response.status_code)
         self.assertIn("username or password is invalid.", response.data["detail"])
@@ -251,12 +247,8 @@ class TestRegisterView(APITestCase):
         response = self.client.post(self.url, self.not_validated_data)
 
         self.assertEqual(400, response.status_code)
-        self.assertEqual(
-            ["The email must be pre-validated via OTP."], response.json()["email"]
-        )
-        self.assertEqual(
-            ["The mobile must be pre-validated via OTP."], response.json()["mobile"]
-        )
+        self.assertEqual(["The email must be pre-validated via OTP."], response.json()["email"])
+        self.assertEqual(["The mobile must be pre-validated via OTP."], response.json()["mobile"])
 
     @pytest.mark.django_db
     def test_register_user_without_mobile_number(self):
@@ -326,17 +318,13 @@ class TestOTPView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json()["message"], "Email Message sent successfully!")
-        self.assertEqual(
-            response.json()["mobile_message"], "Mobile Message sent successfully!"
-        )
+        self.assertEqual(response.json()["mobile_message"], "Mobile Message sent successfully!")
 
     @pytest.mark.django_db
     def test_raise_api_exception_when_destination_as_mobile_is_invalid(self):
         """Checks OTPView raises validation error when mobile is invalid"""
 
-        response = self.client.post(
-            self.url, {"destination": "a.b", "email": "abc@d.com"}
-        )
+        response = self.client.post(self.url, {"destination": "a.b", "email": "abc@d.com"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["detail"],
@@ -373,13 +361,9 @@ class TestOTPView(APITestCase):
         only passes is_login
         """
 
-        response = self.client.post(
-            self.url, {"destination": "email@django.com", "is_login": True}
-        )
+        response = self.client.post(self.url, {"destination": "email@django.com", "is_login": True})
 
-        self.assertEqual(
-            "No user exists with provided details", response.json()["detail"]
-        )
+        self.assertEqual("No user exists with provided details", response.json()["detail"])
         self.assertEqual(404, response.status_code)
 
     @pytest.mark.django_db
@@ -532,25 +516,17 @@ class TestOTPLoginView(APITestCase):
         response = self.client.post(self.url, data=self.data, format="json")
 
         self.assertEqual(201, response.status_code)
-        self.assertEqual(
-            "OTP has been sent successfully.", response.json()["email"]["otp"]
-        )
-        self.assertEqual(
-            "OTP has been sent successfully.", response.json()["mobile"]["otp"]
-        )
+        self.assertEqual("OTP has been sent successfully.", response.json()["email"]["otp"])
+        self.assertEqual("OTP has been sent successfully.", response.json()["mobile"]["otp"])
 
     @pytest.mark.django_db
     def test_login_with_incorrect_otp_for_registered_user(self):
         """Check when data with correct otp is passed, token is generated or not"""
 
-        response = self.client.post(
-            self.url, data=self.data_with_incorrect_otp, format="json"
-        )
+        response = self.client.post(self.url, data=self.data_with_incorrect_otp, format="json")
 
         self.assertEqual(403, response.status_code)
-        self.assertEqual(
-            "OTP Validation failed! 2 attempts left!", response.json()["detail"]
-        )
+        self.assertEqual("OTP Validation failed! 2 attempts left!", response.json()["detail"])
 
     @pytest.mark.django_db
     def test_login_with_incorrect_otp_for_new_user_without_validated_otp(self):
@@ -572,9 +548,7 @@ class TestOTPLoginView(APITestCase):
         and user is created
         """
 
-        response = self.client.post(
-            self.url, data=self.data_with_correct_otp, format="json"
-        )
+        response = self.client.post(self.url, data=self.data_with_correct_otp, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertContains(text="token", response=response, status_code=202)
@@ -700,18 +674,14 @@ class TestPasswordResetView(APITestCase):
     @pytest.mark.django_db
     def test_when_incorrect_email_passed(self):
         """Check when incorrect email is passed as data then api raises 404"""
-        response = self.client.post(
-            self.url, data=self.data_incorrect_email, format="json"
-        )
+        response = self.client.post(self.url, data=self.data_incorrect_email, format="json")
 
         self.assertEqual(404, response.status_code)
 
     @pytest.mark.django_db
     def test_when_incorrect_otp_passed(self):
         """Check when incorrect otp is passed as data then api raises 403"""
-        response = self.client.post(
-            self.url, data=self.data_incorrect_otp, format="json"
-        )
+        response = self.client.post(self.url, data=self.data_incorrect_otp, format="json")
 
         self.assertEqual(403, response.status_code)
 
@@ -760,9 +730,7 @@ class TestUploadImageView(APITestCase):
 
         self.client.force_authenticate(self.user)
         with open(f"{BASE_DIR}/tests/fixtures/test.jpg", "rb") as f:
-            response = self.client.post(
-                self.url, data={"profile_image": f}, format="multipart"
-            )
+            response = self.client.post(self.url, data={"profile_image": f}, format="multipart")
 
         self.assertEqual(201, response.status_code)
         self.assertEqual("Profile Image Uploaded.", response.json()["detail"])

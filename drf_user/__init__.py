@@ -60,9 +60,7 @@ def update_user_settings() -> dict:
                     user_settings["OTP"][otp_key] = otp_value
             elif key == "REGISTRATION":
                 if not isinstance(value, dict):
-                    raise TypeError(
-                        "USER_SETTING attribute REGISTRATION must be a dict."
-                    )
+                    raise TypeError("USER_SETTING attribute REGISTRATION must be a dict.")
                 for reg_key, reg_value in value.items():
                     user_settings["REGISTRATION"][reg_key] = reg_value
         if user_settings["REGISTRATION"]["SEND_MAIL"]:

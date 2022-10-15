@@ -130,9 +130,7 @@ def generate_otp(*, destination_property: str, destination: str) -> OTPValidatio
 
     # Checks if random number is unique among non-validated OTPs and
     # creates new until it is unique.
-    while OTPValidation.objects.filter(otp__exact=random_number).filter(
-        is_validated=False
-    ):
+    while OTPValidation.objects.filter(otp__exact=random_number).filter(is_validated=False):
         random_number: str = User.objects.make_random_password(
             length=otp_settings["LENGTH"], allowed_chars=otp_settings["ALLOWED_CHARS"]
         )
@@ -299,17 +297,13 @@ def validate_otp(*, destination: str, otp_val: int) -> bool:
     elif otp_object.validate_attempt <= 0:
         # check if attempts exceeded and regenerate otp and raise error
         generate_otp(destination_property=otp_object.prop, destination=destination)
-        raise AuthenticationFailed(
-            detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset.")
-        )
+        raise AuthenticationFailed(detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset."))
 
     else:
         # update attempts and raise error
         otp_object.save(update_fields=["validate_attempt"])
         raise AuthenticationFailed(
-            detail=_(
-                f"OTP Validation failed! {otp_object.validate_attempt} attempts left!"
-            )
+            detail=_(f"OTP Validation failed! {otp_object.validate_attempt} attempts left!")
         )
 
 
@@ -343,9 +337,7 @@ def send_message(
     sent = {"success": False, "message": None, "mobile_message": None}
 
     if not getattr(settings, "EMAIL_HOST", None):
-        raise ValueError(
-            "EMAIL_HOST must be defined in django setting for sending mail."
-        )
+        raise ValueError("EMAIL_HOST must be defined in django setting for sending mail.")
     if not getattr(settings, "EMAIL_FROM", None):
         raise ValueError(
             "EMAIL_FROM must be defined in django setting "
@@ -416,13 +408,9 @@ def send_otp(
     )
 
     try:
-        data: dict = send_message(
-            message, otp_settings["SUBJECT"], recip_email, recip_mobile
-        )
+        data: dict = send_message(message, otp_settings["SUBJECT"], recip_email, recip_mobile)
     except (ValueError, ValidationError) as e:
-        raise serializers.ValidationError(
-            {"detail": f"OTP sending failed! because {e}"}
-        ) from e
+        raise serializers.ValidationError({"detail": f"OTP sending failed! because {e}"}) from e
 
     otp_obj.reactive_at = timezone.now() + datetime.timedelta(
         minutes=otp_settings["COOLING_PERIOD"]

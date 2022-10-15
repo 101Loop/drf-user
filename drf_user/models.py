@@ -33,9 +33,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     Author: Himanshu Shankar (https://himanshus.com)
     """
 
-    username = models.CharField(
-        verbose_name=_("Unique UserName"), max_length=254, unique=True
-    )
+    username = models.CharField(verbose_name=_("Unique UserName"), max_length=254, unique=True)
     email = models.EmailField(verbose_name=_("Email Address"), unique=True)
     mobile = models.CharField(
         verbose_name=_("Mobile Number"),
@@ -103,15 +101,9 @@ class AuthTransaction(models.Model):
         blank=True,
         verbose_name=_("JWT Refresh Token"),
     )
-    expires_at = models.DateTimeField(
-        blank=True, null=True, verbose_name=_("Expires At")
-    )
-    create_date = models.DateTimeField(
-        verbose_name=_("Create Date/Time"), auto_now_add=True
-    )
-    update_date = models.DateTimeField(
-        verbose_name=_("Date/Time Modified"), auto_now=True
-    )
+    expires_at = models.DateTimeField(blank=True, null=True, verbose_name=_("Expires At"))
+    create_date = models.DateTimeField(verbose_name=_("Create Date/Time"), auto_now_add=True)
+    update_date = models.DateTimeField(verbose_name=_("Date/Time Modified"), auto_now=True)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -142,9 +134,7 @@ class OTPValidation(models.Model):
     create_date = models.DateTimeField(verbose_name=_("Create Date"), auto_now_add=True)
     update_date = models.DateTimeField(verbose_name=_("Date Modified"), auto_now=True)
     is_validated = models.BooleanField(verbose_name=_("Is Validated"), default=False)
-    validate_attempt = models.IntegerField(
-        verbose_name=_("Attempted Validation"), default=3
-    )
+    validate_attempt = models.IntegerField(verbose_name=_("Attempted Validation"), default=3)
     prop = models.CharField(
         verbose_name=_("Destination Property"),
         default=EMAIL,
@@ -152,9 +142,7 @@ class OTPValidation(models.Model):
         choices=DESTINATION_CHOICES,
     )
     send_counter = models.IntegerField(verbose_name=_("OTP Sent Counter"), default=0)
-    sms_id = models.CharField(
-        verbose_name=_("SMS ID"), max_length=254, null=True, blank=True
-    )
+    sms_id = models.CharField(verbose_name=_("SMS ID"), max_length=254, null=True, blank=True)
     reactive_at = models.DateTimeField(verbose_name=_("ReActivate Sending OTP"))
 
     def __str__(self):

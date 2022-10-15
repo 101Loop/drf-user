@@ -38,9 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
         if check_validation(value=value):
             return value
         else:
-            raise serializers.ValidationError(
-                "The email must be " "pre-validated via OTP."
-            )
+            raise serializers.ValidationError("The email must be " "pre-validated via OTP.")
 
     def validate_mobile(self, value: str) -> str:
         """
@@ -61,9 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
         if check_validation(value=value):
             return value
         else:
-            raise serializers.ValidationError(
-                "The mobile must be " "pre-validated via OTP."
-            )
+            raise serializers.ValidationError("The mobile must be " "pre-validated via OTP.")
 
     def validate_password(self, value: str) -> str:
         """Validate whether the password meets all django validator requirements."""
@@ -201,9 +197,7 @@ class OTPSerializer(serializers.Serializer):
                 raise NotFound(_("No user exists with provided details"))
             if "email" not in attrs.keys() and "verify_otp" not in attrs.keys():
                 raise serializers.ValidationError(
-                    _(
-                        "Email field is compulsory while verifying a non-existing user's OTP."
-                    )
+                    _("Email field is compulsory while verifying a non-existing user's OTP.")
                 )
         else:
             attrs["email"] = user.email
@@ -274,9 +268,7 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
     def validate(self, attrs: dict) -> dict:
         """Validates the response"""
 
-        attrs["user"] = self.get_user(
-            email=attrs.get("email"), mobile=attrs.get("mobile")
-        )
+        attrs["user"] = self.get_user(email=attrs.get("email"), mobile=attrs.get("mobile"))
         return attrs
 
 
@@ -362,9 +354,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     certain extra data in payload such as: email, mobile, name
     """
 
-    default_error_messages = {
-        "no_active_account": _("username or password is invalid.")
-    }
+    default_error_messages = {"no_active_account": _("username or password is invalid.")}
 
     @classmethod
     def get_token(cls, user):

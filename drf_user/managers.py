@@ -30,9 +30,7 @@ class UserManager(BaseUserManager):
         Creates and saves a User with given details
         """
         email = self.normalize_email(email)
-        user = self.model(
-            username=username, email=email, name=fullname, mobile=mobile, **kwargs
-        )
+        user = self.model(username=username, email=email, name=fullname, mobile=mobile, **kwargs)
         user.set_password(password)
         user.save(using=self._db)
         return user

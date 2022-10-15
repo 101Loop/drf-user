@@ -193,21 +193,15 @@ class OTPView(APIView):
         destination: str = serializer.validated_data[
             "destination"
         ]  # destination is a required field
-        destination_property: str = serializer.validated_data.get(
-            "prop"
-        )  # can be email or mobile
+        destination_property: str = serializer.validated_data.get("prop")  # can be email or mobile
         user: User = serializer.validated_data.get("user")
         email: Optional[str] = serializer.validated_data.get("email")
         is_login: bool = serializer.validated_data.get("is_login")
 
         if "verify_otp" in request.data.keys():
-            if validate_otp(
-                destination=destination, otp_val=request.data["verify_otp"]
-            ):
+            if validate_otp(destination=destination, otp_val=request.data["verify_otp"]):
                 if is_login:
-                    return Response(
-                        login_user(user, self.request), status=status.HTTP_202_ACCEPTED
-                    )
+                    return Response(login_user(user, self.request), status=status.HTTP_202_ACCEPTED)
                 else:
                     return Response(
                         data={"OTP": _("OTP Validated successfully!")},
@@ -257,9 +251,7 @@ class RetrieveUpdateUserAccountView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         """Updates user's password"""
 
-        response = super(RetrieveUpdateUserAccountView, self).update(
-            request, *args, **kwargs
-        )
+        response = super(RetrieveUpdateUserAccountView, self).update(request, *args, **kwargs)
         # we need to set_password after save the user otherwise it'll save the raw_password in db. # noqa
         if "password" in request.data.keys():
             self.request.user.set_password(request.data["password"])
@@ -311,17 +303,11 @@ class OTPLoginView(APIView):
                 )
                 user.is_active = True
                 user.save(update_fields=["is_active"])
-            return Response(
-                login_user(user, self.request), status=status.HTTP_202_ACCEPTED
-            )
+            return Response(login_user(user, self.request), status=status.HTTP_202_ACCEPTED)
 
-        otp_obj: OTPValidation = generate_otp(
-            destination_property=EMAIL, destination=email
-        )
+        otp_obj: OTPValidation = generate_otp(destination_property=EMAIL, destination=email)
         # Send OTP to Email & Mobile
-        sent_otp_resp: dict = send_otp(
-            otp_obj=otp_obj, recip_email=email, recip_mobile=mobile
-        )
+        sent_otp_resp: dict = send_otp(otp_obj=otp_obj, recip_email=email, recip_mobile=mobile)
 
         if not sent_otp_resp["success"]:
             raise serializers.ValidationError(
@@ -394,9 +380,7 @@ class UploadImageView(APIView):
         image_serializer.update(
             instance=request.user, validated_data=image_serializer.validated_data
         )
-        return Response(
-            {"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED
-        )
+        return Response({"detail": "Profile Image Uploaded."}, status=status.HTTP_201_CREATED)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -419,13 +403,9 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         token = serializer.validated_data.get("access")
 
-        auth_transaction = AuthTransaction.objects.get(
-            refresh_token=request.data["refresh"]
-        )
+        auth_transaction = AuthTransaction.objects.get(refresh_token=request.data["refresh"])
         auth_transaction.token = token
-        auth_transaction.expires_at = (
-            timezone.now() + api_settings.ACCESS_TOKEN_LIFETIME
-        )
+        auth_transaction.expires_at = timezone.now() + api_settings.ACCESS_TOKEN_LIFETIME
         auth_transaction.save(update_fields=["token", "expires_at"])
 
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
