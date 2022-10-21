@@ -1,5 +1,6 @@
 """Tests for drf_user/views.py module"""
 from datetime import timedelta
+from unittest.mock import patch, MagicMock, ANY
 
 import pytest
 from django.test import override_settings
@@ -10,7 +11,8 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from drf_user.models import AuthTransaction
-from drf_user.models import User
+from drf_user.models import User, OTPValidation
+from tests.fixtures.send_otp_responses import email_mobile_message_sent
 from tests.settings import BASE_DIR
 
 
@@ -393,7 +395,257 @@ class TestOTPView(APITestCase):
         self.assertEqual(202, response.status_code)
 
 
+class TestOTPLoginViewNew(APITestCase):
+    """OTP Login View"""
+
+    @classmethod
+    def setUpTestData(cls):
+        """This method is called once for this test class"""
+        super().setUpTestData()
+
+        # create user
+        cls.user = baker.make(
+            "drf_user.User",
+            username="my_user",
+            email="my_user@django.com",
+            mobile=9988998899,
+        )
+        # create otp of registered user
+        cls.user_otp = baker.make(
+            "drf_user.OTPValidation", destination="my_user@django.com", otp=437474
+        )
+
+        cls.url = reverse("OTP-Register-LogIn")
+
+    def setUp(self) -> None:
+        """This method is called before each test"""
+
+        super().setUp()
+        OTPValidation.objects.all().delete()
+
+    @pytest.mark.django_db
+    def test_api_raises_400_when_only_name_is_passed(self):
+        """
+        Given: Only name is passed
+        When: OTPLoginView is called
+        Then: API raises 400
+        """
+        # given/when
+        response = self.client.post(self.url, data={"name": "test"}, format="json")
+
+        # then
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["email"], ["This field is required."])
+        self.assertEqual(response.json()["mobile"], ["This field is required."])
+
+    @pytest.mark.django_db
+    def test_api_raises_400_when_name_email_is_passed(self):
+        """
+        Given: Name and email is passed
+        When: OTPLoginView is called
+        Then: API raises 400
+        """
+        # given/when
+        response = self.client.post(
+            self.url, data={"name": "test", "email": "test@random.com"}, format="json"
+        )
+
+        # then
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["mobile"], ["This field is required."])
+
+    @pytest.mark.django_db
+    def test_api_raises_400_when_name_mobile_is_passed(self):
+        """
+        Given: Name and mobile is passed
+        When: OTPLoginView is called
+        Then: API raises 400
+        """
+        # given/when
+        response = self.client.post(
+            self.url, data={"name": "test", "mobile": 8899777745}, format="json"
+        )
+
+        # then
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["email"], ["This field is required."])
+
+    @pytest.mark.django_db
+    def test_api_raises_400_when_email_mobile_is_passed(self):
+        """
+        Given: Email and mobile is passed
+        When: OTPLoginView is called
+        Then: API raises 400
+        """
+        # given/when
+        response = self.client.post(
+            self.url,
+            data={"email": "test@example.com", "mobile": 1234838884},
+            format="json",
+        )
+
+        # then
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["name"], ["This field is required."])
+
+    @pytest.mark.django_db
+    def test_api_raises_400_is_provided_mobile_number_is_invalid(self):
+        """
+        Given: Name, email and invalid mobile is passed
+        When: OTPLoginView is called
+        Then: API raises 400
+        """
+        response = self.client.post(
+            self.url,
+            data={
+                "name": "random_name",
+                "email": "random@django.com",
+                "mobile": 1234567890,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["mobile"], ["Enter a valid mobile number."])
+
+    @pytest.mark.django_db
+    def test_api_raises_400_is_provided_email_is_invalid(self):
+        """
+        Given: Name, invalid email and mobile is passed
+        When: OTPLoginView is called
+        Then: API raises 400
+        """
+        response = self.client.post(
+            self.url,
+            data={
+                "name": "random_name",
+                "email": "random@django",
+                "mobile": 8899966662,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["email"], ["Enter a valid email address."])
+
+    @pytest.mark.django_db
+    def test_api_raises_404_if_otp_for_provided_email_does_not_exists(self):
+        """
+        Given: Name, email and mobile, invalid otp is passed
+        When: OTPLoginView is called
+        Then: API raises 404
+        """
+        data = {
+            "name": "random_name",
+            "email": "random@django.com",
+            "mobile": 7334567890,
+            "verify_otp": 999999,
+        }
+        response = self.client.post(self.url, data=data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.json()["detail"],
+            f"No pending OTP validation request found for provided {data['email']}. "
+            "Kindly send an OTP first.",
+        )
+
+    @pytest.mark.django_db
+    @patch("drf_user.views.send_otp", return_value=email_mobile_message_sent)
+    def test_api_raises_403_if_incorrect_otp_passed(self, mock_send_otp: MagicMock):
+        """
+        Given: Valid data to send otp and invalid otp is passed
+        When: OTPLoginView is called
+        Then: API raises 403
+        """
+        data = {
+            "name": "random_name",
+            "email": "random@django.com",
+            "mobile": 7334567890,
+        }
+        # send otp
+        response = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # verify otp and register
+        data["verify_otp"] = 999999
+        response = self.client.post(self.url, data=data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json()["detail"], "OTP Validation failed! 2 attempts left!")
+
+        mock_send_otp.assert_called_once_with(
+            otp_obj=ANY, recip_email=data["email"], recip_mobile=str(data["mobile"])
+        )
+
+    @pytest.mark.django_db
+    @patch("drf_user.utils.send_mail")
+    def test_api_raises_400_when_send_otp_fails(self, mock_send_mail: MagicMock):
+        """
+        Given: Valid data is passed
+        When: OTPLoginView is called
+        Then: API returns 400
+        """
+        # given/when
+        mock_send_mail.side_effect = Exception("Email Sending failed")
+        data = {
+            "name": "morning star",
+            "email": "lucifer@hell.com",
+            "mobile": 9988998811,
+        }
+        response = self.client.post(
+            self.url,
+            data=data,
+            format="json",
+        )
+
+        # then
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json()["message"], "OTP could not be sent! Please try again after some time."
+        )
+        self.assertEqual(response.json()["exc"], "Email Sending failed")
+
+        # assert that OTP is not created
+        self.assertEqual(OTPValidation.objects.count(), 0)
+        mock_send_mail.assert_called_once()
+
+    @pytest.mark.django_db
+    @patch("drf_user.views.send_otp", return_value=email_mobile_message_sent)
+    def test_api_returns_201_when_valid_data_is_passed(self, mock_send_otp: MagicMock):
+        """
+        Given: Valid data is passed
+        When: OTPLoginView is called
+        Then: API returns 201
+        """
+        # given/when
+        data = {
+            "name": "morning star",
+            "email": "lucifer@hell.com",
+            "mobile": 9988998811,
+        }
+        response = self.client.post(
+            self.url,
+            data=data,
+            format="json",
+        )
+
+        # then
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["email"], {"otp": "Email Message sent successfully!"})
+        self.assertEqual(
+            response.json()["mobile_message"], {"otp": "Mobile Message sent successfully!"}
+        )
+
+        # check if otp is created
+        self.assertEqual(OTPValidation.objects.count(), 1)
+        mock_send_otp.assert_called_once_with(
+            otp_obj=ANY, recip_email=data["email"], recip_mobile=str(data["mobile"])
+        )
+
+
 class TestOTPLoginView(APITestCase):
+    # FIXME: Remove me
     """OTP Login View"""
 
     def setUp(self) -> None:
@@ -432,12 +684,6 @@ class TestOTPLoginView(APITestCase):
             "mobile": 9234567890,
             "verify_otp": 888383,
         }
-        self.data_with_incorrect_otp = {
-            "name": "random_name",
-            "email": "random@django.com",
-            "mobile": 7334567890,
-            "verify_otp": 999999,
-        }
         self.data_registered_user = {
             "name": "my_user",
             "email": "my_user@django.com",
@@ -462,84 +708,6 @@ class TestOTPLoginView(APITestCase):
             "mobile": 8848444448,
             "verify_otp": 585858,
         }
-
-    @pytest.mark.django_db
-    def test_when_only_name_is_passed(self):
-        """Check when only name is passed as data then api raises 400"""
-        response = self.client.post(self.url, data={"name": "test"}, format="json")
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(["This field is required."], response.json()["email"])
-        self.assertEqual(["This field is required."], response.json()["mobile"])
-
-    @pytest.mark.django_db
-    def test_when_name_email_is_passed(self):
-        """Check when name and email is passed as data, then API raises 400"""
-
-        response = self.client.post(
-            self.url, data={"name": "test", "email": "test@random.com"}, format="json"
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(["This field is required."], response.json()["mobile"])
-
-    @pytest.mark.django_db
-    def test_when_name_mobile_is_passed(self):
-        """Check when name and mobile is passed as data, then API raises 400"""
-
-        response = self.client.post(
-            self.url, data={"name": "test", "mobile": 1234838884}, format="json"
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(["This field is required."], response.json()["email"])
-
-    @pytest.mark.django_db
-    def test_when_email_mobile_is_passed(self):
-        """Check when email and mobile is passed as data, then API raises 400"""
-
-        response = self.client.post(
-            self.url,
-            data={"email": "test@example.com", "mobile": 1234838884},
-            format="json",
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(["This field is required."], response.json()["name"])
-
-    @pytest.mark.django_db
-    def test_sent_otp_when_name_email_mobile_is_passed(self):
-        """
-        Check when name, email, mobile is passed then OTP
-        is sent on user's email/mobile by API
-        """
-        response = self.client.post(self.url, data=self.data, format="json")
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual("OTP has been sent successfully.", response.json()["email"]["otp"])
-        self.assertEqual("OTP has been sent successfully.", response.json()["mobile"]["otp"])
-
-    @pytest.mark.django_db
-    def test_login_with_incorrect_otp_for_registered_user(self):
-        """Check when data with correct otp is passed, token is generated or not"""
-
-        response = self.client.post(self.url, data=self.data_with_incorrect_otp, format="json")
-
-        self.assertEqual(403, response.status_code)
-        self.assertEqual("OTP Validation failed! 2 attempts left!", response.json()["detail"])
-
-    @pytest.mark.django_db
-    def test_login_with_incorrect_otp_for_new_user_without_validated_otp(self):
-        """Check when data without validated otp is passed, raises 404"""
-
-        response = self.client.post(self.url, data=self.data_random_user, format="json")
-
-        self.assertEqual(404, response.status_code)
-        self.assertEqual(
-            "No pending OTP validation request found for provided destination. "
-            "Kindly send an OTP first",
-            response.json()["detail"],
-        )
 
     @pytest.mark.django_db
     def test_login_with_correct_otp_for_new_user(self):

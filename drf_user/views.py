@@ -309,8 +309,13 @@ class OTPLoginView(APIView):
         sent_otp_resp: dict = send_otp(otp_obj=otp_obj, recip_email=email, recip_mobile=mobile)
 
         if not sent_otp_resp["success"]:
+            # delete otp object if OTP could not be sent
+            otp_obj.delete()
             raise serializers.ValidationError(
-                detail=_(f"OTP could not be sent! {sent_otp_resp['message']}")
+                {
+                    "message": "OTP could not be sent! Please try again after some time.",
+                    "exc": sent_otp_resp["message"],
+                }
             )
 
         otp_obj.send_counter = F("send_counter") + 1

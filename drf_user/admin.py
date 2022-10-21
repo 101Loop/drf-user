@@ -1,26 +1,18 @@
 """
 All Admin configuration related to drf_user
-
-Author: Himanshu Shankar (https://himanshus.com)
 """
 from django.contrib import admin
-from django.contrib.auth.admin import Group
-from django.contrib.auth.admin import GroupAdmin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import Group, GroupAdmin, UserAdmin
 from django.utils.text import gettext_lazy as _
 
-from .models import AuthTransaction
-from .models import OTPValidation
-from .models import Role
-from .models import User
+from drf_user.models import AuthTransaction, OTPValidation, Role, User
 
 
+@admin.register(User)
 class DRFUserAdmin(UserAdmin):
     """
     Overrides UserAdmin to show fields name & mobile and remove fields:
     first_name, last_name
-
-    Author: Himanshu Shankar (https://himanshus.com)
     """
 
     fieldsets = (
@@ -57,12 +49,14 @@ class DRFUserAdmin(UserAdmin):
     readonly_fields = ("date_joined", "last_login", "update_date")
 
 
+@admin.register(OTPValidation)
 class OTPValidationAdmin(admin.ModelAdmin):
     """OTP Validation Admin"""
 
     list_display = ("destination", "otp", "prop")
 
 
+@admin.register(AuthTransaction)
 class AuthTransactionAdmin(admin.ModelAdmin):
     """AuthTransaction Admin"""
 
@@ -89,7 +83,3 @@ class AuthTransactionAdmin(admin.ModelAdmin):
 # Source: https://stackoverflow.com/a/32445368
 admin.site.unregister(Group)
 admin.site.register(Role, GroupAdmin)
-
-admin.site.register(User, DRFUserAdmin)
-admin.site.register(OTPValidation, OTPValidationAdmin)
-admin.site.register(AuthTransaction, AuthTransactionAdmin)

@@ -9,7 +9,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from drf_user import user_settings
 from drf_user.models import User
-from drf_user.utils import check_validation
+from drf_user.utils import check_validation, is_mobile_valid
 from drf_user.constants import EMAIL, MOBILE
 
 
@@ -234,6 +234,11 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
     verify_otp = serializers.CharField(default=None, required=False)
     mobile = serializers.CharField(required=True)
 
+    def validate_mobile(self, value: str) -> str:
+        """Validate whether the mobile is unique."""
+        is_mobile_valid(value)
+        return value
+
     @staticmethod
     def get_user(email: str, mobile: str):
         """Fetches user object"""
@@ -242,27 +247,27 @@ class OTPLoginRegisterSerializer(serializers.Serializer):
         except User.DoesNotExist:
             try:
                 user = User.objects.get(mobile=mobile)
-            except User.DoesNotExist as e:
-                raise NotFound(
-                    _(f"No user exists either for email={email} or mobile={mobile}")
-                ) from e
+            except User.DoesNotExist:
+                # new user is trying to register
+                user = None
 
-        if user.email != email:
-            raise serializers.ValidationError(
-                _(
-                    "Your account is registered with {mobile} does not has "
-                    "{email} as registered email. Please login directly via "
-                    "OTP with your mobile.".format(mobile=mobile, email=email)
+        if user:
+            if user.email != email:
+                raise serializers.ValidationError(
+                    _(
+                        f"Your account is registered with {mobile} does not has "
+                        f"{email} as registered email. Please login directly via "
+                        "OTP with your mobile."
+                    )
                 )
-            )
-        if user.mobile != mobile:
-            raise serializers.ValidationError(
-                _(
-                    "Your account is registered with {email} does not has "
-                    "{mobile} as registered mobile. Please login directly via "
-                    "OTP with your email.".format(mobile=mobile, email=email)
+            if user.mobile != mobile:
+                raise serializers.ValidationError(
+                    _(
+                        f"Your account is registered with {email} does not has "
+                        f"{mobile} as registered mobile. Please login directly via "
+                        "OTP with your email."
+                    )
                 )
-            )
         return user
 
     def validate(self, attrs: dict) -> dict:

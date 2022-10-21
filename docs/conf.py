@@ -11,14 +11,13 @@ Configuration file for the Sphinx documentation builder.
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-
-# sys.path.insert(0, os.path.abspath('.'))
+from datetime import datetime
 
 
 # -- Project information -----------------------------------------------------
 
 project = "drf-user"
-copyright = "2020, 101 Loop"
+copyright = f"{datetime.now().year}, 101 Loop"
 author = "101 Loop"
 
 parent_dir = os.path.dirname(os.path.dirname(__file__))

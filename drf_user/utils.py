@@ -233,7 +233,7 @@ def check_validation(value: str) -> bool:
         return False
 
 
-def validate_mobile(mobile: str) -> bool:
+def is_mobile_valid(mobile: str) -> bool:
     """
     This function checks if the mobile number is valid or not.
     Parameters
@@ -248,12 +248,12 @@ def validate_mobile(mobile: str) -> bool:
     Examples
     --------
     To check if '9999999999' is a valid mobile number
-    >>> print(validate_mobile('9999999999'))
+    >>> print(is_mobile_valid('9999999999'))
     True
     """
     match = re.match(r"^[6-9]\d{9}$", str(mobile))
     if match is None:
-        raise ValidationError("Invalid Mobile Number")
+        raise ValidationError("Enter a valid mobile number.")
     return True
 
 
@@ -281,8 +281,8 @@ def validate_otp(*, destination: str, otp_val: int) -> bool:
     except OTPValidation.DoesNotExist as e:
         raise NotFound(
             detail=_(
-                "No pending OTP validation request found for provided destination."
-                " Kindly send an OTP first"
+                f"No pending OTP validation request found for provided {destination}."
+                " Kindly send an OTP first."
             )
         ) from e
 
@@ -350,7 +350,7 @@ def send_message(
 
     if recip_mobile:
         # check for valid mobile numbers
-        validate_mobile(recip_mobile)
+        is_mobile_valid(recip_mobile)
 
     try:
         send_mail(
@@ -361,7 +361,8 @@ def send_message(
             recipient_list=[recip_email],
         )
     except Exception as e:  # noqa
-        sent["message"] = f"Email Message sending failed! {str(e.args)}"
+        logger.error("Email sending failed", exc_info=e)
+        sent["message"] = str(e)
         sent["success"] = False
     else:
         sent["message"] = "Email Message sent successfully!"
@@ -371,8 +372,8 @@ def send_message(
         try:
             api.send_sms(body=message, to=recip_mobile, from_phone=None)
         except Exception as e:  # noqa
-            logger.debug("Message sending failed", exc_info=e)
-            sent["mobile_message"] = f"Mobile Message sending failed! {str(e.args)}"
+            logger.error("Message sending failed", exc_info=e)
+            sent["mobile_message"] = str(e)
         else:
             sent["mobile_message"] = "Mobile Message sent successfully!"
 
