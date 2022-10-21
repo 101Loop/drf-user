@@ -44,9 +44,7 @@ def update_user_settings() -> dict:
 
     Author: Himanshu Shankar (https://himanshus.com)
     """
-    custom_settings = getattr(settings, "USER_SETTINGS", None)
-
-    if custom_settings:
+    if custom_settings := getattr(settings, "USER_SETTINGS", None):
         if not isinstance(custom_settings, dict):
             raise TypeError("USER_SETTING must be a dict.")
 
