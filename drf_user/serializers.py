@@ -190,19 +190,17 @@ class OTPSerializer(serializers.Serializer):
         else:
             attrs["prop"] = EMAIL
 
-        user = self.get_user(attrs.get("prop"), attrs.get("destination"))
+        if user := self.get_user(attrs.get("prop"), attrs.get("destination")):
+            attrs["email"] = user.email
+            attrs["user"] = user
 
-        if not user:
+        else:
             if attrs["is_login"]:
                 raise NotFound(_("No user exists with provided details"))
             if "email" not in attrs.keys() and "verify_otp" not in attrs.keys():
                 raise serializers.ValidationError(
                     _("Email field is compulsory while verifying a non-existing user's OTP.")
                 )
-        else:
-            attrs["email"] = user.email
-            attrs["user"] = user
-
         return attrs
 
 
@@ -328,12 +326,10 @@ class PasswordResetSerializer(serializers.Serializer):
         """
         validator = EmailValidator()
         validator(attrs.get("email"))
-        user = self.get_user(attrs.get("email"))
-
-        if not user:
+        if user := self.get_user(attrs.get("email")):
+            return attrs
+        else:
             raise NotFound(_("User with the provided email does not exist."))
-
-        return attrs
 
 
 class ImageSerializer(serializers.ModelSerializer):
