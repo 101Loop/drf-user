@@ -64,7 +64,7 @@ docs:
 	python setup.py build_sphinx
 
 lint:
-	flake8  --exclude=*/migrations/* --max-line-length 88 drf_user
+	flake8  --exclude=*/migrations/* --max-line-length 100 drf_user
 
 format:
 	black --exclude .+/migrations/.+\.py drf_user

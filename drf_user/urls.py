@@ -23,13 +23,9 @@ urlpatterns = [
         name="Retrieve Update Profile",
     ),
     # ex: api/user/password/reset/
-    path(
-        "password/reset/", views.PasswordResetView.as_view(), name="reset_user_password"
-    ),
+    path("password/reset/", views.PasswordResetView.as_view(), name="reset_user_password"),
     # ex: api/user/upload-image/
     path("upload-image/", views.UploadImageView.as_view(), name="upload_profile_image"),
     # ex: api/user/refresh-token/
-    path(
-        "refresh-token/", views.CustomTokenRefreshView.as_view(), name="refresh_token"
-    ),
+    path("refresh-token/", views.CustomTokenRefreshView.as_view(), name="refresh_token"),
 ]

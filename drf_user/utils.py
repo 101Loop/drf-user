@@ -1,30 +1,29 @@
 """Collection of general helper functions."""
 import datetime
-from typing import Dict
-from typing import Optional
-from typing import Union
+import logging
+import re
+from typing import Dict, Optional
 
-import pytz
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import gettext_lazy as _
-from drfaddons.utils import send_message
-from rest_framework.exceptions import APIException
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.exceptions import NotFound
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed, NotFound, PermissionDenied
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.utils import datetime_from_epoch
+from sendsms import api
 
 from drf_user import update_user_settings
-from drf_user.models import AuthTransaction
-from drf_user.models import OTPValidation
-from drf_user.models import User
+from drf_user.models import AuthTransaction, OTPValidation, User
 
-user_settings: Dict[
-    str, Union[bool, Dict[str, Union[int, str, bool]]]
-] = update_user_settings()
-otp_settings: Dict[str, Union[str, int]] = user_settings["OTP"]
+user_settings: dict = update_user_settings()
+otp_settings: dict = user_settings["OTP"]
+
+logger = logging.getLogger(__name__)
 
 
 def get_client_ip(request: HttpRequest) -> Optional[str]:
@@ -51,7 +50,7 @@ def get_client_ip(request: HttpRequest) -> Optional[str]:
 def datetime_passed_now(source: datetime.datetime) -> bool:
     """
     Compares provided datetime with current time on the basis of Django
-    settings. Checks source is in future or in past. False if it's in future.
+    settings. Checks source is in future or in the past. False if it's in future.
     Parameters
     ----------
     source: datetime object than may or may not be naive
@@ -63,9 +62,9 @@ def datetime_passed_now(source: datetime.datetime) -> bool:
     Author: Himanshu Shankar (https://himanshus.com)
     """
     if source.tzinfo is not None and source.tzinfo.utcoffset(source) is not None:
-        return source <= datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-    else:
-        return source <= datetime.datetime.now()
+        return source <= datetime.datetime.now(datetime.timezone.utc)
+
+    return source <= datetime.datetime.now()
 
 
 def check_unique(prop: str, value: str) -> bool:
@@ -97,18 +96,18 @@ def check_unique(prop: str, value: str) -> bool:
     return user.count() == 0
 
 
-def generate_otp(prop: str, value: str) -> OTPValidation:
+def generate_otp(*, destination_property: str, destination: str) -> OTPValidation:
     """
     This function generates an OTP and saves it into Model. It also
     sets various counters, such as send_counter,
     is_validated, validate_attempt.
     Parameters
     ----------
-    prop: str
+    destination_property: str
         This specifies the type for which OTP is being created. Can be::
-            email
-            mobile
-    value: str
+            E
+            M
+    destination: str
         This specifies the value for which OTP is being created.
 
     Returns
@@ -118,10 +117,10 @@ def generate_otp(prop: str, value: str) -> OTPValidation:
     Examples
     --------
     To create an OTP for an Email test@testing.com
-    >>> print(generate_otp('email', 'test@testing.com'))
+    >>> print(generate_otp('E', 'test@testing.com'))
     OTPValidation object
 
-    >>> print(generate_otp('email', 'test@testing.com').otp)
+    >>> print(generate_otp('E', 'test@testing.com').otp)
     5039164
     """
     # Create a random number
@@ -131,9 +130,7 @@ def generate_otp(prop: str, value: str) -> OTPValidation:
 
     # Checks if random number is unique among non-validated OTPs and
     # creates new until it is unique.
-    while OTPValidation.objects.filter(otp__exact=random_number).filter(
-        is_validated=False
-    ):
+    while OTPValidation.objects.filter(otp__exact=random_number).filter(is_validated=False):
         random_number: str = User.objects.make_random_password(
             length=otp_settings["LENGTH"], allowed_chars=otp_settings["ALLOWED_CHARS"]
         )
@@ -141,16 +138,16 @@ def generate_otp(prop: str, value: str) -> OTPValidation:
     # Get or Create new instance of Model with value of provided value
     # and set proper counter.
     try:
-        otp_object: OTPValidation = OTPValidation.objects.get(destination=value)
+        otp_object: OTPValidation = OTPValidation.objects.get(destination=destination)
     except OTPValidation.DoesNotExist:
         otp_object: OTPValidation = OTPValidation()
-        otp_object.destination = value
+        otp_object.destination = destination
     else:
         if not datetime_passed_now(otp_object.reactive_at):
             return otp_object
 
     otp_object.otp = random_number
-    otp_object.prop = prop
+    otp_object.prop = destination_property
 
     # Set is_validated to False
     otp_object.is_validated = False
@@ -162,48 +159,6 @@ def generate_otp(prop: str, value: str) -> OTPValidation:
     otp_object.reactive_at = timezone.now() - datetime.timedelta(minutes=1)
     otp_object.save()
     return otp_object
-
-
-def send_otp(value: str, otpobj: OTPValidation, recip: str) -> Dict:
-    """
-    This function sends OTP to specified value.
-    Parameters
-    ----------
-    value: str
-        This is the value at which and for which OTP is to be sent.
-    otpobj: OTPValidation
-        This is the OTP or One Time Passcode that is to be sent to user.
-    recip: str
-        This is the recipient to whom EMail is being sent. This will be
-        deprecated once SMS feature is brought in.
-
-    Returns
-    -------
-
-    """
-    otp: str = otpobj.otp
-
-    if not datetime_passed_now(otpobj.reactive_at):
-        raise PermissionDenied(
-            detail=_(f"OTP sending not allowed until: {otpobj.reactive_at}")
-        )
-
-    message = (
-        f"OTP for verifying {otpobj.get_prop_display()}: {value} is {otp}."
-        f"  Don't share this with anyone!"
-    )
-
-    try:
-        rdata: dict = send_message(message, otp_settings["SUBJECT"], [value], [recip])
-    except ValueError as err:
-        raise APIException(_(f"Server configuration error occurred: {err}"))
-
-    otpobj.reactive_at = timezone.now() + datetime.timedelta(
-        minutes=otp_settings["COOLING_PERIOD"]
-    )
-    otpobj.save()
-
-    return rdata
 
 
 def login_user(user: User, request: HttpRequest) -> Dict[str, str]:
@@ -278,54 +233,190 @@ def check_validation(value: str) -> bool:
         return False
 
 
-def validate_otp(value: str, otp: int) -> bool:
+def is_mobile_valid(mobile: str) -> bool:
+    """
+    This function checks if the mobile number is valid or not.
+    Parameters
+    ----------
+    mobile: str
+        This is the mobile number to be checked.
+
+    Returns
+    -------
+    bool
+        True if mobile number is valid, False otherwise.
+    Examples
+    --------
+    To check if '9999999999' is a valid mobile number
+    >>> print(is_mobile_valid('9999999999'))
+    True
+    """
+    match = re.match(r"^[6-9]\d{9}$", str(mobile))
+    if match is None:
+        raise ValidationError("Enter a valid mobile number.")
+    return True
+
+
+def validate_otp(*, destination: str, otp_val: int) -> bool:
     """
     This function is used to validate the OTP for a particular value.
     It also reduces the attempt count by 1 and resets OTP.
     Parameters
     ----------
-    value: str
+    destination: str
         This is the unique entry for which OTP has to be validated.
-    otp: int
+    otp_val: int
         This is the OTP that will be validated against one in Database.
 
     Returns
     -------
     bool: True, if OTP is validated
     """
+
     try:
         # Try to get OTP Object from Model and initialize data dictionary
         otp_object: OTPValidation = OTPValidation.objects.get(
-            destination=value, is_validated=False
+            destination=destination, is_validated=False
         )
-    except OTPValidation.DoesNotExist:
+    except OTPValidation.DoesNotExist as e:
         raise NotFound(
             detail=_(
-                "No pending OTP validation request found for provided "
-                "destination. Kindly send an OTP first"
+                f"No pending OTP validation request found for provided {destination}."
+                " Kindly send an OTP first."
             )
-        )
+        ) from e
+
     # Decrement validate_attempt
     otp_object.validate_attempt -= 1
 
-    if str(otp_object.otp) == str(otp):
+    if str(otp_object.otp) == str(otp_val):
         # match otp
         otp_object.is_validated = True
-        otp_object.save()
+        otp_object.save(update_fields=["is_validated", "validate_attempt"])
         return True
 
     elif otp_object.validate_attempt <= 0:
         # check if attempts exceeded and regenerate otp and raise error
-        generate_otp(otp_object.prop, value)
-        raise AuthenticationFailed(
-            detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset.")
-        )
+        generate_otp(destination_property=otp_object.prop, destination=destination)
+        raise AuthenticationFailed(detail=_("Incorrect OTP. Attempt exceeded! OTP has been reset."))
 
     else:
         # update attempts and raise error
-        otp_object.save()
+        otp_object.save(update_fields=["validate_attempt"])
         raise AuthenticationFailed(
-            detail=_(
-                f"OTP Validation failed! {otp_object.validate_attempt} attempts left!"
-            )
+            detail=_(f"OTP Validation failed! {otp_object.validate_attempt} attempts left!")
         )
+
+
+def send_message(
+    message: str,
+    subject: str,
+    recip_email: str,
+    recip_mobile: Optional[str] = None,
+    html_message: Optional[str] = None,
+) -> Dict:
+    """
+    Sends message to specified value.
+
+    Parameters
+    ----------
+    message: str
+        Message that is to be sent to user.
+    subject: str
+        Subject that is to be sent to user, in case prop is an email.
+    recip_mobile: str
+        Recipient Mobile Number to whom message is being sent.
+    recip_email: str
+        Recipient to whom EMail is being sent.
+    html_message: str
+        HTML variant of message, if any.
+
+    Returns
+    -------
+    sent: dict
+    """
+    sent = {"success": False, "message": None, "mobile_message": None}
+
+    if not getattr(settings, "EMAIL_HOST", None):
+        raise ValueError("EMAIL_HOST must be defined in django setting for sending mail.")
+    if not getattr(settings, "EMAIL_FROM", None):
+        raise ValueError(
+            "EMAIL_FROM must be defined in django setting "
+            "for sending mail. Who is sending email?"
+        )
+
+    # check if email is valid
+    validate_email(recip_email)
+
+    if recip_mobile:
+        # check for valid mobile numbers
+        is_mobile_valid(recip_mobile)
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            html_message=html_message,
+            from_email=settings.EMAIL_FROM,
+            recipient_list=[recip_email],
+        )
+    except Exception as e:  # noqa
+        logger.error("Email sending failed", exc_info=e)
+        sent["message"] = str(e)
+        sent["success"] = False
+    else:
+        sent["message"] = "Email Message sent successfully!"
+        sent["success"] = True
+
+    if recip_mobile:
+        try:
+            api.send_sms(body=message, to=recip_mobile, from_phone=None)
+        except Exception as e:  # noqa
+            logger.error("Message sending failed", exc_info=e)
+            sent["mobile_message"] = str(e)
+        else:
+            sent["mobile_message"] = "Mobile Message sent successfully!"
+
+    return sent
+
+
+def send_otp(
+    *, otp_obj: OTPValidation, recip_email: str, recip_mobile: Optional[str] = None
+) -> Dict:
+    """
+    This function sends OTP to specified value.
+    Parameters
+    ----------
+    otp_obj: OTPValidation
+        OTPValidation object that contains the OTP and other details.
+    recip_email: str
+        Recipient to whom EMail is being sent.
+    recip_mobile: Optional[str]
+        Recipient Mobile Number to whom message is being sent.
+
+    Returns
+    -------
+    data: dict
+        Dictionary containing the status of the OTP sent.
+    """
+    otp_val: str = otp_obj.otp
+
+    if not datetime_passed_now(otp_obj.reactive_at):
+        raise PermissionDenied(f"OTP sending not allowed until: {otp_obj.reactive_at}")
+
+    message: str = (
+        f"OTP for verifying {otp_obj.get_prop_display()}: {otp_obj.destination} is {otp_val}."
+        f" Don't share this with anyone!"
+    )
+
+    try:
+        data: dict = send_message(message, otp_settings["SUBJECT"], recip_email, recip_mobile)
+    except (ValueError, ValidationError) as e:
+        raise serializers.ValidationError({"detail": f"OTP sending failed! because {e}"}) from e
+
+    otp_obj.reactive_at = timezone.now() + datetime.timedelta(
+        minutes=otp_settings["COOLING_PERIOD"]
+    )
+    otp_obj.save(update_fields=["reactive_at"])
+
+    return data

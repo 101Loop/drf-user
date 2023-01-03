@@ -9,6 +9,7 @@ from model_bakery import baker
 from rest_framework.exceptions import AuthenticationFailed
 
 from drf_user import utils as utils
+from drf_user.constants import CoreConstants
 from drf_user.models import OTPValidation
 from drf_user.models import User
 from drf_user.utils import get_client_ip
@@ -71,7 +72,9 @@ class TestGenerateOTP(TestCase):
     @pytest.mark.django_db
     def test_generate_otp(self):
         """Check generate_otp successfully generates OTPValidation object or not"""
-        utils.generate_otp("email", "user1@email.com")
+        utils.generate_otp(
+            destination_property=CoreConstants.EMAIL_PROP, destination="user1@email.com"
+        )
         self.assertEqual(1, OTPValidation.objects.count())
 
     @pytest.mark.django_db
@@ -79,8 +82,12 @@ class TestGenerateOTP(TestCase):
         """
         Check generate_otp generates a new otp if the reactive time is yet to be over
         """
-        otp_validation1 = utils.generate_otp("email", "user1@email.com")
-        otp_validation2 = utils.generate_otp("email", "user1@email.com")
+        otp_validation1 = utils.generate_otp(
+            destination_property=CoreConstants.EMAIL_PROP, destination="user1@email.com"
+        )
+        otp_validation2 = utils.generate_otp(
+            destination_property=CoreConstants.EMAIL_PROP, destination="user1@email.com"
+        )
         self.assertNotEqual(otp_validation1.otp, otp_validation2.otp)
 
     @pytest.mark.django_db
@@ -88,7 +95,9 @@ class TestGenerateOTP(TestCase):
         """
         Check generate_otp returns the same otp if the reactive time is already over
         """
-        otp_validation1 = utils.generate_otp("email", "user1@email.com")
+        otp_validation1 = utils.generate_otp(
+            destination_property=CoreConstants.EMAIL_PROP, destination="user1@email.com"
+        )
 
         """
         Simulating that the reactive time is already been over 5 minutes ago
@@ -96,7 +105,9 @@ class TestGenerateOTP(TestCase):
         otp_validation1.reactive_at = timezone.now() + datetime.timedelta(minutes=5)
         otp_validation1.save()
 
-        otp_validation2 = utils.generate_otp("email", "user1@email.com")
+        otp_validation2 = utils.generate_otp(
+            destination_property=CoreConstants.EMAIL_PROP, destination="user1@email.com"
+        )
         self.assertEqual(otp_validation2.otp, otp_validation1.otp)
 
 
@@ -117,7 +128,7 @@ class TestValidateOTP(TestCase):
     @pytest.mark.django_db
     def test_validate_otp(self):
         """Check if OTPValidation object is created or not"""
-        self.assertTrue(utils.validate_otp("user@email.com", 12345))
+        self.assertTrue(utils.validate_otp(destination="user@email.com", otp_val=12345))
 
     @pytest.mark.django_db
     def test_validate_otp_raises_attempt_exceeded_exception(self):
@@ -130,7 +141,7 @@ class TestValidateOTP(TestCase):
         self.otp_validation.save()
 
         with self.assertRaises(AuthenticationFailed) as context_manager:
-            utils.validate_otp("user@email.com", 56123)
+            utils.validate_otp(destination="user@email.com", otp_val=56123)
 
         self.assertEqual(
             "Incorrect OTP. Attempt exceeded! OTP has been reset.",
@@ -141,7 +152,7 @@ class TestValidateOTP(TestCase):
     def test_validate_otp_raises_invalid_otp_exception(self):
         """Check function raises attempt exceeded exception"""
         with self.assertRaises(AuthenticationFailed) as context_manager:
-            utils.validate_otp("user@email.com", 5623)
+            utils.validate_otp(destination="user@email.com", otp_val=5623)
 
         self.assertEqual(
             "OTP Validation failed! 2 attempts left!",
