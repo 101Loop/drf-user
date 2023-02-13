@@ -232,6 +232,23 @@ Commit your changes and push your branch to GitHub:
 
 Submit a pull request through the GitHub website.
 
+```
+Windows:
+For developing in windows follow the following instructions
+
+1) Download python from microsoft store
+
+2) clone the git repo using command git clone git@github.com:101loop/drf-user.git or fork it and then clone the using the url of fork
+
+3)  Run py -m pip install --user virtualenv to install virtualenv library
+
+4) Run Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+
+5) After Completing development work. Run command  Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope CurrentUser.
+
+
+Note: The command Set execution policy allows execution of remote scripts. Please remove permissions immediately after work to avoid security issues.
+
 ## Code of Conduct
 
 Please note that this project is released with a Contributor
