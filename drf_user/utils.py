@@ -21,9 +21,9 @@ from drf_user.models import AuthTransaction
 from drf_user.models import OTPValidation
 from drf_user.models import User
 
-user_settings: Dict[
-    str, Union[bool, Dict[str, Union[int, str, bool]]]
-] = update_user_settings()
+user_settings: Dict[str, Union[bool, Dict[str, Union[int, str, bool]]]] = (
+    update_user_settings()
+)
 otp_settings: Dict[str, Union[str, int]] = user_settings["OTP"]
 
 
