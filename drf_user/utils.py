@@ -40,8 +40,7 @@ def get_client_ip(request: HttpRequest) -> Optional[str]:
     -------
     ip: str or None
     """
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
+    if x_forwarded_for := request.META.get("HTTP_X_FORWARDED_FOR"):
         return x_forwarded_for.split(",")[0]
     else:
         return request.META.get("REMOTE_ADDR")
@@ -251,7 +250,7 @@ def is_mobile_valid(mobile: str) -> bool:
     >>> print(is_mobile_valid('9999999999'))
     True
     """
-    match = re.match(r"^[6-9]\d{9}$", str(mobile))
+    match = re.match(r"^[6-9]\d{9}$", mobile)
     if match is None:
         raise ValidationError("Enter a valid mobile number.")
     return True
