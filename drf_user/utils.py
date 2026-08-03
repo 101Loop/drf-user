@@ -93,8 +93,7 @@ def check_unique(prop: str, value: str) -> bool:
     >>> print(check_unique('email', 'test@testing.com'))
     True
     """
-    user = User.objects.extra(where=[prop + " = '" + value + "'"])
-    return user.count() == 0
+    return not User.objects.filter(**{prop: value}).exists()
 
 
 def generate_otp(prop: str, value: str) -> OTPValidation:
